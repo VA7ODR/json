@@ -36,6 +36,14 @@ namespace json
 	class array;
 }
 
+namespace ojson
+{
+	class value;
+	class document;
+	class object;
+	class array;
+}
+
 #include "json.hpp"
 
 #undef OJSON_HPP_START

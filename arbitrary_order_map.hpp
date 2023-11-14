@@ -173,9 +173,15 @@ public:
 		return data.erase(key);
 	}
 
-	class iterator : public std::iterator<std::input_iterator_tag, data2Type>
+	class iterator
 	{
 	public:
+		typedef std::input_iterator_tag  	iterator_category;
+		typedef data2Type        			value_type;
+		typedef ptrdiff_t					difference_type;
+		typedef data2Type*   				pointer;
+		typedef data2Type& 					reference;
+
 		friend class reverse_iterator;
 		friend class const_iterator;
 		iterator()
@@ -278,10 +284,16 @@ public:
 								// instead of iterator in
 								// reverse_iterator(const fIterator& rhs)...
 
-	class const_iterator : public std::iterator<std::input_iterator_tag, data2Type>
+	class const_iterator
 	{
 	public:
 		friend class reverse_iterator;
+		typedef std::input_iterator_tag  	iterator_category;
+		typedef data2Type        			value_type;
+		typedef ptrdiff_t					difference_type;
+		typedef data2Type*   				pointer;
+		typedef data2Type& 					reference;
+
 		const_iterator()
 		{
 

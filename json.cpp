@@ -758,25 +758,31 @@ namespace JSON_NAMESPACE
 	instring::instring(const sdstring& in) {
 		m_size = in.size();
 		str = static_cast<char*>(malloc(m_size + 1));
-		wpos = str;
-		memcpy(str, in.c_str(), m_size);
-		str[m_size] = 0;
+		if (str) {
+			wpos = str;
+			memcpy(str, in.c_str(), m_size);
+			str[m_size] = 0;
+		}
 	}
 
 	instring::instring(const instring& in) {
-			m_size = in.m_size;
+		m_size = in.m_size;
 		str = static_cast<char*>(malloc(m_size + 1));
+		if (str) {
 			wpos = str + (in.wpos - in.str);
-		memcpy(str, in.str, m_size);
-		str[m_size] = 0;
+			memcpy(str, in.str, m_size);
+			str[m_size] = 0;
+		}
 	}
 
 	instring::instring(char* in) {
 		m_size = strlen(in);
 		str = static_cast<char*>(malloc(m_size + 1));
-		wpos = str;
-		memcpy(str, in, m_size);
-		str[m_size] = 0;
+		if (str) {
+			wpos = str;
+			memcpy(str, in, m_size);
+			str[m_size] = 0;
+		}
 	}
 
 	instring::~instring() {
@@ -799,9 +805,11 @@ namespace JSON_NAMESPACE
 		m_size = in.size();
 		free(str);
 		str = static_cast<char*>(malloc(m_size + 1));
-		wpos = str;
-		memcpy(str, in.c_str(), m_size);
-		str[m_size] = 0;
+		if (str) {
+			wpos = str;
+			memcpy(str, in.c_str(), m_size);
+			str[m_size] = 0;
+		}
 		return *this;
 	}
 
@@ -810,22 +818,27 @@ namespace JSON_NAMESPACE
 		m_size = strlen(in);
 		free(str);
 		str = static_cast<char*>(malloc(m_size + 1));
-		wpos = str;
-		memcpy(str, in, m_size);
-		str[m_size] = 0;
+		if (str) {
+			wpos = str;
+			memcpy(str, in, m_size);
+			str[m_size] = 0;
+		}
 		return *this;
 	}
 
 	instring& instring::operator=(const instring& in) {
-		if (this == &in)
+		if (this == &in) {
 			return *this;
+		}
 		memset(str, 0, m_size);
 		m_size = in.m_size;
 		free(str);
 		str = static_cast<char*>(malloc(m_size + 1));
-		wpos = str + (in.wpos - in.str);
-		memcpy(str, in.str, m_size);
-		str[m_size] = 0;
+		if (str) {
+			wpos = str + (in.wpos - in.str);
+			memcpy(str, in.str, m_size);
+			str[m_size] = 0;
+		}
 		return *this;
 	}
 
@@ -834,9 +847,11 @@ namespace JSON_NAMESPACE
 		m_size = in.size();
 		free(str);
 		str = static_cast<char*>(malloc(m_size + 1));
-		wpos = str;
-		memcpy(str, in.c_str(), m_size);
-		str[m_size] = 0;
+		if (str) {
+			wpos = str;
+			memcpy(str, in.c_str(), m_size);
+			str[m_size] = 0;
+		}
 	}
 
 	void instring::set(const char* in) {
@@ -844,9 +859,11 @@ namespace JSON_NAMESPACE
 		m_size = strlen(in);
 		free(str);
 		str = static_cast<char*>(malloc(m_size + 1));
-		wpos = str;
-		memcpy(str, in, m_size);
-		str[m_size] = 0;
+		if (str) {
+			wpos = str;
+			memcpy(str, in, m_size);
+			str[m_size] = 0;
+		}
 	}
 
 	instring instring::operator+(double V) const
@@ -1870,7 +1887,6 @@ namespace JSON_NAMESPACE
 
 		str.assign(V.str);
 
-
 		if (myType != V.myType) {
 			switch (myType) {
 				case JSON_OBJECT:
@@ -2067,32 +2083,32 @@ namespace JSON_NAMESPACE
 		// pParentObject = NULL;
 		// pParentArray = NULL;
 	}
-	value::value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-	{
-	// 	m_number = 0;
-	// 	m_places = -1;
-	// 	m_boolean = false;
-	// 	str.assign(V);
-	// 	myType = JSON_STRING;
-	// 	obj = NULL;
-	// 	arr = NULL;
-	// 	pParentObject = NULL;
-	// 	pParentArray = NULL;
-	}
+//	value::value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+//	{
+//	// 	m_number = 0;
+//	// 	m_places = -1;
+//	// 	m_boolean = false;
+//	// 	str.assign(V);
+//	// 	myType = JSON_STRING;
+//	// 	obj = NULL;
+//	// 	arr = NULL;
+//	// 	pParentObject = NULL;
+//	// 	pParentArray = NULL;
+//	}
 
-	value::value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-	{
-		std::swap(str, V);
-	// 	m_number = 0;
-	// 	m_places = -1;
-	// 	m_boolean = false;
-	// 	str.assign(V);
-	// 	myType = JSON_STRING;
-	// 	obj = NULL;
-	// 	arr = NULL;
-	// 	pParentObject = NULL;
-	// 	pParentArray = NULL;
-	}
+//	value::value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+//	{
+//		std::swap(str, V);
+//	// 	m_number = 0;
+//	// 	m_places = -1;
+//	// 	m_boolean = false;
+//	// 	str.assign(V);
+//	// 	myType = JSON_STRING;
+//	// 	obj = NULL;
+//	// 	arr = NULL;
+//	// 	pParentObject = NULL;
+//	// 	pParentArray = NULL;
+//	}
 /*
 	value & value::operator=(const sdstring& V)
 	{
@@ -3763,7 +3779,7 @@ namespace JSON_NAMESPACE
 	}
     
     std::string& value::string() {
-        return static_cast<std::string&>(_sdstring());
+        return reinterpret_cast<std::string&>(_sdstring());
     }
 
 //	std::string& value::string()
@@ -4715,27 +4731,28 @@ namespace JSON_NAMESPACE
 			size_t l = (size_t)ftell(fd);
 			fseek(fd, 0, SEEK_SET);
 			char* buffer = static_cast<char*>(malloc(l + 1));
+			if (buffer) {
+				buffer[l] = 0;
+				size_t br = fread(buffer, 1, l, fd);
+				if (debug && br != l) {
+					debug("File size mismatch in %s.", inStr.c_str());
+				}
 
-			buffer[l] = 0;
-			size_t br = fread(buffer, 1, l, fd);
-			if (debug && br != l) {
-				debug("File size mismatch in %s.", inStr.c_str());
+				fclose(fd);
+				bool bRetVal;
+				if (bReWriteFile) {
+					bRetVal = parse(buffer, l, preParser, inStr);
+				} else {
+					bRetVal = parse(buffer, l, preParser);
+				}
+				bParseSuccessful = bRetVal;
+				if (debug && !bParseSuccessful) {
+					debug("JSON could not parse %s.", inStr.c_str());
+				}
+				memset(buffer, 0, l+1);
+				free(buffer);
+				return bRetVal;
 			}
-
-			fclose(fd);
-			bool bRetVal;
-			if (bReWriteFile) {
-				bRetVal = parse(buffer, l, preParser, inStr);
-			} else {
-				bRetVal = parse(buffer, l, preParser);
-			}
-			bParseSuccessful = bRetVal;
-			if (debug && !bParseSuccessful) {
-				debug("JSON could not parse %s.", inStr.c_str());
-			}
-			memset(buffer, 0, l+1);
-			free(buffer);
-			return bRetVal;
 		}
 
 		bParseSuccessful = false;
@@ -4820,7 +4837,9 @@ namespace JSON_NAMESPACE
 				sInstrPlusBak.append(".bak");
 				fclose(fd);
 				if (fileExists(sInstrPlusBak.c_str())) {
-					remove(sInstrPlusBak.c_str());
+					if (remove(sInstrPlusBak.c_str()) != 0 && debug) {
+						debug("Failed to remove %s.", sInstrPlusBak.c_str());
+					}
 				}
 				if (fileExists(inStr.c_str())) {
 					if (rename(inStr.c_str(), sInstrPlusBak.c_str()) != 0) {

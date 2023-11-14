@@ -31,8 +31,7 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 void write(const std::string &sPrefix, ojson::value & val, std::string & dest)
 {
-	switch (val.isA())
-	{
+	switch (val.isA()) {
 		default:
 		case json::JSON_VOID:
 			break;

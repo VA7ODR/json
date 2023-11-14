@@ -22,6 +22,9 @@
 
 cmake_minimum_required(VERSION 3.5)
 
+cmake_policy(SET CMP0077 NEW)							#silence CMAKE warning:
+														#For compatibility with older versions of CMake, option is clearing the normal variable 'STAND_ALONE'.
+
 project(json_document)
 
 option(ORDERED_JSON "Is the ordered json (ojson::document) class required" ON)

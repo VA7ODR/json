@@ -22,6 +22,7 @@ THE SOFTWARE.
 The official repository for this library is at https://github.com/VA7ODR/json
 
 */
+#include <filesystem>
 #include <iomanip>
 #include "tinyxml/tinyxml.h"
 #include "tinyxml/tinystr.h"
@@ -156,7 +157,7 @@ namespace DATA_NAMESPACE
 						if (iValType != 0) {
 							sdstring sValue = att->Value();
 
-							JSON_NAMESPACE::instring in(sValue.data());
+							JSON_NAMESPACE::instring in(sValue);
 							bool bFailed = false;
 							if (childref.isA(JSON_NAMESPACE::JSON_OBJECT)) {
 								JSON_NAMESPACE::numberParse(childref[DATA_VAL], in, &bFailed);
@@ -166,7 +167,7 @@ namespace DATA_NAMESPACE
 						} else {
 							sdstring val = att->Value();
 							if (childref.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-								switch(IsBool(val)) {
+								switch (IsBool(val)) {
 									default:
 										childref[DATA_VAL] = elem->Value();
 										break;
@@ -186,7 +187,7 @@ namespace DATA_NAMESPACE
 								// 	childref[DATA_VAL] = elem->Value();
 								// }
 							} else {
-								switch(IsBool(val)) {
+								switch (IsBool(val)) {
 									default:
 										childref = att->Value();
 										break;
@@ -260,7 +261,7 @@ namespace DATA_NAMESPACE
 							if (iValType != 0) {
 								sdstring sValue = att->Value();
 
-								JSON_NAMESPACE::instring in(sValue.data());
+								JSON_NAMESPACE::instring in(sValue);
 					
 								bool bFailed = false;
 					
@@ -273,7 +274,7 @@ namespace DATA_NAMESPACE
 								sdstring val = att->Value();
 					
 								if (childref.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-									switch(IsBool(val)) {
+									switch (IsBool(val)) {
 										default:
 											childref[DATA_VAL] = elem->Value();
 											break;
@@ -286,7 +287,7 @@ namespace DATA_NAMESPACE
 
 									}
 								} else {
-									switch(IsBool(val)) {
+									switch (IsBool(val)) {
 										default:
 											childref = att->Value();
 											break;
@@ -355,7 +356,7 @@ namespace DATA_NAMESPACE
 					if (iValType != 0) {
 						sdstring sValue = elem->Value();
 
-						JSON_NAMESPACE::instring in(sValue.data());
+						JSON_NAMESPACE::instring in(sValue);
 						bool bFailed = false;
 						if (ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
 							JSON_NAMESPACE::numberParse(ret[DATA_VAL], in, &bFailed);
@@ -365,7 +366,7 @@ namespace DATA_NAMESPACE
 					} else {
 						sdstring val = elem->Value();
 						if (ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-							switch(IsBool(val)) {
+							switch (IsBool(val)) {
 								default:
 									ret[DATA_VAL] = elem->Value();
 									break;
@@ -385,7 +386,7 @@ namespace DATA_NAMESPACE
 							// 	ret[DATA_VAL] = elem->Value();
 							// }
 						} else {
-							switch(IsBool(val)) {
+							switch (IsBool(val)) {
 								default:
 									ret = elem->Value();
 									break;
@@ -468,7 +469,7 @@ namespace DATA_NAMESPACE
 							*ptr = c;
 							++ptr;
 							if (c == '+' || c == '-') {
-								if(!bHadChars) {
+								if (!bHadChars) {
 									bHadSign = true;
 								} else {
 									bHadNonNumber = true;
@@ -625,7 +626,7 @@ namespace DATA_NAMESPACE
 							} else {
 								pTag = &(jChild);
 							}
-							if(fastParse(in, *pTag, parseResult) == false) {
+							if (fastParse(in, *pTag, parseResult) == false) {
 								return false;
 							} else {
 								pTag = nullptr;
@@ -895,7 +896,7 @@ namespace DATA_NAMESPACE
 							} else {
 								pTag = &(out[sTag]);
 							}
-							if(fastParse(in, *pTag, parseResult) == false) {
+							if (fastParse(in, *pTag, parseResult) == false) {
 								return false;
 							} else {
 								pTag = nullptr;
@@ -964,7 +965,7 @@ namespace DATA_NAMESPACE
 							*ptr = c;
 							++ptr;
 							if (c == '+' || c == '-') {
-								if(!bHadChars) {
+								if (!bHadChars) {
 									bHadSign = true;
 								} else {
 									bHadNonNumber = true;
@@ -1105,7 +1106,7 @@ namespace DATA_NAMESPACE
 		return true;
 	}
 
-	bool document::parseXML(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
+	bool document::parseXML_old(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
@@ -1119,7 +1120,7 @@ namespace DATA_NAMESPACE
 		m_boolean = false;
 		str.clear();
 		if (preParser == NULL) {
-			JSON_NAMESPACE::instring in(inStr.data());
+			JSON_NAMESPACE::instring in(inStr);
 			JSON_NAMESPACE::SkipWhitespace(in);
 			bParseSuccessful = fastParse(in, *this, strParseResult);
 		} else {
@@ -1134,7 +1135,7 @@ namespace DATA_NAMESPACE
 				}
 				return false;
 			}
-			JSON_NAMESPACE::instring in(inStr.data());
+			JSON_NAMESPACE::instring in(inStr);
 			JSON_NAMESPACE::SkipWhitespace(in);
 			bParseSuccessful = fastParse(in, *this, strParseResult);
 		}
@@ -1151,7 +1152,7 @@ namespace DATA_NAMESPACE
 		}
 	}
 
-	bool document::parseXML_old(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
+	bool document::parseXML(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
@@ -1196,87 +1197,35 @@ namespace DATA_NAMESPACE
 		return true;
 	}
 
-	bool document::parseXMLFile_old(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile)
-	{
-//		auto start = std::chrono::steady_clock::now();
-		FILE* fd = fopen(inStr.c_str(), "rb");
-//		auto mainStart = start;
-		if (fd) {
-//			auto end = std::chrono::steady_clock::now();
-//			std::cout << "open: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-
-			fseek(fd, 0, SEEK_END);
-			size_t l = (size_t)ftell(fd);
-			fseek(fd, 0, SEEK_SET);
-
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "size: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-
-			char* buffer = static_cast<char*>(malloc(l + 1));
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "allocate: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-
-			buffer[l] = 0;
-			size_t br = fread(buffer, 1, l, fd);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "read: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-			if (debug && br != l) {
-				debug("File size mismatch in %s.", inStr.c_str());
-			}
-			fclose(fd);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "close: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-			bool bRetVal;
-			sdstring sDat(buffer, l);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "sdstring: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-			if (bReWriteFile) {
-				bRetVal = parseXML_old(sDat, preParser, inStr);
-			} else {
-				bRetVal = parseXML_old(sDat, preParser);
-			}
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "parsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-			bParseSuccessful = bRetVal;
-			memset(buffer, 0, l + 1);
-			free(buffer);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "freed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			std::cout << "TOTAL: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - mainStart).count() << std::endl << std::endl;
-//			start = end;
-			return bRetVal;
-		}
-		strParseResult = "Couldn't open file " + inStr;
-		bParseSuccessful = false;
-		return false;
-	}
-
 	bool document::parseXMLFile(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile)
 	{
 //		auto start = std::chrono::steady_clock::now();
-//		auto mainStart = start;
 		FILE* fd = fopen(inStr.c_str(), "rb");
+//		auto mainStart = start;
 		if (fd) {
 //			auto end = std::chrono::steady_clock::now();
 //			std::cout << "open: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 //			start = end;
+
 			fseek(fd, 0, SEEK_END);
 			size_t l = (size_t)ftell(fd);
 			fseek(fd, 0, SEEK_SET);
+
 //			end = std::chrono::steady_clock::now();
 //			std::cout << "size: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 //			start = end;
+
 			char* buffer = static_cast<char*>(malloc(l + 1));
+			if (!buffer) {
+				fclose(fd);
+				strParseResult = "Couldn't allocate memory for parsing file " + inStr;
+				bParseSuccessful = false;
+				return false;
+			}
 //			end = std::chrono::steady_clock::now();
 //			std::cout << "allocate: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 //			start = end;
+
 			buffer[l] = 0;
 			size_t br = fread(buffer, 1, l, fd);
 //			end = std::chrono::steady_clock::now();
@@ -1298,6 +1247,70 @@ namespace DATA_NAMESPACE
 				bRetVal = parseXML(sDat, preParser, inStr);
 			} else {
 				bRetVal = parseXML(sDat, preParser);
+			}
+//			end = std::chrono::steady_clock::now();
+//			std::cout << "parsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			start = end;
+			bParseSuccessful = bRetVal;
+			memset(buffer, 0, l + 1);
+			free(buffer);
+//			end = std::chrono::steady_clock::now();
+//			std::cout << "freed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			std::cout << "TOTAL: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - mainStart).count() << std::endl << std::endl;
+//			start = end;
+			return bRetVal;
+		}
+		strParseResult = "Couldn't open file " + inStr;
+		bParseSuccessful = false;
+		return false;
+	}
+
+	bool document::parseXMLFile_old(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile)
+	{
+//		auto start = std::chrono::steady_clock::now();
+//		auto mainStart = start;
+		FILE* fd = fopen(inStr.c_str(), "rb");
+		if (fd) {
+//			auto end = std::chrono::steady_clock::now();
+//			std::cout << "open: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			start = end;
+			fseek(fd, 0, SEEK_END);
+			size_t l = (size_t)ftell(fd);
+			fseek(fd, 0, SEEK_SET);
+//			end = std::chrono::steady_clock::now();
+//			std::cout << "size: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			start = end;
+			char* buffer = static_cast<char*>(malloc(l + 1));
+			if (!buffer) {
+				fclose(fd);
+				strParseResult = "Couldn't allocate memory for parsing " + inStr;
+				bParseSuccessful = false;
+				return false;
+			}
+//			end = std::chrono::steady_clock::now();
+//			std::cout << "allocate: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			start = end;
+			buffer[l] = 0;
+			size_t br = fread(buffer, 1, l, fd);
+//			end = std::chrono::steady_clock::now();
+//			std::cout << "read: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			start = end;
+			if (debug && br != l) {
+				debug("File size mismatch in %s.", inStr.c_str());
+			}
+			fclose(fd);
+//			end = std::chrono::steady_clock::now();
+//			std::cout << "close: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			start = end;
+			bool bRetVal;
+			sdstring sDat(buffer, l);
+//			end = std::chrono::steady_clock::now();
+//			std::cout << "sdstring: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+//			start = end;
+			if (bReWriteFile) {
+				bRetVal = parseXML_old(sDat, preParser, inStr);
+			} else {
+				bRetVal = parseXML_old(sDat, preParser);
 			}
 //			end = std::chrono::steady_clock::now();
 //			std::cout << "parsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
@@ -1628,7 +1641,9 @@ namespace DATA_NAMESPACE
 				sdstring sInstrPlusBak(inStr);
 				sInstrPlusBak.append(".bak");
 				if (json::fileExists(sInstrPlusBak.c_str())) {
-					remove((inStr + ".bak").c_str());
+					std::error_code ec;
+
+					std::filesystem::remove((inStr + ".bak").c_str(), ec);
 				}
 				if (json::fileExists(inStr.c_str())) {
 					if (rename(inStr.c_str(), sInstrPlusBak.c_str()) != 0) {
@@ -1683,7 +1698,7 @@ namespace DATA_NAMESPACE
 		return false;
 	}
 
-	void document ::stripNameSpaces(JSON_NAMESPACE::value & a)
+	void document::stripNameSpaces(JSON_NAMESPACE::value & a)
 	{
 		if (a.isA(JSON_NAMESPACE::JSON_OBJECT)) {
 			JSON_NAMESPACE::value temp;
@@ -1738,7 +1753,7 @@ namespace DATA_NAMESPACE
 					if (sKey[0] == '@') {
 						if (sKey.size() > (*nit).string().size()) {
 							if (sKey.substr(1, (*nit).string().size()) == (*nit)._sdstring()) {
-								sKey = sdstring("@") + (sdstring)sKey.substr((*nit).string().size() + 1);
+								sKey = sdstring("@") + static_cast<sdstring>(sKey.substr((*nit).string().size() + 1));
 							}
 						}
 					} else {
@@ -1780,7 +1795,7 @@ namespace DATA_NAMESPACE
 				if (sKey.size() > sNameSpace.size()) {
 					if (sKey[0] == '@') {
 						if (sKey.substr(1, sNameSpace.size()) == sNameSpace) {
-							sKey = sdstring("@") + (sdstring)sKey.substr(sNameSpace.size() + 1);
+							sKey = sdstring("@") + static_cast<sdstring>(sKey.substr(sNameSpace.size() + 1));
 						}
 					} else {
 						if (sKey.substr(0, sNameSpace.size()) == sNameSpace) {

@@ -195,13 +195,14 @@ namespace JSON_NAMESPACE
 			value(bool V);
 			value(const char* V);
 			value(char* V);
-			value(const sdstring& V);
-			value(sdstring&& V);
-			template<typename T = sdstring>
+//			value(const sdstring& V);
+//			value(sdstring&& V);
+//			template<typename T = sdstring>
 			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-
-			template<typename T = sdstring>
-			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+			value(const base_sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+//			template<typename T = sdstring>
+			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+			value(base_sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
 
 #if !defined USE_STD_STRING
 			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
@@ -280,12 +281,12 @@ namespace JSON_NAMESPACE
 			void push_front(const value& val);				// Array
 
 			value pop_back();								// Array
-			value pop_front();							   	// Array
+			value pop_front();								// Array
 
 			value & front();								// Array / Object
 			value & back();									// Array / Object
 
-			void erase(size_t index);					   	// Array
+			void erase(size_t index);						// Array
 			size_t erase(const sdstring &index);			// Object
 			iterator erase(iterator it);					// Array / Object
 			iterator erase(iterator first, iterator last);	// Array / Object
@@ -437,9 +438,9 @@ namespace JSON_NAMESPACE
 			sdstring Str() const;
 			sdstring SoFar() const;
 		private:
-			char* str;
-			char* wpos;
-			size_t m_size;
+			char* str = nullptr;
+			char* wpos = nullptr;
+			size_t m_size = 0;
 	};
 #if defined _USE_ADDED_ORDER_
 	typedef arbitrary_order_map<sdstring, value> myMap;
@@ -655,10 +656,16 @@ namespace JSON_NAMESPACE
 			object* pParentObject;
 	};
 
-class iterator : public std::iterator<std::input_iterator_tag, value>
+class iterator
 	{
 		public:
 			friend class reverse_iterator;
+
+			typedef std::input_iterator_tag  	iterator_category;
+			typedef value        				value_type;
+			typedef ptrdiff_t					difference_type;
+			typedef value*   					pointer;
+			typedef value& 						reference;
 		
 			iterator() : bNone(true), bIsArray(false), bSetKey(false) {}
 			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false), bSetKey(false) {}
@@ -807,7 +814,13 @@ class iterator : public std::iterator<std::input_iterator_tag, value>
 
 	inline char &instring::peek() const
 	{
-		return *(wpos);
+		if (wpos) {
+			return *(wpos);
+		} else {
+			static char c;
+			c = 0;
+			return c;
+		}
 	}
 
 	inline size_t instring::tell() const

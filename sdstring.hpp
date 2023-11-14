@@ -44,7 +44,7 @@ struct secure_delete_allocator {
 	size_type max_size() const noexcept { return std::numeric_limits<size_type>::max() / sizeof(value_type); }
 	secure_delete_allocator() noexcept {}
 	template <class U> secure_delete_allocator (secure_delete_allocator<U> const&) noexcept {}
-	value_type* allocate (std::size_t n) { return static_cast<value_type*>(malloc(n*sizeof(value_type))); }
+	value_type* allocate (std::size_t n) { value_type* p = static_cast<value_type*>(malloc(n*sizeof(value_type))); return p;}
 	void deallocate (value_type* p, std::size_t n) { memset((void*)p, 0, n); free(p); }
 	template <class U> struct rebind { typedef secure_delete_allocator<U> other; };
 
@@ -84,11 +84,11 @@ class sdstring : public base_sdstring
 {
 	public:
 		sdstring(const sdstring & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
+		
+		sdstring(const base_sdstring & rhs) : base_sdstring(rhs) { }
 
 		sdstring(sdstring && rhs) : base_sdstring(std::move(rhs)) { }
-
-		sdstring(const base_sdstring & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
-
+		
 		sdstring(base_sdstring && rhs) : base_sdstring(std::move(rhs)) { }
 
 		sdstring(const std::string & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
@@ -96,6 +96,9 @@ class sdstring : public base_sdstring
 		sdstring(std::string && rhs) : base_sdstring(std::move(rhs.data()), rhs.size()) { }
 
 		sdstring(const char* rhs, size_t size) : base_sdstring(rhs, size) { }
+
+		sdstring(const char* rhs) : base_sdstring(rhs) { }
+
 		sdstring() : base_sdstring() {}
 
 		~sdstring() {  }
