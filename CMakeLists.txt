@@ -39,17 +39,14 @@ else(STAND_ALONE)
 set(OBJECT_TYPE STATIC)
 endif(STAND_ALONE)
 
-add_library(sdstring STATIC sdstring.cpp)
-set_property(TARGET sdstring PROPERTY CXX_STANDARD 17)
-
 if(ORDERED_JSON)
-add_library(ojson ${OBJECT_TYPE} json.cpp)
+add_library(ojson ${OBJECT_TYPE} json.cpp json.hpp ojson.hpp)
 target_compile_definitions(ojson PRIVATE _USE_ADDED_ORDER_ SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 set_property(TARGET ojson PROPERTY CXX_STANDARD 17)
 SET(OJSON_OBJECTS $<TARGET_OBJECTS:ojson>)
 endif(ORDERED_JSON)
 
-add_library(ajson ${OBJECT_TYPE} json.cpp)
+add_library(ajson ${OBJECT_TYPE} json.cpp json.hpp)
 target_compile_definitions(ajson PRIVATE SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 set_property(TARGET ajson PROPERTY CXX_STANDARD 17)
 
@@ -68,7 +65,7 @@ SET(ADATA_OBJECTS $<TARGET_OBJECTS:adata> $<TARGET_OBJECTS:tinyxml>)
 endif(DATA_DOCUMENT)
 
 if(STAND_ALONE)
-add_library(json STATIC $<TARGET_OBJECTS:ajson> sdstring ${OJSON_OBJECTS} ${ODATA_OBJECTS} ${ADATA_OBJECTS})
+add_library(json STATIC $<TARGET_OBJECTS:ajson> json.hpp sdstring.hpp ${OJSON_OBJECTS} ${ODATA_OBJECTS} ${ADATA_OBJECTS})
 target_compile_definitions(json PUBLIC SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 set_property(TARGET json PROPERTY CXX_STANDARD 17)
 

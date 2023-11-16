@@ -132,7 +132,7 @@ namespace DATA_NAMESPACE
 
 		sdstring writeXML(const char * in, bool bPretty = true, bool bTabs = true, PREWRITEPTR pre = NULL) 
 		{ 
-			return writeXML(std::string(in), bPretty, bTabs, pre);
+			return writeXML(in, bPretty, bTabs, pre);
 		}
 
 		sdstring writeXML(const sdstring &rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR = NULL);
@@ -143,7 +143,7 @@ namespace DATA_NAMESPACE
 
 		bool writeXMLFile(const sdstring &inStr, const char * rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR pWriter = NULL)
 		{
-			return writeXMLFile(inStr, std::string(rootElem), bPretty, bTabs, pWriter);
+			return writeXMLFile(inStr, rootElem, bPretty, bTabs, pWriter);
 		}
 	
 		sdstring rootTag() { return sRootTag; }

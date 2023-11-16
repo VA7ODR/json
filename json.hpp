@@ -199,10 +199,10 @@ namespace JSON_NAMESPACE
 //			value(sdstring&& V);
 //			template<typename T = sdstring>
 			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-			value(const base_sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+//			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
 //			template<typename T = sdstring>
 			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-			value(base_sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+//			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
 
 #if !defined USE_STD_STRING
 			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
@@ -266,7 +266,7 @@ namespace JSON_NAMESPACE
 			unsigned char _uchar() const;
 
 			bool boolean() const;
-			std::string& string();
+			sdstring& string();
 			sdstring& _sdstring();
 			//        std::string& string();
 			DEPRECATED (const char* safeCString());
@@ -368,7 +368,7 @@ namespace JSON_NAMESPACE
 			static void setDebug(DEBUGPTR setTo) { debug = setTo; }
 
 			static const char* typeName(JSONTypes type);
-			const std::string& key() { return m_key; }
+			const sdstring& key() { return m_key; }
 
 		protected:
 			sdstring &stringC(sdstring &dest)const;
@@ -836,15 +836,6 @@ class iterator
 	std::ostream& operator<<(std::ostream& S, document& doc);
 	std::ostream& operator<<(std::ostream& S, value& doc);
 
-#if !defined _USE_ADDED_ORDER_
-	template <typename T>
-	const char * enumKey(T e, const char * keyString)
-	{
-		(void) e;
-		return keyString;
-	}
-#define JSONENUMKEY(x, y) json::enumKey<x>(y, #y)
-#endif
 }
 
 #undef JSON_NAMESPACE

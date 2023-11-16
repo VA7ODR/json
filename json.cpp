@@ -3739,7 +3739,7 @@ namespace JSON_NAMESPACE
 		return (unsigned char)number();
 	}
 
-    sdstring& value::_sdstring() {
+	sdstring& value::_sdstring() {
 		switch (myType) {
 		case JSON_STRING:
 			break;
@@ -3778,8 +3778,8 @@ namespace JSON_NAMESPACE
         return str;
 	}
     
-    std::string& value::string() {
-        return reinterpret_cast<std::string&>(_sdstring());
+	sdstring& value::string() {
+		return _sdstring();
     }
 
 //	std::string& value::string()

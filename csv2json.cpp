@@ -29,10 +29,11 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #define _USE_ADDED_ORDER_
 #include "data.hpp"
 
-std::vector< std::vector<std::string> > CSVData;
+std::vector< std::vector<sdstring> > CSVData;
 
-std::string deQuote(std::string str)
+sdstring deQuote(const sdstring & strIn)
 {
+	sdstring str(strIn);
 	if (str[0] == '\"') {
 		str = str.substr(1);
 	}
@@ -42,13 +43,13 @@ std::string deQuote(std::string str)
 	return str;
 }
 
-size_t ParseCSV(const char * szFileName)
+size_t ParseCSV(const sdstring & szFileName)
 {
 	FILE * fp;
 
 	size_t iLines = 0;
 
-	fp = fopen(szFileName, "r");
+	fp = fopen(szFileName.c_str(), "r");
 	if (fp) {
 		fseek(fp, 0, SEEK_END);
 		size_t l = ftell(fp);
@@ -82,7 +83,7 @@ size_t ParseCSV(const char * szFileName)
 					if (iLines >= CSVData.size()) {
 						CSVData.resize(iLines + 1);
 					}
-					CSVData[iLines].push_back(deQuote(std::string(szField, &szData[i] - szField)));
+					CSVData[iLines].push_back(deQuote(sdstring(szField, &szData[i] - szField)));
 					szField = &szData[i] + 1;
 					iFields++;
 				} else if (szData[i] == '\n') {
@@ -90,7 +91,7 @@ size_t ParseCSV(const char * szFileName)
 					if (iLines >= CSVData.size()) {
 						CSVData.resize(iLines + 1);
 					}
-					CSVData[iLines].push_back(deQuote(std::string(szField, &szData[i] - szField)));
+					CSVData[iLines].push_back(deQuote(sdstring(szField, &szData[i] - szField)));
 					iFields = 0;
 					szField = &szData[i] + 1;
 					iLines++;
@@ -99,7 +100,7 @@ size_t ParseCSV(const char * szFileName)
 					if (iLines >= CSVData.size()) {
 						CSVData.resize(iLines + 1);
 					}
-					CSVData[iLines].push_back(deQuote(std::string(szField)));
+					CSVData[iLines].push_back(deQuote(sdstring(szField)));
 					iFields = 0;
 					// szField = &szData[i] + 1;
 					iLines++;

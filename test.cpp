@@ -28,22 +28,6 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 using namespace std;
 
-enum myKeys{
-	one = 1,
-	two,
-	three
-};
-
-enum myOtherKeys{
-	four = 4,
-	five,
-	six,
-	seven
-};
-
-#define MYKEY(z) JSONENUMKEY(myKeys, z)
-#define MYOTHERKEY(z) DATAATTENUMKEY(myOtherKeys, z)
-
 void Debug(const char * format, ...)
 {
 	std::string s;
@@ -75,19 +59,53 @@ void Debug(const char * format, ...)
 template <class T>
 void test(const char * type)
 {
+	sdstring sTest("Hello");
+	sTest.assign("Hello");
+	sTest.append("There");
+	std::string sTest2("This");
+	sTest.append(sTest2);
+
+	sTest += sTest2;
+	sTest += sTest;
+	sTest += "This is another test";
+
+	cout << "sdstring Testing: " << sTest << endl;
+
+	cout << (sTest  == "HelloThereThisThisHelloThereThisThisThis is another test" ? "Y" : "N") << std::endl;
+	cout << ("HelloThereThisThisHelloThereThisThisThis is another test" == sTest ? "Y" : "N") << std::endl;
+	cout << (sTest2 == sTest  ? "Y" : "N") << std::endl;
+	cout << (sTest  == sTest2 ? "Y" : "N") << std::endl;
+	cout << (sTest  == sTest ? "Y" : "N") << std::endl;
+
+	cout << (sTest  != "HelloThereThisThisHelloThereThisThisThis is another test" ? "Y" : "N") << std::endl;
+	cout << ("HelloThereThisThisHelloThereThisThisThis is another test" != sTest ? "Y" : "N") << std::endl;
+	cout << (sTest2 != sTest  ? "Y" : "N") << std::endl;
+	cout << (sTest  != sTest2 ? "Y" : "N") << std::endl;
+	cout << (sTest  != sTest ? "Y" : "N") << std::endl;
+
+	cout << sTest[3] << endl;
+	cout << (sTest < sTest) << endl;
+	cout << (sTest < "sTest") << endl;
+	cout << (sTest > sTest) << endl;
+	cout << (sTest > "sTest") << endl;
+
+	sdstring sTest3(sTest2);
+	std::string sTest4(sTest3);
+
+	cout << (sTest3.find("te") == sdstring::npos) << endl;
+	cout << (sTest3.find(sTest4) == sdstring::npos) << endl;
+	cout << (sTest3.find(sTest) == sdstring::npos) << endl;
+	cout << sTest3.size() << endl;
+
 	// bStarted = true;
 	cout << "Testing: " << type << endl;
 	T jEnum;
 
+	jEnum[sTest2] = sTest;
 	jEnum["Array"][0] = "Value";
-	std::string mstring("String");
+	sdstring mstring("String");
 	jEnum[mstring] = "Value";
 	jEnum["Array"][0] = "Value";
-
-	jEnum[MYKEY(one)] = one;
-	jEnum[MYKEY(two)] = two;
-	jEnum[DATA_ATT(MYKEY(three))] = three;
-	jEnum[MYOTHERKEY(four)] = four; // works
 
 	jEnum.writeFile("test1.json", true);
 	T j1;

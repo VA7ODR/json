@@ -315,7 +315,7 @@ namespace DATA_NAMESPACE
 									switch (child->Type()) {
 										case TiXmlNode::TINYXML_ELEMENT:
 											{
-												std::string childName = child->Value();
+												sdstring childName = child->Value();
 
 												if (childName[0] == '_' && strchr("1234567890", childName[1])) {
 													childName = childName.substr(1);
@@ -1017,7 +1017,7 @@ namespace DATA_NAMESPACE
 									}
 								}
 							} else {
-								std::istringstream convert(sdstring(retVal, len));
+								sdistringstream convert(sdstring(retVal, len));
 								double d = 0.0;
 								if (!(convert >> d)) {
 									(*pTag)[sAttribute] = 0.0;
@@ -1753,7 +1753,7 @@ namespace DATA_NAMESPACE
 					if (sKey[0] == '@') {
 						if (sKey.size() > (*nit).string().size()) {
 							if (sKey.substr(1, (*nit).string().size()) == (*nit)._sdstring()) {
-								sKey = sdstring("@") + static_cast<sdstring>(sKey.substr((*nit).string().size() + 1));
+								sKey = sdstring("@") + sKey.substr((*nit).string().size() + 1);
 							}
 						}
 					} else {
@@ -1795,7 +1795,7 @@ namespace DATA_NAMESPACE
 				if (sKey.size() > sNameSpace.size()) {
 					if (sKey[0] == '@') {
 						if (sKey.substr(1, sNameSpace.size()) == sNameSpace) {
-							sKey = sdstring("@") + static_cast<sdstring>(sKey.substr(sNameSpace.size() + 1));
+							sKey = sdstring("@") + sKey.substr(sNameSpace.size() + 1);
 						}
 					} else {
 						if (sKey.substr(0, sNameSpace.size()) == sNameSpace) {
