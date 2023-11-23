@@ -1722,14 +1722,14 @@ namespace JSON_NAMESPACE
 		V.myType = JSON_VOID;
 	}
 
-	value::value(const document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-	{
-		if (myType == JSON_OBJECT) {
-			obj = new object(V.obj);
-		} else if (myType == JSON_ARRAY) {
-			arr = new array(V.arr);
-		}
-	}
+//	value::value(const document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+//	{
+//		if (myType == JSON_OBJECT) {
+//			obj = new object(V.obj);
+//		} else if (myType == JSON_ARRAY) {
+//			arr = new array(V.arr);
+//		}
+//	}
 
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
 	value::value(const ojson::value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
@@ -1741,14 +1741,14 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	value::value(const ojson::document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-	{
-		if (myType == JSON_OBJECT) {
-			obj = new object(V.obj);
-		} else if (myType == JSON_ARRAY) {
-			arr = new array(V.arr);
-		}
-	}
+//	value::value(const ojson::document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+//	{
+//		if (myType == JSON_OBJECT) {
+//			obj = new object(V.obj);
+//		} else if (myType == JSON_ARRAY) {
+//			arr = new array(V.arr);
+//		}
+//	}
 
 #elif defined _USE_ADDED_ORDER_
 
@@ -1762,14 +1762,14 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	value::value(const json::document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-	{
-		if (myType == JSON_OBJECT) {
-			obj = new object(V.obj);
-		} else if (myType == JSON_ARRAY) {
-			arr = new array(V.arr);
-		}
-	}
+//	value::value(const json::document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+//	{
+//		if (myType == JSON_OBJECT) {
+//			obj = new object(V.obj);
+//		} else if (myType == JSON_ARRAY) {
+//			arr = new array(V.arr);
+//		}
+//	}
 
 	array::array(const json::array& V)
 	: myVec(V.begin(), V.end()) {

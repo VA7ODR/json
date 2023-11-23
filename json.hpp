@@ -183,14 +183,14 @@ namespace JSON_NAMESPACE
 			value() : m_number(0), m_places(-1), m_boolean(false), myType(JSON_VOID), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
 			value(const value& V);
 			value(value&& V);
-			value(const document& V);
+//			explicit value(const document& V);
 
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
 			value(const ojson::value& V);
-			value(const ojson::document& V);
+//			explicit value(const ojson::document& V);
 #elif defined _USE_ADDED_ORDER_
 			value(const json::value& V);
-			value(const json::document& V);
+//			explicit value(const json::document& V);
 #endif
 			value(bool V);
 			value(const char* V);
@@ -210,7 +210,7 @@ namespace JSON_NAMESPACE
 			value(object& V);
 			value(array& V);
 
-			template <typename T>
+			template <typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
 			value(T V) : m_number((double)V), m_places(-1), m_boolean(!(m_number == 0.0)), myType(JSON_NUMBER), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
 
 			~value();

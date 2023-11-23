@@ -22,13 +22,13 @@ THE SOFTWARE.
 The official repository for this library is at https://github.com/VA7ODR/json
 
 */
-#if !defined JSTRING_HPP
-#define JSTRING_HPP
+#pragma once
 
 #include <limits>
 #include <cstring>
 #include <string>
-#include <sstream>
+#include <type_traits>
+#include <vector>
 
 template <class T>
 struct secure_delete_allocator {
@@ -48,12 +48,8 @@ struct secure_delete_allocator {
 	template <class U> struct rebind { typedef secure_delete_allocator<U> other; };
 };
 
-#if defined USE_STD_STRING
-#define sdstring std::string
-#else
-
-//typedef std::basic_string<char, std::char_traits<char>, secure_delete_allocator<char> > sdstring;
 typedef std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char> > sdistringstream;
+typedef std::basic_ostringstream<char, std::char_traits<char>, secure_delete_allocator<char> > sdostringstream;
 
 template <class T, class U>
 constexpr bool operator== (const secure_delete_allocator<T>&, const secure_delete_allocator<U>&) noexcept
@@ -65,41 +61,56 @@ constexpr bool operator!= (const secure_delete_allocator<T>&, const secure_delet
 
 typedef std::basic_string<char, std::char_traits<char>, secure_delete_allocator<char> > base_sdstring;
 
+template<typename T>
+struct has_iterators {
+  static const bool value = false;
+};
+
+template<>
+struct has_iterators<std::string> {
+  static const bool value = true;
+};
+
+template<>
+struct has_iterators<base_sdstring> {
+  static const bool value = true;
+};
+
+template<>
+struct has_iterators<std::basic_string_view<char>> {
+  static const bool value = true;
+};
+
+template<>
+struct has_iterators<std::vector<char>> {
+  static const bool value = true;
+};
+
 class sdstring : public base_sdstring
 {
 	public:
-		sdstring(const std::string & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
-		sdstring(std::string && rhs) : base_sdstring(std::move(rhs.data()), rhs.size()) { }
-
 		using base_sdstring::base_sdstring;
 		using base_sdstring::operator=;
+
+		template <class strInType, typename std::enable_if<has_iterators<strInType>::value, strInType>::type* = nullptr>
+		sdstring(const strInType & in) : base_sdstring(in.begin(), in.end()) {}
+		template <class strInType, typename std::enable_if<has_iterators<strInType>::value, strInType>::type* = nullptr>
+		sdstring(strInType && in) : base_sdstring(std::make_move_iterator(in.begin()), std::make_move_iterator(in.end())) {}
+
 };
 
-inline sdstring operator+(const sdstring & lhs, const std::string & rhs)
+template <class T, typename std::enable_if<std::is_same<std::string, T>::value, int>::type = 0>
+sdstring operator+(const sdstring & lhs, const T & rhs)
 {
 	sdstring ret;
 	ret.reserve(lhs.size() + rhs.size());
 	ret.append(lhs);
-	ret.append(rhs.c_str());
+	ret.append(rhs.begin(), rhs.end());
 	return ret;
 }
 
-inline sdstring operator+(const char* lhs, const sdstring & rhs)
-{
-	sdstring ret(lhs);
-	ret.reserve(ret.size() + rhs.size());
-	ret.append(rhs);
-	return ret;
-}
-
-inline sdstring operator+(const sdstring & lhs, const char* rhs)
-{
-	sdstring ret(lhs);
-	ret.append(rhs);
-	return ret;
-}
-
-inline sdstring operator+(const sdstring & lhs, const sdstring & rhs)
+template <class T, typename std::enable_if<std::is_same<std::string, T>::value, int>::type = 0>
+sdstring operator+(const T & lhs, const sdstring & rhs)
 {
 	sdstring ret;
 	ret.reserve(lhs.size() + rhs.size());
@@ -108,64 +119,76 @@ inline sdstring operator+(const sdstring & lhs, const sdstring & rhs)
 	return ret;
 }
 
-inline std::string operator+(const std::string & lhs, const sdstring & rhs)
-{
-	std::string ret;
-	ret.reserve(lhs.size() + rhs.size());
-	ret.append(lhs);
-	ret.append(rhs.c_str());
-	return ret;
-}
-
-inline bool operator==(const sdstring & lhs, const char * rhs)
-{
-	if (rhs) {
-		const char * p = rhs;
-		for (auto & c : lhs) {
-			if (c != *p) {
-				return false;
-			}
-			++p;
-		}
-		return true;
-	}
-	return false;
-}
-
-inline bool operator!=(const sdstring & lhs, const char * rhs)
-{
-	return !(lhs == rhs);
-}
-
-inline bool operator==(const std::string & lhs, const sdstring & rhs)
+template <class T, typename std::enable_if<std::is_same<std::string, T>::value, int>::type = 0>
+bool operator==(const sdstring & lhs, const T & rhs)
 {
 	return (lhs == rhs.c_str());
 }
 
-inline bool operator!=(const std::string & lhs, const sdstring & rhs)
-{
-	return !(lhs == rhs.c_str());
-}
-
-inline bool operator==(const sdstring & lhs, const std::string & rhs)
+template <class T, typename std::enable_if<std::is_same<std::string, T>::value, int>::type = 0>
+bool  operator==(const T & lhs, const sdstring & rhs)
 {
 	return (lhs == rhs.c_str());
 }
 
-inline bool operator!=(const sdstring & lhs, const std::string & rhs)
+template <class T, typename std::enable_if<std::is_same<std::string, T>::value, int>::type = 0>
+bool operator!=(const sdstring & lhs, const T & rhs)
 {
-	return !(lhs == rhs.c_str());
+	return (lhs != rhs.c_str());
 }
 
-inline bool operator==(const char * lhs, const sdstring & rhs)
+template <class T, typename std::enable_if<std::is_same<std::string, T>::value, int>::type = 0>
+bool operator!=(const T & lhs, const sdstring & rhs)
 {
-	return (rhs == lhs);
+	return (lhs != rhs.c_str());
 }
 
-inline bool operator!=(const char * lhs, const sdstring & rhs)
-{
-	return !(rhs == lhs);
-}
+//inline bool operator==(const sdstring & lhs, const char * rhs)
+//{
+//	if (rhs) {
+//		const char * p = rhs;
+//		for (auto & c : lhs) {
+//			if (c != *p) {
+//				return false;
+//			}
+//			++p;
+//		}
+//		return true;
+//	}
+//	return false;
+//}
 
-#endif
-#endif //JSTRING_HPP
+//inline bool operator!=(const sdstring & lhs, const char * rhs)
+//{
+//	return !(lhs == rhs);
+//}
+
+//inline bool operator==(const std::string & lhs, const sdstring & rhs)
+//{
+//	return (lhs == rhs.c_str());
+//}
+
+//inline bool operator!=(const std::string & lhs, const sdstring & rhs)
+//{
+//	return !(lhs == rhs.c_str());
+//}
+
+//inline bool operator==(const sdstring & lhs, const std::string & rhs)
+//{
+//	return (lhs == rhs.c_str());
+//}
+
+//inline bool operator!=(const sdstring & lhs, const std::string & rhs)
+//{
+//	return !(lhs == rhs.c_str());
+//}
+
+//inline bool operator==(const char * lhs, const sdstring & rhs)
+//{
+//	return (rhs == lhs);
+//}
+
+//inline bool operator!=(const char * lhs, const sdstring & rhs)
+//{
+//	return !(rhs == lhs);
+//}
