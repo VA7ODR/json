@@ -776,6 +776,10 @@ class iterator
 
 			sdstring write(bool bPretty = false, PREWRITEPTR = NULL) const;
 			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL) const;
+			static sdstring write(const value & val, bool bPretty = false, PREWRITEPTR preWriter = NULL)
+			{
+				return write(val, 1, bPretty, preWriter);
+			}
 			static sdstring write(const value & val, size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL);
 
 			sdstring print(bool bPretty = false, PREWRITEPTR = NULL) const
