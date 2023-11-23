@@ -776,6 +776,7 @@ class iterator
 
 			sdstring write(bool bPretty = false, PREWRITEPTR = NULL) const;
 			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL) const;
+			static sdstring write(const value & val, size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL);
 
 			sdstring print(bool bPretty = false, PREWRITEPTR = NULL) const
 			{
@@ -835,7 +836,6 @@ class iterator
 
 	std::ostream& operator<<(std::ostream& S, document& doc);
 	std::ostream& operator<<(std::ostream& S, value& doc);
-
 }
 
 #undef JSON_NAMESPACE

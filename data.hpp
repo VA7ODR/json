@@ -162,7 +162,7 @@ namespace DATA_NAMESPACE
 	private:
 		bool fastParse(JSON_NAMESPACE::instring& in, JSON_NAMESPACE::value& out, sdstring& parseResult);
 		void parseXMLElement(JSON_NAMESPACE::value& ret, const TiXmlNode * elem);
-		void writeXML(sdstring & str, JSON_NAMESPACE::value & ret, size_t depth, bool bPretty = true, bool bTabs = true);
+		static void writeXML(sdstring & str, JSON_NAMESPACE::value & ret, size_t depth, bool bPretty = true, bool bTabs = true);
 
 		sdstring sRootTag;
 		bool bForceXMLHeader;

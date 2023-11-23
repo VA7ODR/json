@@ -1394,10 +1394,11 @@ namespace DATA_NAMESPACE
 	{
 		switch (ret.isA()) {
 			default:
-			break;
+				break;
+
 			case JSON_NAMESPACE::JSON_BOOLEAN:
-			strParameter.append(ret.boolean() ? "true" : "false");
-			break;
+				strParameter.append(ret.boolean() ? "true" : "false");
+				break;
 
 			case JSON_NAMESPACE::JSON_NUMBER:
 			{
@@ -1405,8 +1406,8 @@ namespace DATA_NAMESPACE
 				break;
 			}
 			case JSON_NAMESPACE::JSON_STRING:
-			strParameter.append(XMLEscape(ret.string()));
-			break;
+				strParameter.append(XMLEscape(ret.string()));
+				break;
 
 			case JSON_NAMESPACE::JSON_OBJECT:
 			{
@@ -1597,7 +1598,6 @@ namespace DATA_NAMESPACE
 				ret.append("\n");
 			}
 		}
-
 
 		if (isA(JSON_NAMESPACE::JSON_OBJECT)) {
 			writeXML(ret, *(JSON_NAMESPACE::value*)this, iStartDepth, bPretty, bTabs);

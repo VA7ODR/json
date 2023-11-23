@@ -4766,25 +4766,30 @@ namespace JSON_NAMESPACE
 
 	sdstring document::write(size_t iDepth, bool bPretty, PREWRITEPTR preWriter) const
 	{
-		if (isA(JSON_VOID)) {
+		return write(*this, iDepth, bPretty, preWriter);
+	}
+
+	sdstring document::write(const value & val, size_t iDepth, bool bPretty, PREWRITEPTR preWriter)
+	{
+		if (val.isA(JSON_VOID)) {
 			return "";
-		} else if (isA(JSON_OBJECT)) {
-			size_t l = obj->psize(iDepth, bPretty);
+		} else if (val.isA(JSON_OBJECT)) {
+			size_t l = val.obj->psize(iDepth, bPretty);
 			sdstring ret;
 			MovingCharPointer ptr(ret, l);
-			obj->cprint(ptr, iDepth, bPretty);
+			val.obj->cprint(ptr, iDepth, bPretty);
 			if (preWriter == NULL) {
 				return ret;
 			} else {
 				sdstring sOut;
 				return preWriter(ret, sOut);
 			}
-		} else if (isA(JSON_ARRAY)) {
-			arr->resize(size());
-			size_t l = arr->psize(iDepth, bPretty);
+		} else if (val.isA(JSON_ARRAY)) {
+			val.arr->resize(val.size());
+			size_t l = val.arr->psize(iDepth, bPretty);
 			sdstring ret;
 			MovingCharPointer ptr(ret, l);
-			arr->cprint(ptr, iDepth, bPretty);
+			val.arr->cprint(ptr, iDepth, bPretty);
 
 			if (preWriter == NULL) {
 				return ret;
@@ -4793,10 +4798,10 @@ namespace JSON_NAMESPACE
 				return preWriter(ret, sOut);
 			}
 		} else {
-			size_t l = value::psize(iDepth, bPretty);
+			size_t l = val.psize(iDepth, bPretty);
 			sdstring t;
 			MovingCharPointer ptr(t, l);
-			value::cprint(ptr, iDepth, bPretty);
+			val.cprint(ptr, iDepth, bPretty);
 			if (preWriter == NULL) {
 				return t;
 			} else {
