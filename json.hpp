@@ -366,7 +366,7 @@ namespace JSON_NAMESPACE
 			static void setDebug(DEBUGPTR setTo) { debug = setTo; }
 
 			static const char* typeName(JSONTypes type);
-			const sdstring& key() { return m_key; }
+			const std::string& key() { return m_key; }
 
 		protected:
 			sdstring &stringC(sdstring &dest)const;
@@ -823,7 +823,7 @@ class iterator
 			bool parse(const sdstring& inStr, PREPARSEPTR = NULL);
 			bool parseFile(const sdstring &instr, PREPARSEPTR = NULL);
 
-			sdstring write(bool bPretty = false, PREWRITEPTR = NULL) const;
+			std::string write(bool bPretty = false, PREWRITEPTR = NULL) const;
 			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL) const;
 			static sdstring write(const value & val, bool bPretty = false, PREWRITEPTR preWriter = NULL)
 			{

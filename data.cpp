@@ -1755,7 +1755,7 @@ namespace DATA_NAMESPACE
 					if (sKey[0] == '@') {
 						if (sKey.size() > (*nit).string().size()) {
 							if (sKey.substr(1, (*nit).string().size()) == (*nit)._sdstring()) {
-								sKey = sdstring("@") + sKey.substr((*nit).string().size() + 1);
+								sKey = sdstring("@") + sKey.substr((*nit)._sdstring().size() + 1);
 							}
 						}
 					} else {
