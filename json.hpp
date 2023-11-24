@@ -310,8 +310,6 @@ namespace JSON_NAMESPACE
 
 			bool empty() const; // Is array empty or object empty or string empty.  Number and booleans return false, NULL and VOID return true.
 
-			std::string getKey(size_t index); // VERY slow for objects.  Don't use inside a for loop.  Use iterators instead.
-
 			value& at(size_t index);
 
 			bool operator==(const value& V) const;
