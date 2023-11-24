@@ -81,7 +81,7 @@ if(DATA_DOCUMENT)
 endif(DATA_DOCUMENT)
 
 if(STAND_ALONE)
-	 add_library(json STATIC $<TARGET_OBJECTS:ajson> json.hpp sdstring.hpp ${OJSON_OBJECTS} ${ADATA_OBJECTS} ${ODATA_OBJECTS})
+	 add_library(json STATIC $<TARGET_OBJECTS:ajson> json.hpp sdstring.cpp sdstring.hpp ${OJSON_OBJECTS} ${ADATA_OBJECTS} ${ODATA_OBJECTS})
     target_compile_definitions(json PUBLIC SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS )
 
     if(TEST_EXAMPLE)

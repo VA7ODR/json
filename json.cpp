@@ -198,7 +198,8 @@ namespace JSON_NAMESPACE
 			}
 		}
 
-		sdostringstream s;
+//		sdostringstream s;
+		std::ostringstream s;
 		s << szError << "  Line: " << line <<  " Column: " << pos;
 		inputString.Error(s.str());
 	}
@@ -4724,7 +4725,7 @@ namespace JSON_NAMESPACE
 		return false;
 	}
 
-	sdstring document::write(bool bPretty, PREWRITEPTR preWriter) const
+	std::string document::write(bool bPretty, PREWRITEPTR preWriter) const
 	{
 		return write(1, bPretty, preWriter);
 	}
