@@ -3778,8 +3778,8 @@ namespace JSON_NAMESPACE
         return str;
 	}
     
-	sdstring& value::string() {
-		return _sdstring();
+	std::string &value::string() {
+		return reinterpret_cast<std::string&>(_sdstring());
     }
 
 //	std::string& value::string()

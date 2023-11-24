@@ -266,7 +266,7 @@ namespace JSON_NAMESPACE
 			unsigned char _uchar() const;
 
 			bool boolean() const;
-			sdstring& string();
+			std::string& string();
 			sdstring& _sdstring();
 			//        std::string& string();
 			DEPRECATED (const char* safeCString());
