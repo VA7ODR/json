@@ -111,9 +111,9 @@ void test(const char * type)
 	T j1;
 	cout << "Parse File 1:               ";
 	if (j1.parseFile("test1.json")) {
-		cout << "Success!" << endl;
+		cout << "Success! " << endl << j1.write(true) << endl;
 	} else {
-		cout << "Failed!" << endl;
+		cout << "Failed! " << j1.parseResult() << endl;
 	}
 
 	cout << "Compare ==:                 ";

@@ -22,7 +22,11 @@ THE SOFTWARE.
 The official repository for this library is at https://github.com/VA7ODR/json
 
 */
+#if defined USE_DATA_DOCUMENT
 #include "data.hpp"
+#else
+#include "json.hpp"
+#endif
 #include <iostream>
 
 bool ends_with(std::string value, std::string ending)
@@ -54,6 +58,7 @@ int main (int argc, char ** argv)
 			std::cout << in.parseResult() << std::endl;
 			return 1;
 		}
+#if defined USE_DATA_DOCUMENT
 	} else if (ends_with(argv[0], "xmlpretty")) {
 		odata::document in;
 		if (in.parseXMLFile(argv[1])) {
@@ -68,16 +73,6 @@ int main (int argc, char ** argv)
 		}
 	} else if (ends_with(argv[0], "xml2json")) {
 		odata::document in;
-//		std::cout << "pass1" << std::endl;
-//		in.parseXMLFile2(argv[1]);
-//		std::cout << "pass2" << std::endl;
-//		if (in.parseXMLFile2(argv[1])) {
-//			if (!in.writeFile((std::string(argv[2]) + "new.json").c_str(), true)) {
-//				std::cout << "Couldn't open '" << argv[2] << "'' for writing." << std::endl;
-//				return 2;
-//			}
-//		}
-//		std::cout << "passold" << std::endl;
 		if (in.parseXMLFile(argv[1])) {
 			if (!in.writeFile(argv[2], true)) {
 				std::cout << "Couldn't open '" << argv[2] << "'' for writing." << std::endl;
@@ -100,6 +95,7 @@ int main (int argc, char ** argv)
 			std::cout << in.parseResult() << std::endl;
 			return 1;
 		}
+#endif
 	} else {
 		std::cout << "Unkown command: " << argv[0] << std::endl;
 		return -1;

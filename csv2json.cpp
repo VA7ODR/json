@@ -26,8 +26,11 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #include <stdlib.h>
 #include <string>
 #include <vector>
-#define _USE_ADDED_ORDER_
+#if defined USE_DATA_DOCUMENT
 #include "data.hpp"
+#else
+#include "json.hpp"
+#endif
 
 std::vector< std::vector<sdstring> > CSVData;
 
@@ -127,7 +130,11 @@ int main(int argc, char ** argv)
 	}
 	size_t iLines = ParseCSV(argv[1]);
 
+#if defined USE_DATA_DOCUMENT
 	odata::document outDoc;
+#else
+	ojson::document outDoc;
+#endif
 	for (size_t i = 1; i < iLines; i++) {
 
 		for (size_t j = 0; j < CSVData[i].size(); j++) {
@@ -138,11 +145,13 @@ int main(int argc, char ** argv)
 			outDoc[i - 1][CSVData[0][j]] = CSVData[i][j];
 		}
 	}
+#if defined USE_DATA_DOCUMENT
 	if (std::string(argv[0]) == "csv2xml") {
 		outDoc.writeXMLFile(argv[2], argv[3], true);
-	} else {
-		outDoc.writeFile(argv[2], true);
+		return 0;
 	}
+#endif
+	outDoc.writeFile(argv[2], true);
 	return 0;
 
 }

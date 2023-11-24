@@ -183,7 +183,7 @@ namespace JSON_NAMESPACE
 		return n < -308 ? 0.0 : e[n + 308];
 	}
 
-	void generateError(instring& inputString, const char* szError) {
+	void generateError(instring& inputString, const sdstring & szError) {
 		sdstring in = inputString.SoFar();
 		size_t l = in.size();
 		size_t pos = 1;
@@ -198,10 +198,9 @@ namespace JSON_NAMESPACE
 			}
 		}
 
-		std::ostringstream s;
+		sdostringstream s;
 		s << szError << "  Line: " << line <<  " Column: " << pos;
-		instring ostring(s.str().c_str());
-		inputString = ostring;
+		inputString.Error(s.str());
 	}
 
 	void nullParse(value& ret, instring& inputString, bool* bFailed) {
@@ -249,7 +248,7 @@ namespace JSON_NAMESPACE
 	unsigned hex4Parse(instring& s, bool* bFailed) {
 		unsigned ret = 0;
 		for (int i = 0; i < 4; i++) {
-			char &c = s.take();
+			const char &c = s.take();
 			ret <<= 4;
 			ret += (unsigned)c;
 			if (c >= '0' && c <= '9')
@@ -278,11 +277,11 @@ namespace JSON_NAMESPACE
 #undef Z16
 
 		s.take(); // Skip '\"'
-
-		char* ptr = s.getPos();
-		char* retVal = ptr;
+		s.UpToAndIncluding(ret, '"');
+		auto ptr = ret.begin();
+		auto take = ptr;
 		for (;;) {
-			char &c = s.take();
+			const char &c =*take++;
 			switch (c) {
 				default: {
 					*ptr = c;
@@ -292,18 +291,18 @@ namespace JSON_NAMESPACE
 				}
 
 				case '"': {
-					ret.assign(retVal, (size_t)(ptr - retVal));
+					ret.resize(ptr - ret.begin());
 					return;
 				}
 
 				case '\\': {
-					char &cE = s.take();
+					const char &cE = *take++;
 					if (escape[(unsigned char)cE])
 						*ptr++ = escape[(unsigned char)cE];
 					else if (cE == 'u') { // Unicode
 						unsigned h = hex4Parse(s, bFailed);
 						if (h >= 0xD800 && h <= 0xDBFF) { // Handle UTF-16 surrogate pair
-							if (s.take() != '\\' || s.take() != 'u') {
+							if (*take++ != '\\' || *take++ != 'u') {
 								generateError(s, "Error Parsing string.");
 								*bFailed = true;
 								return;
@@ -341,7 +340,7 @@ namespace JSON_NAMESPACE
 	}
 
 	void numberParse(value& ret, instring& s, bool* bFailed) {
-		char * pStart = s.getPos();
+		const char * pStart = s.getPos();
 		bool minus = false;
 		if (s.peek() == '-') {
 			minus = true;
@@ -473,7 +472,6 @@ namespace JSON_NAMESPACE
 			return;
 		}
 
-		
 		for (;;) {
 			if (inputString.peek() != '"') {
 				generateError(inputString, "Name of an object member must be a string");
@@ -755,149 +753,149 @@ namespace JSON_NAMESPACE
 		return temp;
 	}
 
-	instring::instring(const sdstring& in) {
-		m_size = in.size();
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str;
-			memcpy(str, in.c_str(), m_size);
-			str[m_size] = 0;
-		}
-	}
+//	instring::instring(const sdstring& in) {
+//		m_size = in.size();
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str;
+//			memcpy(str, in.c_str(), m_size);
+//			str[m_size] = 0;
+//		}
+//	}
 
-	instring::instring(const instring& in) {
-		m_size = in.m_size;
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str + (in.wpos - in.str);
-			memcpy(str, in.str, m_size);
-			str[m_size] = 0;
-		}
-	}
+//	instring::instring(const instring& in) {
+//		m_size = in.m_size;
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str + (in.wpos - in.str);
+//			memcpy(str, in.str, m_size);
+//			str[m_size] = 0;
+//		}
+//	}
 
-	instring::instring(char* in) {
-		m_size = strlen(in);
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str;
-			memcpy(str, in, m_size);
-			str[m_size] = 0;
-		}
-	}
+//	instring::instring(char* in) {
+//		m_size = strlen(in);
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str;
+//			memcpy(str, in, m_size);
+//			str[m_size] = 0;
+//		}
+//	}
 
-	instring::~instring() {
-		memset(str, 0, m_size);
-		free(str);
-	}
+//	instring::~instring() {
+//		memset(str, 0, m_size);
+//		free(str);
+//	}
 
-	void instring::seek(size_t newPos) {
-		if (newPos < m_size) {
-			wpos = str + newPos;
-		}
-	}
+//	void instring::seek(size_t newPos) {
+//		if (newPos < m_size) {
+//			wpos = str + newPos;
+//		}
+//	}
 
-	char* instring::getPos() {
-		return wpos;
-	}
+//	char* instring::getPos() {
+//		return wpos;
+//	}
 
-	instring& instring::operator=(const sdstring& in) {
-		memset(str, 0, m_size);
-		m_size = in.size();
-		free(str);
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str;
-			memcpy(str, in.c_str(), m_size);
-			str[m_size] = 0;
-		}
-		return *this;
-	}
+//	instring& instring::operator=(const sdstring& in) {
+//		memset(str, 0, m_size);
+//		m_size = in.size();
+//		free(str);
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str;
+//			memcpy(str, in.c_str(), m_size);
+//			str[m_size] = 0;
+//		}
+//		return *this;
+//	}
 
-	instring& instring::operator=(const char* in) {
-		memset(str, 0, m_size);
-		m_size = strlen(in);
-		free(str);
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str;
-			memcpy(str, in, m_size);
-			str[m_size] = 0;
-		}
-		return *this;
-	}
+//	instring& instring::operator=(const char* in) {
+//		memset(str, 0, m_size);
+//		m_size = strlen(in);
+//		free(str);
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str;
+//			memcpy(str, in, m_size);
+//			str[m_size] = 0;
+//		}
+//		return *this;
+//	}
 
-	instring& instring::operator=(const instring& in) {
-		if (this == &in) {
-			return *this;
-		}
-		memset(str, 0, m_size);
-		m_size = in.m_size;
-		free(str);
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str + (in.wpos - in.str);
-			memcpy(str, in.str, m_size);
-			str[m_size] = 0;
-		}
-		return *this;
-	}
+//	instring& instring::operator=(const instring& in) {
+//		if (this == &in) {
+//			return *this;
+//		}
+//		memset(str, 0, m_size);
+//		m_size = in.m_size;
+//		free(str);
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str + (in.wpos - in.str);
+//			memcpy(str, in.str, m_size);
+//			str[m_size] = 0;
+//		}
+//		return *this;
+//	}
 
-	void instring::set(const sdstring &in) {
-		memset(str, 0, m_size);
-		m_size = in.size();
-		free(str);
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str;
-			memcpy(str, in.c_str(), m_size);
-			str[m_size] = 0;
-		}
-	}
+//	void instring::set(const sdstring &in) {
+//		memset(str, 0, m_size);
+//		m_size = in.size();
+//		free(str);
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str;
+//			memcpy(str, in.c_str(), m_size);
+//			str[m_size] = 0;
+//		}
+//	}
 
-	void instring::set(const char* in) {
-		memset(str, 0, m_size);
-		m_size = strlen(in);
-		free(str);
-		str = static_cast<char*>(malloc(m_size + 1));
-		if (str) {
-			wpos = str;
-			memcpy(str, in, m_size);
-			str[m_size] = 0;
-		}
-	}
+//	void instring::set(const char* in) {
+//		memset(str, 0, m_size);
+//		m_size = strlen(in);
+//		free(str);
+//		str = static_cast<char*>(malloc(m_size + 1));
+//		if (str) {
+//			wpos = str;
+//			memcpy(str, in, m_size);
+//			str[m_size] = 0;
+//		}
+//	}
 
-	instring instring::operator+(double V) const
-	{
-		sdstring temp = *this;
-		std::ostringstream o;
-		o << std::setprecision(JSON_NUMBER_PRECISION) << V;
-		temp.append(o.str().c_str());
-		return temp;
-	}
+//	instring instring::operator+(double V) const
+//	{
+//		sdstring temp = *this;
+//		std::ostringstream o;
+//		o << std::setprecision(JSON_NUMBER_PRECISION) << V;
+//		temp.append(o.str().c_str());
+//		return temp;
+//	}
 
-	instring instring::operator+(sdstring& V) const
-	{
-		sdstring temp = *this;
-		temp.append(V);
-		return temp;
-	}
+//	instring instring::operator+(sdstring& V) const
+//	{
+//		sdstring temp = *this;
+//		temp.append(V);
+//		return temp;
+//	}
 
-	instring instring::operator+(const char* V) const
-	{
-		sdstring temp = *this;
-		temp.append(V);
-		return temp;
-	}
+//	instring instring::operator+(const char* V) const
+//	{
+//		sdstring temp = *this;
+//		temp.append(V);
+//		return temp;
+//	}
 
-	sdstring instring::Str() const
-	{
-		return sdstring(str);
-	}
+//	sdstring instring::Str() const
+//	{
+//		return sdstring(str);
+//	}
 
-	sdstring instring::SoFar() const
-	{
-		return sdstring(str, wpos - str);
-	}
+//	sdstring instring::SoFar() const
+//	{
+//		return sdstring(str, wpos - str);
+//	}
 
 	iterator value::begin() const
 	{
@@ -1655,31 +1653,6 @@ namespace JSON_NAMESPACE
 		value ret;
 		objectParse(ret, inputString, bFailed);
 		return ret;
-	}
-
-    std::string value::getKey(size_t index) {
-		assert(i64(index) >= 0);
-		if (isA() == JSON_OBJECT) {
-			if (obj == NULL) {
-				obj = new object();
-				if (pParentObject) {
-					obj->setParentObject(pParentObject);
-				} else if (pParentArray) {
-					obj->setParentArray(pParentArray);
-				}
-				delete arr;
-				arr = NULL;
-			}
-			size_t i = 0;
-			for (object::iterator it = obj->begin(); it != obj->end(); ++it) {
-				if (i++ == index) {
-					return it->first.c_str();
-				}
-			}
-			return c_str();
-		} else {
-			return c_str();
-		}
 	}
 
 	value::DEBUGPTR value::debug = NULL;
@@ -4644,23 +4617,19 @@ namespace JSON_NAMESPACE
 
 	}
 
-	bool document::parse(const sdstring& inStr, PREPARSEPTR preParser, const sdstring& preParseFileName) {
-		return parse(inStr.c_str(), inStr.size(), preParser, preParseFileName);
-	}
-
-	bool document::parse(const char* inDat, size_t len, PREPARSEPTR preParser, const sdstring &preParseFileName) {
+	bool document::parse(const sdstring& sData, PREPARSEPTR preParser) {
 		strParseResult = "Successful";
 		bool bFailed = false;
 		bParseSuccessful = true;
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -4672,23 +4641,21 @@ namespace JSON_NAMESPACE
 		m_boolean = false;
 		str.clear();
 		sdstring sOut;
-		const char * inStr = inDat;
-		if (preParser != NULL) {
-			sdstring sDat(inDat, len);
-			preParser(sDat, sOut, preParseFileName);
+		const sdstring * pData = &sData;
+		if (preParser != nullptr) {
+			preParser(sData, sOut);
 			if (sOut.size() == 0) {
 				bParseSuccessful = false;
 				bFailed = true;
 				strParseResult = "JSON Document failed to pre-parse.";
 				if (debug) {
 					debug("%s", strParseResult.c_str());
-					debug("%s", inStr);
 				}
 				return false;
 			}
-			inStr = sOut.c_str();
+			pData = &sOut;
 		}
-		instring in(inStr);
+		instring in(*pData);
 		SkipWhitespace(in);
 		if (in.tell() >= in.size()) {
 			return true;
@@ -4699,13 +4666,12 @@ namespace JSON_NAMESPACE
 			bParseSuccessful = false;
 			if (debug) {
 				debug("%s", strParseResult.c_str());
-				debug("%s", inStr);
 			}
 		}
 		return !bFailed;
 	}
 
-	bool document::parseFile(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile) {
+	bool document::parseFile(const sdstring &inStr, PREPARSEPTR preParser) {
 		FILE* fd = fopen(inStr.c_str(), "rb");
 #if defined _JSON_TEMP_FILES_ && defined _JSON_RESTORE_TEMP_FILES_
 		sdstring sInstrPlusBak(inStr);
@@ -4730,27 +4696,26 @@ namespace JSON_NAMESPACE
 			fseek(fd, 0, SEEK_END);
 			size_t l = (size_t)ftell(fd);
 			fseek(fd, 0, SEEK_SET);
-			char* buffer = static_cast<char*>(malloc(l + 1));
-			if (buffer) {
-				buffer[l] = 0;
-				size_t br = fread(buffer, 1, l, fd);
-				if (debug && br != l) {
-					debug("File size mismatch in %s.", inStr.c_str());
+			sdstring buffer;
+			buffer.resize(l);
+			if (buffer.capacity() >= l) {
+				size_t br = fread(buffer.data(), 1, l, fd);
+				if (br != l) {
+					buffer.resize(br);
+					if (debug) {
+						debug("JSON File size mismatch in %s.", inStr.c_str());
+					}
+					bParseSuccessful = false;
+					strParseResult = "JSON File size mismatch in " + inStr + ".";
+					return false;
 				}
 
 				fclose(fd);
-				bool bRetVal;
-				if (bReWriteFile) {
-					bRetVal = parse(buffer, l, preParser, inStr);
-				} else {
-					bRetVal = parse(buffer, l, preParser);
-				}
+				bool bRetVal = parse(buffer, preParser);
 				bParseSuccessful = bRetVal;
 				if (debug && !bParseSuccessful) {
 					debug("JSON could not parse %s.", inStr.c_str());
 				}
-				memset(buffer, 0, l+1);
-				free(buffer);
 				return bRetVal;
 			}
 		}

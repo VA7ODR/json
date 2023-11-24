@@ -403,44 +403,99 @@ namespace JSON_NAMESPACE
 	class instring
 	{
 		public:
-			instring(const sdstring& in);
-			instring(const instring& in);
-			instring(char* in);
-
-			~instring();
-
-			char &take();
-			void skip();
-			char &peek() const;
-			size_t tell() const;
-			size_t size() const;
-			void seek(size_t newPos);
-			char* getPos();
-
-			instring& operator=(const sdstring& in);
-			instring& operator=(const char* in);
-			instring& operator=(const instring& in);
-			instring& operator=(instring&& in);
-
-			void set(const sdstring& in);
-			void set(const char* in);
-
-
-			operator sdstring() const
+			instring(const sdstring &in) : sString(in)
 			{
-				return sdstring(str);
+				itPos = sString.begin();
 			}
 
-			instring operator+(sdstring& V) const;
-			instring operator+(const char* V) const;
-			instring operator+(double V) const;
+			const char &take()
+			{
+				return *(itPos++);
+			}
 
-			sdstring Str() const;
-			sdstring SoFar() const;
+			const void skip()
+			{
+				++itPos;
+			}
+
+			const char &peek() const
+			{
+				if (itPos != sString.end()) {
+					return *(itPos);
+				} else {
+					static char c;
+					c = 0;
+					return c;
+				}
+			}
+
+			size_t tell() const
+			{
+				return itPos - sString.begin();
+			}
+
+			size_t size() const
+			{
+				return sString.size();
+			}
+
+
+			void seek(size_t newPos) {
+				if (newPos < size()) {
+					itPos = sString.begin() + newPos;
+				}
+			}
+
+			const char *getPos() const {
+				return &(*itPos);
+			}
+
+			const sdstring &Str() const
+			{
+				return sString;
+			}
+
+			sdstring SoFar() const
+			{
+				return {sString.begin(), itPos};
+			}
+
+			void UpToAndIncluding(sdstring & sRet, char c)
+			{
+				auto it = itPos;
+				auto end = sString.end();
+				for(; itPos != end; ++itPos) {
+					if (*itPos == c) {
+						++itPos;
+						break;
+					}
+				}
+				if (it != itPos) {
+					sRet.assign(it, itPos);
+				} else {
+					sRet.clear();
+				}
+			}
+
+			void Error(const sdstring & sErrorIn)
+			{
+				sError = sErrorIn;
+			}
+
+			const sdstring & Error()
+			{
+				return sError;
+			}
+
+			bool HasError()
+			{
+				return sError.size() > 0;
+			}
+
 		private:
-			char* str = nullptr;
-			char* wpos = nullptr;
-			size_t m_size = 0;
+			const sdstring & sString;
+			sdstring::const_iterator itPos;
+			sdstring sError;
 	};
 #if defined _USE_ADDED_ORDER_
 	typedef arbitrary_order_map<sdstring, value> myMap;
@@ -745,7 +800,6 @@ class iterator
 			value dumbRet;
 	};
 
-
 	class document : public value
 	{
 		public:
@@ -766,13 +820,10 @@ class iterator
 			document& operator=(const document& V);
 			document& operator=(document&& V);
 
-			typedef sdstring& (*PREPARSEPTR)(const sdstring& in, sdstring& out, sdstring fileName);
+			typedef sdstring& (*PREPARSEPTR)(const sdstring& in, sdstring& out);
 			typedef sdstring& (*PREWRITEPTR)(const sdstring& in, sdstring& out);
-			bool parse(const sdstring& inStr, PREPARSEPTR = NULL, const sdstring &preParseFileName = "");
-
-			bool parse(const char* inStr, size_t len, PREPARSEPTR = NULL, const sdstring &preParseFileName = "");
-
-			bool parseFile(const sdstring &instr, PREPARSEPTR = NULL, bool bReWriteFile = false);
+			bool parse(const sdstring& inStr, PREPARSEPTR = NULL);
+			bool parseFile(const sdstring &instr, PREPARSEPTR = NULL);
 
 			sdstring write(bool bPretty = false, PREWRITEPTR = NULL) const;
 			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL) const;
@@ -808,35 +859,6 @@ class iterator
 			sdstring strParseResult;
 			bool bParseSuccessful;
 	};
-
-	inline char &instring::take() {
-		return *(wpos++);
-	}
-
-	inline void instring::skip() {
-		++wpos;
-	}
-
-	inline char &instring::peek() const
-	{
-		if (wpos) {
-			return *(wpos);
-		} else {
-			static char c;
-			c = 0;
-			return c;
-		}
-	}
-
-	inline size_t instring::tell() const
-	{
-		return wpos - str;
-	}
-
-	inline size_t instring::size() const
-	{
-		return m_size;
-	}
 
 	std::ostream& operator<<(std::ostream& S, document& doc);
 	std::ostream& operator<<(std::ostream& S, value& doc);

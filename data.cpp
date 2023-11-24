@@ -433,6 +433,7 @@ namespace DATA_NAMESPACE
 		return s.str().c_str();
 	}
 
+#if defined DONT_DO_THIS
 	bool document::fastParse(JSON_NAMESPACE::instring& in, JSON_NAMESPACE::value& out, sdstring& parseResult)
 	{
 		enum eState {
@@ -447,8 +448,8 @@ namespace DATA_NAMESPACE
 		};
 		eState state = eRoot;
 		eState lastState = eRoot;
-		char* ptr = in.getPos();
-		char* retVal = ptr;
+		const char* ptr = in.getPos();
+		const char* retVal = ptr;
 		sdstring sTag;
 		sdstring sAttribute;
 		JSON_NAMESPACE::value * pTag = nullptr;
@@ -460,7 +461,7 @@ namespace DATA_NAMESPACE
 		size_t decimalPos = 0;
 		for (;;) {
 //			std::cout << sz << ", " << tl << std::endl;
-			char &c = in.take();
+			const char &c = in.take();
 			switch (state) {
 				case eRoot:
 				{
@@ -752,7 +753,7 @@ namespace DATA_NAMESPACE
 						}
 						case 'a':
 						{
-							char & c2 = in.take();
+							const char & c2 = in.take();
 							if (c2 == 'm') {
 								if (in.take() == 'p' && in.take() == ';') {
 									*ptr = '&';
@@ -824,7 +825,7 @@ namespace DATA_NAMESPACE
 						case ' ':
 						{
 							JSON_NAMESPACE::SkipWhitespace(in);
-							char & cNext = in.take();
+							const char & cNext = in.take();
 							if (cNext != '=' && cNext != '>' && cNext != '/') {
 								parseResult = generateError(in, "Unexpected data.");
 								return false;
@@ -1105,7 +1106,6 @@ namespace DATA_NAMESPACE
 		}
 		return true;
 	}
-
 	bool document::parseXML_old(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
@@ -1151,6 +1151,7 @@ namespace DATA_NAMESPACE
 			return false;
 		}
 	}
+#endif
 
 	bool document::parseXML(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
 	{
@@ -1265,6 +1266,7 @@ namespace DATA_NAMESPACE
 		return false;
 	}
 
+#if defined DONT_DO_THIS
 	bool document::parseXMLFile_old(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile)
 	{
 //		auto start = std::chrono::steady_clock::now();
@@ -1328,7 +1330,7 @@ namespace DATA_NAMESPACE
 		bParseSuccessful = false;
 		return false;
 	}
-
+#endif
 	sdstring XMLEscape(const sdstring& in, bool bAttribute) {
 		sdstring out;
 		for (const char &c: in) {
