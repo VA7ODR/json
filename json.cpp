@@ -279,6 +279,9 @@ namespace JSON_NAMESPACE
 
 		s.take(); // Skip '\"'
 		s.UpToAndIncluding(ret, '"');
+		if (ret.back() != '"') {
+			generateError(s, "lacks ending quotation before the end of string");
+		}
 		auto ptr = ret.begin();
 		auto take = ptr;
 		for (;;) {
@@ -331,11 +334,11 @@ namespace JSON_NAMESPACE
 					break;
 				}
 
-				case 0: {
-					generateError(s, "lacks ending quotation before the end of string");
-					*bFailed = true;
-					return;
-				}
+//				case 0: {
+//					generateError(s, "lacks ending quotation before the end of string");
+//					*bFailed = true;
+//					return;
+//				}
 			}
 		}
 	}
@@ -4663,7 +4666,7 @@ namespace JSON_NAMESPACE
 		}
 		valueParse(*this, in, &bFailed);
 		if (bFailed) {
-			strParseResult = in.Str();
+			strParseResult = in.Error();
 			bParseSuccessful = false;
 			if (debug) {
 				debug("%s", strParseResult.c_str());

@@ -462,13 +462,19 @@ namespace JSON_NAMESPACE
 			{
 				auto it = itPos;
 				auto end = sString.end();
+				bool bEscape = false;
 				for(; itPos != end; ++itPos) {
-					if (*itPos == c) {
+					if (bEscape == false && *itPos == c) {
 						++itPos;
 						break;
 					}
+					if (*itPos == '\\') {
+						bEscape = true;
+					} else {
+						bEscape = false;
+					}
 				}
-				if (it != itPos) {
+				if (it != itPos && itPos != end) {
 					sRet.assign(it, itPos);
 				} else {
 					sRet.clear();
