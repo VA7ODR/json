@@ -198,8 +198,8 @@ namespace JSON_NAMESPACE
 			}
 		}
 
-//		sdostringstream s;
-		std::ostringstream s;
+		sdostringstream s;
+//		std::ostringstream s;
 		s << szError << "  Line: " << line <<  " Column: " << pos;
 		inputString.Error(s.str());
 	}
@@ -4073,7 +4073,7 @@ namespace JSON_NAMESPACE
 			{
 				value ret(*this);
 				for (iterator it = V.begin(); it != V.end(); ++it) {
-					ret.erase(it.key().string());
+					ret.erase(it.key()._sdstring());
 				}
 				return ret;
 			}
@@ -4173,7 +4173,7 @@ namespace JSON_NAMESPACE
 
 			case JSON_OBJECT:
 				for (iterator it = V.begin(); it != V.end(); ++it) {
-					erase(it.key().string());
+					erase(it.key()._sdstring());
 				}
 				break;
 
@@ -4728,7 +4728,7 @@ namespace JSON_NAMESPACE
 		return false;
 	}
 
-	std::string document::write(bool bPretty, PREWRITEPTR preWriter) const
+	sdstring document::write(bool bPretty, PREWRITEPTR preWriter) const
 	{
 		return write(1, bPretty, preWriter);
 	}

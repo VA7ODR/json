@@ -22,15 +22,12 @@ THE SOFTWARE.
 The official repository for this library is at https://github.com/odhinnsrunes/json
 
 */
-#if !defined JSTRING_HPP
-#define JSTRING_HPP
-
+#pragma once
 #include <limits>
 #include <cstring>
 #include <string>
-// #if defined _WINDOWS && !defined __clang__ && _MSC_VER >= 1900
-// #define noexcept
-// #endif
+#include <type_traits>
+
 template <class T>
 struct secure_delete_allocator {
 	typedef T value_type;
@@ -47,28 +44,7 @@ struct secure_delete_allocator {
 	value_type* allocate (std::size_t n) { value_type* p = static_cast<value_type*>(malloc(n*sizeof(value_type))); return p;}
 	void deallocate (value_type* p, std::size_t n) { memset((void*)p, 0, n); free(p); }
 	template <class U> struct rebind { typedef secure_delete_allocator<U> other; };
-
-//	void construct(pointer p, const value_type& val)
-//	{
-//		new(static_cast<void*>(p)) value_type(val);
-//	}
-
-//	void construct(pointer p)
-//	{
-//		new(static_cast<void*>(p)) value_type();
-//	}
-
-//	void destroy(pointer p)
-//	{
-//		p->~value_type();
-//	}
-
 };
-
-#if defined USE_STD_STRING
-#define sdstring std::string
-#else
-
 
 template <class T, class U>
 constexpr bool operator== (const secure_delete_allocator<T>&, const secure_delete_allocator<U>&) noexcept
@@ -78,163 +54,67 @@ template <class T, class U>
 constexpr bool operator!= (const secure_delete_allocator<T>&, const secure_delete_allocator<U>&) noexcept
 {return false;}
 
+typedef std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char> > sdistringstream;
+typedef std::basic_ostringstream<char, std::char_traits<char>, secure_delete_allocator<char> > sdostringstream;
+
 typedef std::basic_string<char, std::char_traits<char>, secure_delete_allocator<char> > base_sdstring;
 
 class sdstring : public base_sdstring
 {
 	public:
-		sdstring(const sdstring & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
-		
-		sdstring(const base_sdstring & rhs) : base_sdstring(rhs) { }
+		using base_sdstring::basic_string;
 
-		sdstring(sdstring && rhs) : base_sdstring(std::move(rhs)) { }
-		
-		sdstring(base_sdstring && rhs) : base_sdstring(std::move(rhs)) { }
+		sdstring(const base_sdstring & in) : base_sdstring(in) {}
+		sdstring(base_sdstring && in) : base_sdstring(std::move(in)) {}
 
-		sdstring(const std::string & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
-
-		sdstring(std::string && rhs) : base_sdstring(std::move(rhs.data()), rhs.size()) { }
-
-		sdstring(const char* rhs, size_t size) : base_sdstring(rhs, size) { }
-		sdstring() : base_sdstring() {}
-
-		~sdstring() {  }
-
-		using base_sdstring::base_sdstring;
-		using base_sdstring::operator[];
-		using base_sdstring::operator=;
-//		using base_sdstring::operator<;
-		using base_sdstring::operator+=;
-		using base_sdstring::append;
-		using base_sdstring::assign;
-		using base_sdstring::size;
-		using base_sdstring::find;
-		size_t find(const std::string& in, size_t pos = 0) const { return find(*in.c_str(), pos); }
-
-        sdstring& operator=(const sdstring& rhs)
-        {
-            if (&rhs != this) {
-                static_cast<base_sdstring&>(*this) = static_cast<const base_sdstring&>(rhs);
-            }
-            return *this;
-        }
-
-        sdstring& operator=(sdstring&& rhs)
-        {
-            if (&rhs != this) {
-                static_cast<base_sdstring&>(*this) = static_cast<const base_sdstring&&>(rhs);
-            }
-            return *this;
-        }
-//
-        operator std::string&() const
-        {
-            return *((std::string*) this);
-        }
-//
-//    operator const std::basic_string<char>&()
-//        {
-//            return *((const std::string*) this);
-//        }
-
-//     operator std::string() const
-//    {
-//        return std::string(this->c_str());
-//    }
-    
-//     operator const std::string() const
-//    {
-//        return std::string(this->c_str());
-//    }
-    
-		bool operator==(const sdstring& rhs) const noexcept
-        {
-			if (rhs.size() != this->size()) {
-				return false;
-			}
-            return memcmp(rhs.data(), this->data(), this->size()) == 0;
-        }
-
-		bool operator!=(const sdstring& rhs) const noexcept
-        {
-			if (rhs.size() != this->size()) {
-				return true;
-			}
-            return memcmp(rhs.data(), this->data(), this->size()) != 0;
-         }
-
-		bool operator==(const char* rhs) const noexcept
-        {
-			if (sdstring(rhs).size() != this->size()) {
-				return false;
-			}
-            return memcmp(rhs, this->data(), this->size()) == 0;
-        }
-
-		bool operator!=(const char* rhs) const noexcept
-        {
-			if (sdstring(rhs).size() != this->size()) {
-				return true;
-			}
-            return memcmp(rhs, this->data(), this->size()) != 0;
-        }
-
-//		size_t operator<(const sdstring& rhs) const
-//		{
-//			return std::less<std::string>{}(static_cast<std::string&>(*this), static_cast<std::string&>(rhs));
-//		}
-
-//        sdstring& append(const std::string& rhs)
-//        {
-//            this->append(rhs.c_str());
-//            return *this;
-//        }
+		sdstring(const std::string & in) : base_sdstring(in.begin(), in.end()) {}
+		sdstring(std::string && in) : base_sdstring(std::make_move_iterator(in.begin()), std::make_move_iterator(in.end())) {}
 };
-sdstring operator+(const sdstring & lhs, const std::string & rhs);
-sdstring operator+(const sdstring & lhs, const sdstring & rhs);
-sdstring operator+(const char*, const sdstring & rhs);
-sdstring operator+(const sdstring & lhs, const char* rhs);
-std::string operator+(const std::string & lhs, const sdstring & rhs);
-bool operator==(const std::string & lhs, const sdstring & rhs);
-bool operator!=(const std::string & lhs, const sdstring & rhs);
-inline size_t operator<(sdstring const& s, sdstring const& s2)
+
+template <class T>
+auto operator==(const T & lhs, const sdstring & rhs)
+	-> std::enable_if_t<std::is_same<T, std::string>::value, bool>
 {
-	return std::less<std::string>{}(static_cast<std::string&>(s), static_cast<std::string&>(s2));
+	return (lhs == rhs.c_str());
 }
 
-// struct SDStringComparator
-// {
-// 	bool
-// 	operator()(const sdstring & obj1, const sdstring & obj2) const
-// 	{
-// 		return (obj1 == obj2);
-// 	}
-// };
-
-namespace std
+template <class T>
+auto operator!=(const T & lhs, const sdstring & rhs)
+	-> std::enable_if_t<std::is_same<T, std::string>::value, bool>
 {
-template<>
-	struct hash<sdstring>
-	{
-        typedef sdstring argument_type;
-        typedef std::size_t result_type;
-		result_type operator()(const argument_type& s) const noexcept
-		{
-            return std::hash<std::string>{}(std::string(s.c_str()));
-		}
-	};
-template<>
-	struct less<sdstring>
-	{
-        typedef sdstring argument_type;
-        typedef std::size_t result_type;
-		result_type operator()(const argument_type& s, const argument_type& s2) const noexcept
-/*        typedef bool result_type;
-        result_type operator()(argument_type const& s, argument_type const& s2) const NOEXCEPT*/
-		{
-            return std::less<std::string>{}(static_cast<std::string&>(s), static_cast<std::string&>(s2));
-		}
-	};
+	return (lhs != rhs.c_str());
 }
-#endif
-#endif //JSTRING_HPP
+
+template <class T>
+auto operator==(const T & lhs, const std::string & rhs)
+	-> std::enable_if_t<std::is_same<T, sdstring>::value, bool>
+{
+	return (lhs == rhs.c_str());
+}
+
+template <class T>
+auto operator!=(const T & lhs, const std::string & rhs)
+	-> std::enable_if_t<std::is_same<T, sdstring>::value, bool>
+{
+	return (lhs == rhs.c_str());
+}
+
+inline bool operator==(const sdstring & lhs, const char * rhs)
+{
+	return (lhs == rhs);
+}
+
+inline bool operator!=(const sdstring & lhs, const char * rhs)
+{
+	return (lhs != rhs);
+}
+
+inline bool operator==(const char * lhs, const sdstring & rhs)
+{
+	return (rhs == lhs);
+}
+
+inline bool operator!=(const char * lhs, const sdstring & rhs)
+{
+	return (rhs != lhs);
+}

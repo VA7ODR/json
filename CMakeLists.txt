@@ -52,7 +52,7 @@ if(USE_TEMP_FILES)
 endif(USE_TEMP_FILES)
 
 if (ORDERED_JSON)
-	 add_library(ojson ${OBJECT_TYPE} json.cpp json.hpp ojson.hpp)
+	 add_library(ojson ${OBJECT_TYPE} json.cpp json.hpp ojson.hpp sdstring.hpp arbitrary_order_map.hpp)
 	 target_compile_definitions(ojson PRIVATE _USE_ADDED_ORDER_ SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 	 set_property(TARGET ojson PROPERTY CXX_STANDARD 17)
 	 SET(OJSON_OBJECTS $<TARGET_OBJECTS:ojson>)
@@ -64,25 +64,24 @@ endif(DATA_DOCUMENT)
 
 add_compile_definitions(${JSON_TEMP} ${DATA_DOCUMENT_DEFINES} ${ORDERED})
 
-add_library(ajson ${OBJECT_TYPE} json.cpp json.hpp)
+add_library(ajson ${OBJECT_TYPE} json.cpp json.hpp sdstring.hpp)
 target_compile_definitions(ajson PRIVATE SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 
 if(DATA_DOCUMENT)
 	 add_library(tinyxml ${OBJECT_TYPE} tinyxml/tinystr.cpp tinyxml/tinyxml.cpp tinyxml/tinyxmlerror.cpp tinyxml/tinyxmlparser.cpp)
 	 if(ORDERED_JSON)
-		  add_library(odata ${OBJECT_TYPE} data.cpp)
+		  add_library(odata ${OBJECT_TYPE} data.cpp data.hpp odata.hpp sdstring.hpp arbitrary_order_map.hpp)
 		  target_compile_definitions(odata PRIVATE _USE_ADDED_ORDER_ SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
-		  set_property(TARGET odata PROPERTY CXX_STANDARD 17)
 		  SET(ODATA_OBJECTS $<TARGET_OBJECTS:odata>)
 	 endif(ORDERED_JSON)
-	 add_library(adata ${OBJECT_TYPE} data.cpp)
+	 add_library(adata ${OBJECT_TYPE} data.cpp data.hpp sdstring.hpp)
 	 target_compile_definitions(adata PRIVATE SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 	 SET(ADATA_OBJECTS $<TARGET_OBJECTS:adata> $<TARGET_OBJECTS:tinyxml>)
 endif(DATA_DOCUMENT)
 
 if(STAND_ALONE)
-	 add_library(json STATIC $<TARGET_OBJECTS:ajson> json.hpp sdstring.cpp sdstring.hpp ${OJSON_OBJECTS} ${ADATA_OBJECTS} ${ODATA_OBJECTS})
-    target_compile_definitions(json PUBLIC SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS )
+	 add_library(json STATIC $<TARGET_OBJECTS:ajson> ${OJSON_OBJECTS} ${ADATA_OBJECTS} ${ODATA_OBJECTS})
+	 target_compile_definitions(json PUBLIC SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 
     if(TEST_EXAMPLE)
         add_executable(testbed test.cpp)
@@ -125,13 +124,20 @@ if(STAND_ALONE)
             target_link_libraries(csv2xml PRIVATE json)
 
             install(TARGETS json2xml xml2json xmlpretty csv2xml RUNTIME DESTINATION bin)
-
         endif(SAMPLES)
 
         install(FILES data.hpp DESTINATION include)
+
+		  if (SUPPORT_ORDERED_JSON)
+				install(FILES oata.hpp DESTINATION include)
+		  endif(SUPPORT_ORDERED_JSON)
     endif(DATA_DOCUMENT)
 
     install(FILES json.hpp sdstring.hpp DESTINATION include)
+
+	 if (SUPPORT_ORDERED_JSON)
+		  install(FILES arbitrary_order_map.hpp DESTINATION include)
+	 endif(SUPPORT_ORDERED_JSON)
 
     install(TARGETS json ARCHIVE DESTINATION lib)
 endif(STAND_ALONE)

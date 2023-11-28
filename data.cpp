@@ -1404,11 +1404,11 @@ namespace DATA_NAMESPACE
 
 			case JSON_NAMESPACE::JSON_NUMBER:
 			{
-				strParameter.append(XMLEscape(ret.string()));
+				strParameter.append(XMLEscape(ret._sdstring()));
 				break;
 			}
 			case JSON_NAMESPACE::JSON_STRING:
-				strParameter.append(XMLEscape(ret.string()));
+				strParameter.append(XMLEscape(ret._sdstring()));
 				break;
 
 			case JSON_NAMESPACE::JSON_OBJECT:
@@ -1423,7 +1423,7 @@ namespace DATA_NAMESPACE
 						}
 					}
 					if (key == DATA_VAL) {
-						strParameter.append(XMLEscape(val.string()));
+						strParameter.append(XMLEscape(val._sdstring()));
 						continue;
 					}
 					bool bIsNumericKey = false;
@@ -1462,7 +1462,7 @@ namespace DATA_NAMESPACE
 										strParameter.push_back(' ');
 										strParameter.append(subKey.substr(1));
 										strParameter.append("=\"");
-										strParameter.append(XMLEscape(val2.string(), true));
+										strParameter.append(XMLEscape(val2._sdstring(), true));
 										strParameter.push_back('\"');
 										attCount++;
 									}
@@ -1504,7 +1504,7 @@ namespace DATA_NAMESPACE
 									strParameter.push_back(' ');
 									strParameter.append(subKey.substr(1));
 									strParameter.append("=\"");
-									strParameter.append(XMLEscape(val2.string(), true));
+									strParameter.append(XMLEscape(val2._sdstring(), true));
 									strParameter.push_back('\"');
 									attCount++;
 								}
@@ -1588,7 +1588,7 @@ namespace DATA_NAMESPACE
 							ret.append(" ");
 							ret.append(key.substr(1));
 							ret.append("=\"");
-							ret.append(XMLEscape(val.string(), true));
+							ret.append(XMLEscape(val._sdstring(), true));
 							ret.append("\"");
 						}
 					}
@@ -1706,7 +1706,7 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				if (sKey.size() > 2) {
 					if (sKey[0] == '@') {
 						size_t stLast = sKey.find_last_of(':');
@@ -1738,7 +1738,7 @@ namespace DATA_NAMESPACE
 		if (begin) {
 			JSON_NAMESPACE::iterator end = jNameSpaces.end();
 			for (JSON_NAMESPACE::iterator it = jNameSpaces.begin(); it != end; ++it) {
-				sdstring sNS = (*it).string();
+				sdstring sNS = (*it)._sdstring();
 				if (sNS[sNS.size() - 1] != ':') {
 					sNS.append(":");
 					(*it) = sNS;
@@ -1749,7 +1749,7 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				JSON_NAMESPACE::iterator end = jNameSpaces.end();
 				for (JSON_NAMESPACE::iterator nit = jNameSpaces.begin(); nit != end; ++nit) {
 					if (sKey[0] == '@') {
@@ -1793,7 +1793,7 @@ namespace DATA_NAMESPACE
 				if ((*it).isA(JSON_NAMESPACE::JSON_VOID) ) {
 					continue;
 				}
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				if (sKey.size() > sNameSpace.size()) {
 					if (sKey[0] == '@') {
 						if (sKey.substr(1, sNameSpace.size()) == sNameSpace) {
@@ -1829,7 +1829,7 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				if (sKey[0] == '@') {
 					sKey.insert(1, sNameSpace);
 				} else {
@@ -1860,7 +1860,7 @@ namespace DATA_NAMESPACE
 	{
 		JSON_NAMESPACE::iterator end = jNameSpaces.end();
 		for (JSON_NAMESPACE::iterator it = jNameSpaces.begin(); it != end; ++it) {
-			sdstring sNS = (*it).string();
+			sdstring sNS = (*it)._sdstring();
 			if (sNS[sNS.size() - 1] != ':') {
 				sNS.append(":");
 				(*it) = sNS;
