@@ -205,7 +205,7 @@ namespace JSON_NAMESPACE
 //			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
 
 #if !defined USE_STD_STRING
-			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
 #endif
 			value(object& V);
 			value(array& V);
@@ -250,28 +250,80 @@ namespace JSON_NAMESPACE
 			value& fixedDecimal(int iPlaces);
 
 			double number() const;
-			float _float() const;
-			i64 integer() const;
-			ui64 _uint64() const;
-			int _int() const;
-			i64 _integer64() const;
-			double _double() const;
-			size_t _size_t() const;
-			long _long() const;
-			short _short() const;
-			char _char() const;
-			unsigned int _uint() const;
-			unsigned long _ulong() const;
-			unsigned short _ushort() const;
-			unsigned char _uchar() const;
+
+			float _float() const {
+				return (float)number();
+			}
+
+			i64 integer() const {
+				return (i64)number();
+			}
+
+			ui64 _uint64() const {
+				return (ui64)number();
+			}
+
+			int _int() const {
+				return (int)number();
+			}
+
+			i64 _integer64() const {
+				return (i64)number();
+			}
+
+			double _double() const {
+				return number();
+			}
+
+			size_t _size_t() const {
+				return (size_t)number();
+			}
+
+			long _long() const {
+				return (long)number();
+			}
+
+			short _short() const {
+				return (short)number();
+			}
+
+			char _char() const {
+				return (char)number();
+			}
+
+			unsigned int _uint() const {
+				return (unsigned int)number();
+			}
+
+			unsigned long _ulong() const {
+				return (unsigned long)number();
+			}
+
+			unsigned short _ushort() const {
+				return (unsigned short)number();
+			}
+
+			unsigned char _uchar() const {
+				return (unsigned char)number();
+			}
 
 			bool boolean() const;
-			std::string& string();
-			sdstring& _sdstring();
-			//        std::string& string();
-			DEPRECATED (const char* safeCString());
-			const char* c_str();
-			const char* cString();
+
+			const char* c_str()
+			{
+				makeStringFromValue();
+				return str.c_str();
+			};
+
+			sdstring& _sdstring() {
+				makeStringFromValue();
+				return str;
+			}
+
+			std::string& string() {
+				makeStringFromValue();
+				return str;
+			}
 
 			value& operator[](size_t index);
 			value& operator[](const sdstring& index);
@@ -369,6 +421,7 @@ namespace JSON_NAMESPACE
 			const sdstring& key() { return m_key; }
 
 		protected:
+			void makeStringFromValue();
 			sdstring &stringC(sdstring &dest)const;
 
 			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false) const;
@@ -455,7 +508,7 @@ namespace JSON_NAMESPACE
 
 			sdstring SoFar() const
 			{
-				return {sString.begin(), itPos};
+				return sdstring(sString.begin(), itPos);
 			}
 
 			void UpToAndIncluding(sdstring & sRet, char c)

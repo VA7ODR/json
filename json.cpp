@@ -198,8 +198,8 @@ namespace JSON_NAMESPACE
 			}
 		}
 
-		sdostringstream s;
-//		std::ostringstream s;
+//		sdostringstream s;
+		std::ostringstream s;
 		s << szError << "  Line: " << line <<  " Column: " << pos;
 		inputString.Error(s.str());
 	}
@@ -3660,63 +3660,7 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	i64 value::integer() const {
-		return (i64)number();
-	}
-
-	ui64 value::_uint64() const {
-		return (ui64)number();
-	}
-
-	float value::_float() const {
-		return (float)number();
-	}
-
-	long value::_long() const {
-		return (long)number();
-	}
-
-	double value::_double() const {
-		return number();
-	}
-
-	int value::_int() const {
-		return (int)number();
-	}
-
-	i64 value::_integer64() const {
-		return (i64)number();
-	}
-
-	size_t value::_size_t() const {
-		return (size_t)number();
-	}
-
-	short value::_short() const {
-		return (short)number();
-	}
-
-	char value::_char() const {
-		return (char)number();
-	}
-
-	unsigned long value::_ulong() const {
-		return (unsigned long)number();
-	}
-
-	unsigned int value::_uint() const {
-		return (unsigned int)number();
-	}
-
-	unsigned short value::_ushort() const {
-		return (unsigned short)number();
-	}
-
-	unsigned char value::_uchar() const {
-		return (unsigned char)number();
-	}
-
-	sdstring& value::_sdstring() {
+	void value::makeStringFromValue() {
 		switch (myType) {
 		case JSON_STRING:
 			break;
@@ -3752,17 +3696,9 @@ namespace JSON_NAMESPACE
 			}
 			break;
 		}
-        return str;
 	}
-    
-	std::string &value::string() {
-		return reinterpret_cast<std::string&>(_sdstring());
-    }
 
-//	std::string& value::string()
-//	{
-//		return reinterpret_cast<std::string&>(_sdstring());
-//	}
+
 
 	sdstring& value::stringC(sdstring & dest) const {
 		switch (myType) {
@@ -3800,24 +3736,6 @@ namespace JSON_NAMESPACE
 			break;
 		}
 		return dest;
-	}
-
-	const char* value::safeCString() {
-		return _sdstring().c_str();
-	}
-
-	const char* value::c_str() {
-		return _sdstring().c_str();
-	}
-
-	const char* value::cString() {
-		switch (myType) {
-		case JSON_VOID:
-		case JSON_NULL:
-			return NULL;
-		default:
-			return _sdstring().c_str();
-		}
 	}
 
 	sdstring value::print(size_t depth, bool bPretty) const
