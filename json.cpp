@@ -1117,7 +1117,8 @@ namespace JSON_NAMESPACE
 		return retVal;
 	}
 
-	void value::erase(size_t index) {
+	void value::erase(size_t index)
+	{
 		assert(i64(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
 			if (debug) {
@@ -1132,7 +1133,8 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	size_t value::erase(const sdstring& index) {
+	size_t value::erase(const sdstring& index)
+	{
 		if (myType == JSON_OBJECT) {
 			myMap::iterator it;
 			it = obj->find(index);
@@ -1144,7 +1146,8 @@ namespace JSON_NAMESPACE
 		return 0;
 	}
 
-	iterator value::erase(iterator it) {
+	iterator value::erase(iterator it)
+	{
 		if (it.IsArray() && arr) {
 			return arr->erase(it.arr());
 		} else if (!it.IsArray() && !it.Neither() && obj) {
@@ -1168,7 +1171,8 @@ namespace JSON_NAMESPACE
 		return iterator();
 	}
 
-	bool value::exists(size_t index) {
+	bool value::exists(size_t index)
+	{
 		assert(i64(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
 			if (debug) {
@@ -1187,7 +1191,8 @@ namespace JSON_NAMESPACE
 		return false;
 	}
 
-	bool value::exists(const sdstring& index) {
+	bool value::exists(const sdstring& index)
+	{
 		if (isA(JSON_OBJECT) && obj != NULL) {
 			if (obj->empty()) {
 				return false;
@@ -1278,7 +1283,8 @@ namespace JSON_NAMESPACE
 		return iterator(obj->insert(obj->end(), std::pair<sdstring, value>(index, V)));
 	}
 
-	iterator value::insert(iterator position, value& V) {
+	iterator value::insert(iterator position, value& V)
+	{
 		if (position.IsArray() && myType == JSON_ARRAY) {
 			arr->setNotEmpty();
 			return iterator(arr->insert(position.arr(), V));
@@ -1297,7 +1303,8 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	iterator value::insert(iterator position, const sdstring &key, value &V) {
+	iterator value::insert(iterator position, const sdstring &key, value &V)
+	{
 		if (!position.IsArray() && !position.Neither() && myType == JSON_OBJECT) {
 			obj->setNotEmpty();
 			return iterator(obj->insert(position.obj(), std::pair<sdstring, value>(key, V)));
@@ -1306,7 +1313,8 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	void value::insert(iterator position, iterator first, iterator last) {
+	void value::insert(iterator position, iterator first, iterator last)
+	{
 		if (position.IsArray() && first.IsArray() && last.IsArray()) {
 			if (myType != JSON_ARRAY || arr == NULL) {
 				m_number = 0;
@@ -1371,7 +1379,8 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	void value::insert(iterator first, iterator last) {
+	void value::insert(iterator first, iterator last)
+	{
 		if (first.IsArray() && last.IsArray()) {
 			if (myType != JSON_ARRAY) {
 				m_number = 0;
@@ -1426,7 +1435,8 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	const value parse(instring& inputString, bool* bFailed) {
+	const value parse(instring& inputString, bool* bFailed)
+	{
 		value ret;
 		objectParse(ret, inputString, bFailed);
 		return ret;
@@ -1434,7 +1444,8 @@ namespace JSON_NAMESPACE
 
 	value::DEBUGPTR value::debug = nullptr;
 
-	value::value(const value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+	value::value(const value& V) :
+		m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
 		if (myType == JSON_OBJECT) {
 			obj = new object(V.obj);
@@ -1473,7 +1484,8 @@ namespace JSON_NAMESPACE
 	}
 
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
-	value::value(const ojson::value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType((JSONTypes)V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+	value::value(const ojson::value& V) :
+		m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType((JSONTypes)V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
 		if (myType == JSON_OBJECT) {
 			obj = new object(V.obj);
@@ -1481,8 +1493,32 @@ namespace JSON_NAMESPACE
 			arr = new array(V.arr);
 		}
 	}
-#elif defined _USE_ADDED_ORDER_
 
+	array::array(const ojson::array& V) :
+		myVec(V.begin(), V.end()), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr)
+	{
+
+	}
+
+	array::array(const ojson::array* V) :
+		myVec(V->begin(), V->end()), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr)
+	{
+
+	}
+
+	object::object(const ojson::object& V) :
+		myMap(V.begin(), V.end()), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr)
+	{
+
+	}
+
+	object::object(const ojson::object* V) :
+		myMap(V->begin(), V->end()), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr)
+	{
+
+	}
+
+#elif defined _USE_ADDED_ORDER_
 	value::value(const json::value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
 
@@ -1493,15 +1529,17 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	array::array(const json::array& V)
-	: myVec(V.begin(), V.end()) {
+	array::array(const json::array& V) :
+		myVec(V.begin(), V.end())
+	{
 		bNotEmpty = V.bNotEmpty;
 		pParentArray = NULL;
 		pParentObject = NULL;
 	}
 
-	array::array(const json::array* V)
-	: myVec(V->begin(), V->end()) {
+	array::array(const json::array* V) :
+		myVec(V->begin(), V->end())
+	{
 		bNotEmpty = V->bNotEmpty;
 		pParentArray = NULL;
 		pParentObject = NULL;

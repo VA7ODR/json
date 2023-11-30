@@ -30,7 +30,25 @@ The official repository for this library is at https://github.com/VA7ODR/json
 class TiXmlNode;
 
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
-#include "odata.hpp"
+#define _USE_ADDED_ORDER_
+
+#define _ODATA_HPP_START
+namespace json
+{
+	class value;
+	class document;
+	class object;
+	class array;
+}
+namespace data
+{
+	class document;
+}
+#include "data.hpp"
+
+#undef _ODATA_HPP_START
+
+#undef _USE_ADDED_ORDER_
 #endif
 
 #if defined _USE_ADDED_ORDER_
@@ -38,7 +56,6 @@ class TiXmlNode;
 #if !defined SUPPORT_ORDERED_JSON
 #define SUPPORT_ORDERED_JSON
 #endif
-#include "ojson.hpp"
 #include "json.hpp"
 #define _USE_ADDED_ORDER_
 // #undef JSON_HPP_

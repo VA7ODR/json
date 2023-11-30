@@ -78,8 +78,9 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #if !defined OJSON_HPP_START
 #define JSON_HPP_
 #endif
+#if !defined JSON_DOCUMENT_VERSION
 #define JSON_DOCUMENT_VERSION "1.1.0"
-
+#endif
 #if !defined JSON_NUMBER_PRECISION
 #define JSON_NUMBER_PRECISION 14
 #endif
@@ -89,7 +90,30 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #include <deque>
 
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
-#include "ojson.hpp"
+#define _USE_ADDED_ORDER_
+
+#define OJSON_HPP_START
+namespace json
+{
+	class value;
+	class document;
+	class object;
+	class array;
+}
+
+namespace ojson
+{
+	class value;
+	class document;
+	class object;
+	class array;
+}
+
+#include "json.hpp"
+
+#undef OJSON_HPP_START
+
+#undef _USE_ADDED_ORDER_
 #endif
 
 #if defined _USE_ADDED_ORDER_
@@ -575,9 +599,8 @@ namespace JSON_NAMESPACE
 			object(const object* V) : myMap(static_cast<myMap>(*V)), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
 			friend class ojson::object;
-
-			object(const ojson::object& V) : myMap(V.begin(), V.end()), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
-			object(const ojson::object* V) : myMap(V->begin(), V->end()), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+			object(const ojson::object& V);
+			object(const ojson::object* V);
 #elif defined SUPPORT_ORDERED_JSON && defined _USE_ADDED_ORDER_
 			friend class json::object;
 			object(const json::object& V);
@@ -667,9 +690,8 @@ namespace JSON_NAMESPACE
 			array(size_t C) : myVec(C), bNotEmpty(true), pParentArray(nullptr), pParentObject(nullptr) {}
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
 			friend class ojson::array;
-
-			array(const ojson::array& V) : myVec(V.begin(), V.end()), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
-			array(const ojson::array* V) : myVec(V->begin(), V->end()), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+			array(const ojson::array& V);
+			array(const ojson::array* V);
 #elif defined SUPPORT_ORDERED_JSON && defined _USE_ADDED_ORDER_
 			friend class json::array;
 			array(const json::array& V);
