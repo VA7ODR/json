@@ -111,22 +111,23 @@ class sdstring : public base_sdstring
             return *((std::string*) this);
         }
     
+#if __cplusplus < 202002L
 		bool operator==(const sdstring& rhs) const noexcept
-        {
+		{
 			if (rhs.size() != this->size()) {
 				return false;
 			}
-            return memcmp(rhs.data(), this->data(), this->size()) == 0;
-        }
+			return memcmp(rhs.data(), this->data(), this->size()) == 0;
+		}
 
 		bool operator!=(const sdstring& rhs) const noexcept
-        {
+		{
 			if (rhs.size() != this->size()) {
 				return true;
 			}
-            return memcmp(rhs.data(), this->data(), this->size()) != 0;
-         }
-
+			return memcmp(rhs.data(), this->data(), this->size()) != 0;
+		 }
+#endif
 		bool operator==(const char* rhs) const noexcept
         {
 			if (sdstring(rhs).size() != this->size()) {
@@ -202,10 +203,12 @@ inline bool operator!=(const T & lhs, const sdstring & rhs)
 	return (lhs != rhs.c_str());
 }
 
+#if __cplusplus < 202002L
 inline size_t operator<(sdstring const& s, sdstring const& s2)
 {
 	return std::less<std::string>{}(static_cast<std::string&>(s), static_cast<std::string&>(s2));
 }
+#endif
 
 class sdstreambuf : public std::basic_streambuf<char>
 {
