@@ -1517,7 +1517,7 @@ namespace JSON_NAMESPACE
 		} else if (myType == JSON_OBJECT && V.myType == JSON_OBJECT) {
 			obj->insert(V.begin().obj(), V.end().obj());
 			obj->setNotEmpty();
-			return obj->find(V.begin().key().string());
+			return obj->find(V.begin().key()._sdstring());
 #endif
 		} else {
 			return iterator();
@@ -3419,7 +3419,7 @@ namespace JSON_NAMESPACE
 
 	size_t value::length()
 	{
-		return string().size();
+		return _sdstring().size();
 	}
 
 	size_t value::arraySize()
@@ -4280,11 +4280,11 @@ namespace JSON_NAMESPACE
 			break;
 
 		case JSON_NUMBER:
-			S << doc.string();
+			S << doc._sdstring();
 			break;
 
 		case JSON_STRING: {
-			S << doc.string();
+			S << doc._sdstring();
 			break;
 		}
 		}

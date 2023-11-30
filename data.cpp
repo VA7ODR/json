@@ -1753,15 +1753,15 @@ namespace DATA_NAMESPACE
 				JSON_NAMESPACE::iterator end = jNameSpaces.end();
 				for (JSON_NAMESPACE::iterator nit = jNameSpaces.begin(); nit != end; ++nit) {
 					if (sKey[0] == '@') {
-						if (sKey.size() > (*nit).string().size()) {
-							if (sKey.substr(1, (*nit).string().size()) == (*nit)._sdstring()) {
+						if (sKey.size() > (*nit)._sdstring().size()) {
+							if (sKey.substr(1, (*nit)._sdstring().size()) == (*nit)._sdstring()) {
 								sKey = sdstring("@") + sKey.substr((*nit)._sdstring().size() + 1);
 							}
 						}
 					} else {
-						if (sKey.size() > (*nit).string().size()) {
-							if (sKey.substr(0, (*nit).string().size()) == (*nit)._sdstring()) {
-								sKey = sKey.substr((*nit).string().size());
+						if (sKey.size() > (*nit)._sdstring().size()) {
+							if (sKey.substr(0, (*nit)._sdstring().size()) == (*nit)._sdstring()) {
+								sKey = sKey.substr((*nit)._sdstring().size());
 							}
 						}
 					}
@@ -1865,9 +1865,9 @@ namespace DATA_NAMESPACE
 				sNS.append(":");
 				(*it) = sNS;
 			}
-			if (sRootTag.size() > (*it).string().size()) {
-				if (sRootTag.substr(0, (*it).string().size()) == (*it)._sdstring()) {
-					sRootTag = sRootTag.substr((*it).string().size());
+			if (sRootTag.size() > (*it)._sdstring().size()) {
+				if (sRootTag.substr(0, (*it)._sdstring().size()) == (*it)._sdstring()) {
+					sRootTag = sRootTag.substr((*it)._sdstring().size());
 				}
 			}
 		}
