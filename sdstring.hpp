@@ -55,64 +55,67 @@ template <class T, class U>
 constexpr bool operator!= (const secure_delete_allocator<T>&, const secure_delete_allocator<U>&) noexcept
 {return false;}
 
-typedef std::basic_string<char, std::char_traits<char>, secure_delete_allocator<char> > base_sdstring;
+//typedef std::basic_string<char, std::char_traits<char>, secure_delete_allocator<char> > base_sdstring;
 
-class sdstring : public base_sdstring
+template <typename charT>
+class basic_sdstring : public std::basic_string<charT, std::char_traits<charT>, secure_delete_allocator<charT>>
 {
 	public:
-		sdstring(const sdstring & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
+		using base_type = std::basic_string<charT, std::char_traits<charT>, secure_delete_allocator<charT>>;
+
+		basic_sdstring(const basic_sdstring & rhs) : base_type(rhs.data(), rhs.size()) { }
 		
-		sdstring(const base_sdstring & rhs) : base_sdstring(rhs) { }
+		basic_sdstring(const base_type & rhs) : base_type(rhs) { }
 
-		sdstring(sdstring && rhs) : base_sdstring(std::move(rhs)) { }
+		basic_sdstring(basic_sdstring && rhs) : base_type(std::move(rhs)) { }
 		
-		sdstring(base_sdstring && rhs) : base_sdstring(std::move(rhs)) { }
+		basic_sdstring(base_type && rhs) : base_type(std::move(rhs)) { }
 
-		sdstring(const std::string & rhs) : base_sdstring(rhs.data(), rhs.size()) { }
+		basic_sdstring(const std::basic_string<charT> & rhs) : base_type(rhs.data(), rhs.size()) { }
 
-		sdstring(std::string && rhs) : base_sdstring(std::move(rhs.data()), rhs.size()) { }
+		basic_sdstring(std::basic_string<charT> && rhs) : base_type(std::move(rhs.data()), rhs.size()) { }
 
-		sdstring(const char* rhs, size_t size) : base_sdstring(rhs, size) { }
+		basic_sdstring(const char* rhs, size_t size) : base_type(rhs, size) { }
 
-		sdstring(const char* rhs) : base_sdstring(rhs) { }
+		basic_sdstring(const char* rhs) : base_type(rhs) { }
 
-		sdstring() : base_sdstring() {}
+		basic_sdstring() : base_type() {}
 
-		~sdstring() {  }
+		~basic_sdstring() {  }
 
-		using base_sdstring::base_sdstring;
-		using base_sdstring::operator[];
-		using base_sdstring::operator=;
-		using base_sdstring::operator+=;
-		using base_sdstring::append;
-		using base_sdstring::assign;
-		using base_sdstring::size;
-		using base_sdstring::find;
-		size_t find(const std::string& in, size_t pos = 0) const { return find(*in.c_str(), pos); }
+		using base_type::base_type;
+		using base_type::operator[];
+		using base_type::operator=;
+		using base_type::operator+=;
+		using base_type::append;
+		using base_type::assign;
+		using base_type::size;
+		using base_type::find;
+		size_t find(const std::basic_string<charT>& in, size_t pos = 0) const { return find(*in.c_str(), pos); }
 
-        sdstring& operator=(const sdstring& rhs)
+		basic_sdstring& operator=(const basic_sdstring& rhs)
         {
             if (&rhs != this) {
-                static_cast<base_sdstring&>(*this) = static_cast<const base_sdstring&>(rhs);
+				static_cast<base_type&>(*this) = static_cast<const base_type&>(rhs);
             }
             return *this;
         }
 
-        sdstring& operator=(sdstring&& rhs)
+		basic_sdstring& operator=(basic_sdstring&& rhs)
         {
             if (&rhs != this) {
-                static_cast<base_sdstring&>(*this) = static_cast<const base_sdstring&&>(rhs);
+				static_cast<base_type&>(*this) = static_cast<const base_type&&>(rhs);
             }
             return *this;
         }
 
-		operator std::string&() const
+		operator std::basic_string<charT>&() const
         {
-            return *((std::string*) this);
+			return *((std::basic_string<charT>*) this);
         }
     
 #if __cplusplus < 202002L
-		bool operator==(const sdstring& rhs) const noexcept
+		bool operator==(const basic_sdstring& rhs) const noexcept
 		{
 			if (rhs.size() != this->size()) {
 				return false;
@@ -120,7 +123,7 @@ class sdstring : public base_sdstring
 			return memcmp(rhs.data(), this->data(), this->size()) == 0;
 		}
 
-		bool operator!=(const sdstring& rhs) const noexcept
+		bool operator!=(const basic_sdstring& rhs) const noexcept
 		{
 			if (rhs.size() != this->size()) {
 				return true;
@@ -130,7 +133,7 @@ class sdstring : public base_sdstring
 #endif
 		bool operator==(const char* rhs) const noexcept
         {
-			if (sdstring(rhs).size() != this->size()) {
+			if (basic_sdstring(rhs).size() != this->size()) {
 				return false;
 			}
             return memcmp(rhs, this->data(), this->size()) == 0;
@@ -138,102 +141,113 @@ class sdstring : public base_sdstring
 
 		bool operator!=(const char* rhs) const noexcept
         {
-			if (sdstring(rhs).size() != this->size()) {
+			if (basic_sdstring(rhs).size() != this->size()) {
 				return true;
 			}
             return memcmp(rhs, this->data(), this->size()) != 0;
         }
 };
 
-inline sdstring operator+(const sdstring & lhs, const std::string & rhs)
+template <typename charT>
+inline basic_sdstring<charT> operator+(const basic_sdstring<charT> & lhs, const std::basic_string<charT> & rhs)
 {
-	sdstring ret;
+	basic_sdstring<charT> ret;
 	ret.reserve(lhs.size() + rhs.size());
 	ret.append(lhs);
 	ret.append(rhs);
 	return ret;
 }
 
-template <typename T, typename std::enable_if<std::is_same<T, sdstring>::value>::type* = nullptr>
-inline sdstring operator+(const sdstring & lhs, const T & rhs)
+template <typename charT, typename T, typename std::enable_if<std::is_same<T, basic_sdstring<charT>>::value>::type* = nullptr>
+inline basic_sdstring<charT> operator+(const basic_sdstring<charT> & lhs, const T & rhs)
 {
-	sdstring ret;
+	basic_sdstring<charT> ret;
 	ret.reserve(lhs.size() + rhs.size());
 	ret.append(lhs);
 	ret.append(rhs);
 	return ret;
 }
 
-inline sdstring operator+(const char* lhs, const sdstring & rhs)
+template <typename charT>
+inline basic_sdstring<charT> operator+(const char* lhs, const basic_sdstring<charT> & rhs)
 {
-	sdstring ret;
+	basic_sdstring<charT> ret;
 	ret.reserve(sizeof(lhs) + rhs.size());
 	ret.append(lhs);
 	ret.append(rhs);
 	return ret;
 }
 
-inline sdstring operator+(const sdstring & lhs, const char* rhs)
+template <typename charT>
+inline basic_sdstring<charT> operator+(const basic_sdstring<charT> & lhs, const char* rhs)
 {
-	sdstring ret;
+	basic_sdstring<charT> ret;
 	ret.reserve(ret.size() + sizeof(rhs));
 	ret.append(lhs);
 	ret.append(rhs);
 	return ret;
 }
 
-inline std::string operator+(const std::string & lhs, const sdstring & rhs)
+template <typename charT>
+inline std::basic_string<charT> operator+(const std::basic_string<charT> & lhs, const basic_sdstring<charT> & rhs)
 {
-	std::string ret;
+	std::basic_string<charT> ret;
 	ret.reserve(lhs.size() + rhs.size());
 	ret.append(lhs);
 	ret.append(rhs.c_str());
 	return ret;
 }
 
-template <typename T, typename std::enable_if<std::is_same<T, std::string>::value>::type* = nullptr>
-inline bool operator==(const T & lhs, const sdstring & rhs)
+template <typename charT, class T, typename std::enable_if<std::is_same<T, std::basic_string<charT>>::value>::type* = nullptr>
+inline bool operator==(const T & lhs, const basic_sdstring<charT> & rhs)
 {
 	return (lhs == rhs.c_str());
 }
 
-template <typename T, typename std::enable_if<std::is_same<T, std::string>::value>::type* = nullptr>
-inline bool operator!=(const T & lhs, const sdstring & rhs)
+template <typename charT, class T, typename std::enable_if<std::is_same<T, std::basic_string<charT>>::value>::type* = nullptr>
+inline bool operator!=(const T & lhs, const basic_sdstring<charT> & rhs)
 {
 	return (lhs != rhs.c_str());
 }
 
 #if __cplusplus < 202002L
-inline size_t operator<(sdstring const& s, sdstring const& s2)
+template <typename charT>
+inline size_t operator<(basic_sdstring<charT> const& s, basic_sdstring<charT> const& s2)
 {
-	return std::less<std::string>{}(static_cast<std::string&>(s), static_cast<std::string&>(s2));
+	return std::less<std::basic_string<charT>>{}(static_cast<std::basic_string<charT>&>(s), static_cast<std::basic_string<charT>&>(s2));
 }
 #endif
 
-class sdstreambuf : public std::basic_streambuf<char>
+template <typename charT>
+class sdstreambuf : public std::basic_streambuf<charT>
 {
 	public:
-		sdstreambuf(sdstring & bufIn) : sBuffer(bufIn) {}
+		sdstreambuf(basic_sdstring<charT> & bufIn) : sBuffer(bufIn) {}
 
 	protected:
-		sdstring & sBuffer;
+		basic_sdstring<charT> & sBuffer;
 
-		std::streamsize xsputn(const std::basic_ostream<char>::char_type* s, std::streamsize n) override
+		std::streamsize xsputn(const typename std::basic_ostream<charT>::char_type* s, std::streamsize n) override
 		{
 			sBuffer.append(s, n);
 			return n;
 		}
 
-		std::basic_ostream<char>::int_type overflow(std::basic_ostream<char>::int_type c) override
+		std::basic_ostream<char>::int_type overflow(typename std::basic_ostream<charT>::int_type c) override
 		{
 			sBuffer.push_back((char)c);
 			return c;
 		}
 };
 
-class sdostream : private sdstreambuf , public std::basic_ostream<char>
+template <typename charT>
+class base_sdostream : private sdstreambuf<charT> , public std::basic_ostream<char>
 {
 	public:
-		sdostream(sdstring & bufIn) : sdstreambuf(bufIn), std::basic_ostream<char>(this) {}
-
+		base_sdostream(basic_sdstring<charT> & bufIn) : sdstreambuf<charT>(bufIn), std::basic_ostream<char>(this) {}
 };
+
+typedef basic_sdstring<char> sdstring;
+typedef basic_sdstring<wchar_t> sdwstring;
+typedef base_sdostream<char> sdostream;
+typedef base_sdostream<wchar_t> sdwostream;
