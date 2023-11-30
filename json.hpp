@@ -64,6 +64,7 @@ The official repository for this library is at https://github.com/VA7ODR/json
  }
  \endcode
  */
+
 #if defined __GNUC__
 #define DEPRECATED(func) func __attribute__ ((deprecated))
 #elif defined(_MSC_VER)
@@ -77,26 +78,19 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #if !defined OJSON_HPP_START
 #define JSON_HPP_
 #endif
-#define JSON_DOCUMENT_VERSION "1.0.0"
+#define JSON_DOCUMENT_VERSION "1.1.0"
 
 #if !defined JSON_NUMBER_PRECISION
 #define JSON_NUMBER_PRECISION 14
 #endif
 
-#include <stdio.h>
-#include <string.h>
 #include <string>
-#include <sstream>
 #include <map>
 #include <deque>
-#include <list>
-#include <algorithm>
 
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
 #include "ojson.hpp"
 #endif
-
-#include <set>
 
 #if defined _USE_ADDED_ORDER_
 #include "arbitrary_order_map.hpp"
@@ -112,10 +106,6 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 namespace JSON_NAMESPACE
 {
-	bool fileExists(const char * szName);
-
-	void debug(const char *format, ...);
-
 	enum JSONTypes{
 		JSON_VOID = -1,
 		JSON_NULL,
@@ -143,10 +133,7 @@ namespace JSON_NAMESPACE
 	class document;
 	class iterator;
 	class reverse_iterator;
-	/*! \brief 	This is the class that does the heavy lifting for the JSON library.
-	 *			However, don't instaitiate this class direcly.  Instead use the
-	 *			document class.
-	 */
+
 	class value
 	{
 		public:
@@ -183,30 +170,18 @@ namespace JSON_NAMESPACE
 			value() : m_number(0), m_places(-1), m_boolean(false), myType(JSON_VOID), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
 			value(const value& V);
 			value(value&& V);
-//			explicit value(const document& V);
 
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
 			value(const ojson::value& V);
-//			explicit value(const ojson::document& V);
 #elif defined _USE_ADDED_ORDER_
 			value(const json::value& V);
-//			explicit value(const json::document& V);
 #endif
-			value(bool V);
+			value(bool V) : m_number((double)V), m_places(-1), m_boolean(V), myType(JSON_BOOLEAN), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
 			value(const char* V);
 			value(char* V);
-//			value(const sdstring& V);
-//			value(sdstring&& V);
-//			template<typename T = sdstring>
 			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-//			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-//			template<typename T = sdstring>
 			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-//			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(V.data(), V.size()), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-
-#if !defined USE_STD_STRING
 			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-#endif
 			value(object& V);
 			value(array& V);
 
@@ -241,9 +216,8 @@ namespace JSON_NAMESPACE
 
 			value& toArray();
 			value& toObject(const sdstring& key);
-			value& toObject(const char * key);
 			value& toString();
-			value& toString(int iDecimalPlaces);
+			value& toString(int iDecimalPlaces = -1);
 			value& toNumber();
 			value& toBool();
 			value& toNull();
@@ -311,22 +285,41 @@ namespace JSON_NAMESPACE
 
 			const char* c_str()
 			{
-				makeStringFromValue();
+				makeString(str);
 				return str.c_str();
 			};
 
 			sdstring& _sdstring() {
-				makeStringFromValue();
+				makeString(str);
 				return str;
 			}
 
 			std::string& string() {
-				makeStringFromValue();
+				makeString(str);
 				return str;
 			}
 
 			value& operator[](size_t index);
 			value& operator[](const sdstring& index);
+			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type* = nullptr>
+			value& operator[](const T & index)
+			{
+				assert(index.m_type == JSON_NUMBER || index.m_type == JSON_STRING && "Wrong value type used as index.");
+				switch (index.m_type) {
+					case JSON_STRING:
+						return operator[](index.str);
+
+					case JSON_NUMBER:
+						return operator[](index._size_t());
+
+					default:
+						break;
+				}
+				if (debug) {
+					debug("json operator[value]: of type %s used as index. Returning self: ", typeName(index.myType));
+				}
+				return *this;
+			}
 
 			void push_back(const value& val);				// Array
 			void push_back(value&& val);					// Array
@@ -414,20 +407,19 @@ namespace JSON_NAMESPACE
 			reverse_iterator rfind(const char* index) const;
 
 			typedef void (*DEBUGPTR)(const char *, ...);
-			void debugPrint() const { if (debug) { debug("%s\n", print(0, true).c_str()); } }
+			void debugPrint() { if (debug) { debug("%s\n", print(0, true).c_str()); } }
 			static void setDebug(DEBUGPTR setTo) { debug = setTo; }
 
 			static const char* typeName(JSONTypes type);
 			const sdstring& key() { return m_key; }
 
 		protected:
-			void makeStringFromValue();
-			sdstring &stringC(sdstring &dest)const;
+			sdstring &makeString(sdstring &dest)const;
 
-			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false) const;
-			sdstring print(size_t depth = 0, bool bPretty = false) const;
+			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false);
+			sdstring print(size_t depth = 0, bool bPretty = false);
 
-			size_t psize(size_t depth, bool bPretty) const;
+			size_t psize(size_t depth, bool bPretty);
 
 			double m_number;
 			int m_places;
@@ -435,6 +427,7 @@ namespace JSON_NAMESPACE
 			sdstring str;
 			JSONTypes myType;
 			union {
+				public:
 					object* obj;
 					array* arr;
 			};
@@ -442,6 +435,8 @@ namespace JSON_NAMESPACE
 
 			object* pParentObject;
 			array* pParentArray;
+
+			friend void debugTypeChangeReal(const sdstring & func, value& oldType, value& newType);
 			static DEBUGPTR debug;
 
 		private:
@@ -539,7 +534,7 @@ namespace JSON_NAMESPACE
 				sError = sErrorIn;
 			}
 
-			const sdstring & Error()
+			sdstring & Error()
 			{
 				return sError;
 			}
@@ -655,8 +650,8 @@ namespace JSON_NAMESPACE
 			void setNotEmpty();
 			void setParentArray(array * pSetTo);
 			void setParentObject(object * pSetTo);
-			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false) const;
-			size_t psize(size_t depth, bool bPretty) const;
+			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false);
+			size_t psize(size_t depth, bool bPretty);
 			bool notEmpty() { return bNotEmpty; }
 		protected:
 			bool bNotEmpty;
@@ -703,6 +698,7 @@ namespace JSON_NAMESPACE
 			using myVec::rend;
 			using myVec::insert;
 			using myVec::erase;
+			using myVec::clear;
 			using myVec::iterator;
 			using myVec::reverse_iterator;
 			using myVec::const_iterator;
@@ -758,8 +754,8 @@ namespace JSON_NAMESPACE
 			void setNotEmpty();
 			void setParentArray(array * pSetTo);
 			void setParentObject(object * pSetTo);
-			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false) const;
-			size_t psize(size_t depth, bool bPretty) const;
+			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false);
+			size_t psize(size_t depth, bool bPretty);
 			bool notEmpty() { return bNotEmpty; }
 		protected:
 			bool bNotEmpty;
@@ -882,20 +878,20 @@ class iterator
 			bool parse(const sdstring& inStr, PREPARSEPTR = NULL);
 			bool parseFile(const sdstring &instr, PREPARSEPTR = NULL);
 
-			sdstring write(bool bPretty = false, PREWRITEPTR = NULL) const;
-			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL) const;
-			static sdstring write(const value & val, bool bPretty = false, PREWRITEPTR preWriter = NULL)
+			sdstring write(bool bPretty = false, PREWRITEPTR = NULL);
+			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL);
+			static sdstring write(value & val, bool bPretty = false, PREWRITEPTR preWriter = NULL)
 			{
 				return write(val, 1, bPretty, preWriter);
 			}
-			static sdstring write(const value & val, size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL);
+			static sdstring write(value &val, size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL);
 
-			sdstring print(bool bPretty = false, PREWRITEPTR = NULL) const
+			sdstring print(bool bPretty = false, PREWRITEPTR = NULL)
 			{
 				return write(bPretty);
 			}
 
-			bool writeFile(const sdstring &inStr, bool bPretty = false, PREWRITEPTR = NULL) const;
+			bool writeFile(const sdstring &inStr, bool bPretty = false, PREWRITEPTR = NULL);
 
 			sdstring parseResult() const
 			{
@@ -910,7 +906,7 @@ class iterator
 			template<typename T>
 			document(T V) : value(V) { bParseSuccessful = true; }
 
-			static int appendToArrayFile(const sdstring &sFile, const document & atm, bool bPretty);
+			static int appendToArrayFile(const sdstring &sFile, document &atm, bool bPretty);
 
 		protected:
 			sdstring strParseResult;

@@ -23,17 +23,16 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 */
 
-#include <assert.h>
+#include <cassert>
 #include <algorithm>
 #include <cmath>
+#include <filesystem>
 #include <iomanip>
-#include <stdarg.h>
+#include <optional>
+
 #if defined _WINDOWS && defined __clang__
 #define __uncaught_exception std::uncaught_exception
 #endif
-// #include <thread>
-#include <sys/types.h>
-#include <sys/stat.h>
 
 #if defined _USE_ADDED_ORDER_
 #undef _USE_ADDED_ORDER_
@@ -42,20 +41,13 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #endif
 #include "json.hpp"
 #define _USE_ADDED_ORDER_
-// #undef JSON_HPP_
-// #include "json.hpp"
 #define JSON_NAMESPACE ojson
 #else
 #include "json.hpp"
 #define JSON_NAMESPACE json
 #endif
 
-#if defined __BORLANDC__ && __BORLANDC__ < 0x0600
-#pragma warn - 8026
-#pragma warn - 8027
-#endif
-
-#if defined __GNUC__ || __BORLANDC__ >= 0x0600
+#if defined __GNUC__
 #define UNSIGNEDMAX 0xFFFFFFFFFFFFFFFFLL
 #define SIGNEDMAX 0x7FFFFFFFFFFFFFFFLL
 #else
@@ -68,31 +60,10 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #define _CRT_SECURE_NO_WARNINGS 1
 #endif
 
+#define STRINGIFY(X) #X
+
 namespace JSON_NAMESPACE
 {
-	void debug(const char * format, ...) {
-		sdstring s;
-		size_t size = 100;
-		bool b = false;
-		va_list marker;
-		while (!b) {
-			size_t n;
-			s.resize(size);
-			va_start(marker, format);
-			n = vsnprintf((char*)s.c_str(), size, format, marker);
-			va_end(marker);
-			b = (n < size);
-			if (n > 0 && n != (size_t)-1 && b) {
-				size = n;
-			} else if (n == (size_t)-1) {
-				size = size * 2;
-			} else {
-				size = n * 2;
-			}
-		}
-		printf("%s\n", s.c_str());
-	}
-
 	class MovingCharPointer
 	{
 	public:
@@ -198,10 +169,10 @@ namespace JSON_NAMESPACE
 			}
 		}
 
-//		sdostringstream s;
-		std::ostringstream s;
+		inputString.Error().clear();
+		inputString.Error().reserve(szError.size() + 64);
+		sdostream s(inputString.Error());
 		s << szError << "  Line: " << line <<  " Column: " << pos;
-		inputString.Error(s.str());
 	}
 
 	void nullParse(value& ret, instring& inputString, bool* bFailed) {
@@ -333,12 +304,6 @@ namespace JSON_NAMESPACE
 
 					break;
 				}
-
-//				case 0: {
-//					generateError(s, "lacks ending quotation before the end of string");
-//					*bFailed = true;
-//					return;
-//				}
 			}
 		}
 	}
@@ -383,7 +348,7 @@ namespace JSON_NAMESPACE
 				generateError(s, "At least one digit in fraction part");
 				*bFailed = true;
 				ret = value();
-				return; // value();
+				return;
 			}
 
 			while (s.peek() >= '0' && s.peek() <= '9') {
@@ -458,19 +423,14 @@ namespace JSON_NAMESPACE
 
 		ret.myType = JSON_OBJECT;
 		SkipWhitespace(inputString);
-//		if (ret.obj == NULL) {
-			ret.obj = new object();
-//			if (ret.arr)
-//				delete ret.arr;
-//			ret.arr = NULL;
+		ret.obj = new object();
 
-			ret.obj->setNotEmpty();
-			if (ret.pParentArray) {
-				ret.obj->setParentArray(ret.pParentArray);
-			} else if (ret.pParentObject) {
-				ret.obj->setParentObject(ret.pParentObject);
-			}
-//		}
+		ret.obj->setNotEmpty();
+		if (ret.pParentArray) {
+			ret.obj->setParentArray(ret.pParentArray);
+		} else if (ret.pParentObject) {
+			ret.obj->setParentObject(ret.pParentObject);
+		}
 		if (inputString.peek() == '}') {
 			inputString.take();
 			return;
@@ -536,19 +496,14 @@ namespace JSON_NAMESPACE
 
 		arr.myType = JSON_ARRAY;
 		SkipWhitespace(inputString);
-//		if (arr.arr == NULL) {
-			arr.arr = new array();
-//			if (arr.obj)
-//				delete arr.obj;
-//			arr.obj = NULL;
-			if (arr.pParentArray) {
-				arr.arr->setParentArray(arr.pParentArray);
-			} else if (arr.pParentObject) {
-				arr.arr->setParentObject(arr.pParentObject);
-			}
+		arr.arr = new array();
+		if (arr.pParentArray) {
+			arr.arr->setParentArray(arr.pParentArray);
+		} else if (arr.pParentObject) {
+			arr.arr->setParentObject(arr.pParentObject);
+		}
 
-			arr.arr->setNotEmpty();
-//		}
+		arr.arr->setNotEmpty();
 
 		if (inputString.peek() == ']') {
 			inputString.take();
@@ -698,14 +653,10 @@ namespace JSON_NAMESPACE
 		loc(in)
 	{
 		loc.assign(reserve, 0);
-		m_orig = (char*)loc.data();
+		m_orig = loc.data();
 		m_current = m_orig;
 		m_max = m_orig + reserve;
-//		m_orig[reserve] = 0;
-//		m_current = m_orig;
-//		m_max = m_orig + reserve;
 	}
-
 
 	MovingCharPointer::MovingCharPointer(MovingCharPointer&& ptr) :
 		loc(ptr.loc),
@@ -756,150 +707,6 @@ namespace JSON_NAMESPACE
 		m_max = nullptr;
 		return temp;
 	}
-
-//	instring::instring(const sdstring& in) {
-//		m_size = in.size();
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str;
-//			memcpy(str, in.c_str(), m_size);
-//			str[m_size] = 0;
-//		}
-//	}
-
-//	instring::instring(const instring& in) {
-//		m_size = in.m_size;
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str + (in.wpos - in.str);
-//			memcpy(str, in.str, m_size);
-//			str[m_size] = 0;
-//		}
-//	}
-
-//	instring::instring(char* in) {
-//		m_size = strlen(in);
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str;
-//			memcpy(str, in, m_size);
-//			str[m_size] = 0;
-//		}
-//	}
-
-//	instring::~instring() {
-//		memset(str, 0, m_size);
-//		free(str);
-//	}
-
-//	void instring::seek(size_t newPos) {
-//		if (newPos < m_size) {
-//			wpos = str + newPos;
-//		}
-//	}
-
-//	char* instring::getPos() {
-//		return wpos;
-//	}
-
-//	instring& instring::operator=(const sdstring& in) {
-//		memset(str, 0, m_size);
-//		m_size = in.size();
-//		free(str);
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str;
-//			memcpy(str, in.c_str(), m_size);
-//			str[m_size] = 0;
-//		}
-//		return *this;
-//	}
-
-//	instring& instring::operator=(const char* in) {
-//		memset(str, 0, m_size);
-//		m_size = strlen(in);
-//		free(str);
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str;
-//			memcpy(str, in, m_size);
-//			str[m_size] = 0;
-//		}
-//		return *this;
-//	}
-
-//	instring& instring::operator=(const instring& in) {
-//		if (this == &in) {
-//			return *this;
-//		}
-//		memset(str, 0, m_size);
-//		m_size = in.m_size;
-//		free(str);
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str + (in.wpos - in.str);
-//			memcpy(str, in.str, m_size);
-//			str[m_size] = 0;
-//		}
-//		return *this;
-//	}
-
-//	void instring::set(const sdstring &in) {
-//		memset(str, 0, m_size);
-//		m_size = in.size();
-//		free(str);
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str;
-//			memcpy(str, in.c_str(), m_size);
-//			str[m_size] = 0;
-//		}
-//	}
-
-//	void instring::set(const char* in) {
-//		memset(str, 0, m_size);
-//		m_size = strlen(in);
-//		free(str);
-//		str = static_cast<char*>(malloc(m_size + 1));
-//		if (str) {
-//			wpos = str;
-//			memcpy(str, in, m_size);
-//			str[m_size] = 0;
-//		}
-//	}
-
-//	instring instring::operator+(double V) const
-//	{
-//		sdstring temp = *this;
-//		std::ostringstream o;
-//		o << std::setprecision(JSON_NUMBER_PRECISION) << V;
-//		temp.append(o.str().c_str());
-//		return temp;
-//	}
-
-//	instring instring::operator+(sdstring& V) const
-//	{
-//		sdstring temp = *this;
-//		temp.append(V);
-//		return temp;
-//	}
-
-//	instring instring::operator+(const char* V) const
-//	{
-//		sdstring temp = *this;
-//		temp.append(V);
-//		return temp;
-//	}
-
-//	sdstring instring::Str() const
-//	{
-//		return sdstring(str);
-//	}
-
-//	sdstring instring::SoFar() const
-//	{
-//		return sdstring(str, wpos - str);
-//	}
 
 	iterator value::begin() const
 	{
@@ -1040,9 +847,10 @@ namespace JSON_NAMESPACE
 		if (iPlaces >= 0) {
 			temp = round((temp * pow(10, iPlaces))) / pow(10, iPlaces);
 		}
-		std::ostringstream s;
+		in.clear();
+		in.reserve(JSON_NUMBER_PRECISION * 2);
+		sdostream s(in);
 		s << std::setprecision(JSON_NUMBER_PRECISION) << temp;
-		in = s.str().c_str();
 		if (iPlaces >= 0) {
 			size_t p = in.find('.');
 			if (p != sdstring::npos) {
@@ -1060,7 +868,7 @@ namespace JSON_NAMESPACE
 		return in;
 	}
 
-	size_t value::psize(size_t depth, bool bPretty) const
+	size_t value::psize(size_t depth, bool bPretty)
 	{
 		switch (isA()) {
 		default:
@@ -1078,12 +886,9 @@ namespace JSON_NAMESPACE
 
 		case JSON_NUMBER: {
 			if (str.empty()) {
-				sdstring s;
-				makeStringFromNumber(s, m_places, m_number);
-				return s.size();
-			} else {
-				return str.size();
+				makeStringFromNumber(str, m_places, m_number);
 			}
+			return str.size();
 		}
 
 		case JSON_STRING:
@@ -1098,7 +903,7 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	void value::cprint(MovingCharPointer& ptr, size_t depth, bool bPretty) const
+	void value::cprint(MovingCharPointer& ptr, size_t depth, bool bPretty)
 	{
 		switch (isA()) {
 		default:
@@ -1119,12 +924,9 @@ namespace JSON_NAMESPACE
 
 		case JSON_NUMBER: {
 			if (str.empty()) {
-				sdstring s;
-				makeStringFromNumber(s, m_places, m_number);
-				ptr.set(s.c_str(), s.size());
-			} else {
-				ptr.set(str.c_str(), str.size());
+				makeStringFromNumber(str, m_places, m_number);
 			}
+			ptr.set(str.c_str(), str.size());
 
 			break;
 		}
@@ -1152,7 +954,7 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	size_t array::psize(size_t depth, bool bPretty) const
+	size_t array::psize(size_t depth, bool bPretty)
 	{
 		size_t ret = 0;
 
@@ -1160,7 +962,7 @@ namespace JSON_NAMESPACE
 			ret += 2;
 		else
 			ret++;
-		const_iterator it;
+		iterator it;
 		for (it = begin(); it < end(); ++it) {
 			if (it > begin()) {
 				if (bPretty) {
@@ -1185,14 +987,14 @@ namespace JSON_NAMESPACE
 		return ret;
 	}
 
-	void array::cprint(MovingCharPointer& ptr, size_t depth, bool bPretty) const
+	void array::cprint(MovingCharPointer& ptr, size_t depth, bool bPretty)
 	{
 		if (bPretty && !myVec::empty()) {
 			ptr.set("[\n", 2);
 		} else {
 			ptr.set('[');
 		}
-		const_iterator it;
+		iterator it;
 		for (it = begin(); it < end(); ++it) {
 			if (it > begin()) {
 				if (bPretty) {
@@ -1217,7 +1019,7 @@ namespace JSON_NAMESPACE
 		ptr.set(']');
 	}
 
-	size_t object::psize(size_t depth, bool bPretty) const
+	size_t object::psize(size_t depth, bool bPretty)
 	{
 		size_t ret = 0;
 
@@ -1225,7 +1027,7 @@ namespace JSON_NAMESPACE
 			ret += 2;
 		else
 			ret++;
-		const_iterator it;
+		iterator it;
 		for (it = begin(); it != end(); ++it) {
 			if (it->second.isA() != JSON_VOID) {
 				if (it != begin()) {
@@ -1249,14 +1051,14 @@ namespace JSON_NAMESPACE
 		return ret;
 	}
 
-	void object::cprint(MovingCharPointer& ptr, size_t depth, bool bPretty) const
+	void object::cprint(MovingCharPointer& ptr, size_t depth, bool bPretty)
 	{
 		if (bPretty && !myMap::empty()) {
 			ptr.set("{\n", 2);
 		} else {
 			ptr.set('{');
 		}
-		const_iterator it;
+		iterator it;
 		bool bStarted = false;
 		for (it = begin(); it != end(); ++it) {
 			if (it->second.isA() != JSON_VOID) {
@@ -1330,10 +1132,6 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	// size_t value::erase(const sdstring &index) {
-	// 	return erase(index.c_str());
-	// }
-
 	size_t value::erase(const sdstring& index) {
 		if (myType == JSON_OBJECT) {
 			myMap::iterator it;
@@ -1388,10 +1186,6 @@ namespace JSON_NAMESPACE
 		}
 		return false;
 	}
-
-	// bool value::exists(const sdstring &index) {
-	// 	return exists(index.c_str());
-	// }
 
 	bool value::exists(const sdstring& index) {
 		if (isA(JSON_OBJECT) && obj != NULL) {
@@ -1483,27 +1277,6 @@ namespace JSON_NAMESPACE
 		obj->setNotEmpty();
 		return iterator(obj->insert(obj->end(), std::pair<sdstring, value>(index, V)));
 	}
-
-	// iterator value::insert(const char* index, value V)
-	// {
-	// 	if (myType != JSON_OBJECT) {
-	// 		m_number = 0;
-	// 		m_places = -1;
-	// 		m_boolean = false;
-	// 		myType = JSON_OBJECT;
-	// 		if (!str.empty())
-	// 			str.clear();
-	// 		obj = new object();
-	// 		if (pParentObject) {
-	// 			obj->setParentObject(pParentObject);
-	// 		} else if (pParentArray) {
-	// 			obj->setParentArray(pParentArray);
-	// 		}
-	// 		delete arr;
-	// 		arr = NULL;
-	// 	}
-	// 	return iterator(obj->insert(obj->end(), std::pair<sdstring, value>(index, V)));
-	// }
 
 	iterator value::insert(iterator position, value& V) {
 		if (position.IsArray() && myType == JSON_ARRAY) {
@@ -1659,7 +1432,7 @@ namespace JSON_NAMESPACE
 		return ret;
 	}
 
-	value::DEBUGPTR value::debug = NULL;
+	value::DEBUGPTR value::debug = nullptr;
 
 	value::value(const value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
@@ -1699,17 +1472,8 @@ namespace JSON_NAMESPACE
 		V.myType = JSON_VOID;
 	}
 
-//	value::value(const document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-//	{
-//		if (myType == JSON_OBJECT) {
-//			obj = new object(V.obj);
-//		} else if (myType == JSON_ARRAY) {
-//			arr = new array(V.arr);
-//		}
-//	}
-
 #if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
-	value::value(const ojson::value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+	value::value(const ojson::value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType((JSONTypes)V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
 		if (myType == JSON_OBJECT) {
 			obj = new object(V.obj);
@@ -1717,16 +1481,6 @@ namespace JSON_NAMESPACE
 			arr = new array(V.arr);
 		}
 	}
-
-//	value::value(const ojson::document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-//	{
-//		if (myType == JSON_OBJECT) {
-//			obj = new object(V.obj);
-//		} else if (myType == JSON_ARRAY) {
-//			arr = new array(V.arr);
-//		}
-//	}
-
 #elif defined _USE_ADDED_ORDER_
 
 	value::value(const json::value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
@@ -1739,21 +1493,13 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-//	value::value(const json::document& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-//	{
-//		if (myType == JSON_OBJECT) {
-//			obj = new object(V.obj);
-//		} else if (myType == JSON_ARRAY) {
-//			arr = new array(V.arr);
-//		}
-//	}
-
 	array::array(const json::array& V)
 	: myVec(V.begin(), V.end()) {
 		bNotEmpty = V.bNotEmpty;
 		pParentArray = NULL;
 		pParentObject = NULL;
 	}
+
 	array::array(const json::array* V)
 	: myVec(V->begin(), V->end()) {
 		bNotEmpty = V->bNotEmpty;
@@ -1762,10 +1508,9 @@ namespace JSON_NAMESPACE
 	}
 
 	object::object(const json::object& V)
-	// : myMap((const std::map<sdstring, json::value>)V)
 	{
-        std::map<sdstring, json::value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, json::value>>> in = (std::map<sdstring, json::value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, json::value>>>)V;
-		for (auto it = in.begin(); it != in.end(); ++it) {
+		auto end = V.end();
+		for (auto it = V.begin(); it != end; ++it) {
 			(*this).insert(this->end(), *it);
 		}
 
@@ -1773,19 +1518,22 @@ namespace JSON_NAMESPACE
 		pParentArray = NULL;
 		pParentObject = NULL;
 	}
-	object::object(const json::object* V)
-	// : myMap(V)
-	{
-		std::map<sdstring, json::value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, json::value>>> in = (std::map<sdstring, json::value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, json::value>>>)*V;
-		for (auto it = in.begin(); it != in.end(); ++it) {
-			(*this).insert(this->end(), *it);
-		}
 
-		bNotEmpty = V->bNotEmpty;
+	object::object(const json::object* V)
+	{
+		if (V) {
+			auto end = V->end();
+			for (auto it = V->begin(); it != end; ++it) {
+				(*this).insert(this->end(), *it);
+			}
+
+			bNotEmpty = V->bNotEmpty;
+		} else {
+			bNotEmpty = false;
+		}
 		pParentArray = NULL;
 		pParentObject = NULL;
 	}
-
 #endif
 
 	const char* value::typeName(JSONTypes type)
@@ -1822,10 +1570,6 @@ namespace JSON_NAMESPACE
 		if (debug) {
 			if (myType != V.myType) {
 				switch(myType) {
-						// case JSON_NULL:
-						// 	debug("json operator= changed type from NULL to %s", typeName(V.myType).c_str());
-						// 	break;
-
 					case JSON_BOOLEAN:
 						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
 							debug("json operator= changed type from Boolean %i to %s", m_boolean, typeName(V.myType));
@@ -1911,49 +1655,43 @@ namespace JSON_NAMESPACE
 				}
 			}
 		}
-		// m_key = V.m_key;
 		return *this;
 	}
 
-	value& value::operator=(value&& V) {
-		if (debug) {
-			if (myType != V.myType) {
-				switch(myType) {
-						// case JSON_NULL:
-						// 	debug("json operator= changed type from NULL to %s", typeName(V.myType).c_str());
-						// 	break;
+	void debugTypeChangeReal(const sdstring & func, value& oldType, value& newType)
+	{
+		sdstring sOldData;
+		switch (oldType.myType) {
+			case JSON_OBJECT:
+			case JSON_ARRAY:
+				sOldData.assign(oldType.print().substr(0, 25));
+				break;
 
-					case JSON_BOOLEAN:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Boolean %i to %s", m_boolean, typeName(V.myType));
-						}
-						break;
-
-					case JSON_NUMBER:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Number %f to %s", m_number, typeName(V.myType));
-						}
-						break;
-
-					case JSON_STRING:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from String '%s' to %s", str.c_str(), typeName(V.myType));
-						}
-						break;
-
-					case JSON_ARRAY:
-						debug("json operator= changed type from Array to %s, orphanning:\n%s\n", typeName(V.myType), this->print(0, true).c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json operator= changed type from Object to %s, orphanning:\n%s\n", typeName(V.myType), this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
+			default:
+				sOldData.assign(oldType._sdstring().substr(0, 25));
+				break;
 		}
+
+		sdstring sNewData;
+		switch (newType.myType) {
+			case JSON_OBJECT:
+			case JSON_ARRAY:
+				sOldData.assign(newType.print().substr(0, 25));
+				break;
+
+			default:
+				sOldData.assign(newType._sdstring().substr(0, 25));
+				break;
+		}
+
+		value::debug("%s::value::%s changed type from %s '%s...' to %s '%s...'.", STRINGIFY(JSON_NAMESPACE), func.c_str(), value::typeName(oldType.myType), sOldData.c_str(), value::typeName(newType.myType), sNewData.c_str());
+
+	}
+
+#define debugTypeChange(C, O, N) if (O.myType != JSON_VOID && value::debug && C) { debugTypeChangeReal(__func__, O, N); }
+
+	value& value::operator=(value&& V) {
+		debugTypeChange(myType != V.myType, (*this), V);
 
 		m_number = std::move(V.m_number);
 		m_places = std::move(V.m_places);
@@ -1996,13 +1734,7 @@ namespace JSON_NAMESPACE
 			}
 		}
 
-		// V.m_number = 0;
-		// V.m_places = -1;
-		// V.m_boolean = false;
 		V.myType = JSON_VOID;
-
-		// V.obj = NULL;
-		// V.arr = NULL;
 
 		V.pParentObject = NULL;
 		V.pParentArray = NULL;
@@ -2010,195 +1742,28 @@ namespace JSON_NAMESPACE
 		return *this;
 	}
 
-	value::value(bool V) : m_number((double)V), m_places(-1), m_boolean(V), myType(JSON_BOOLEAN), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-	{
-		// m_number = (double)V;
-		// m_places = -1;
-		// m_boolean = !(V == 0);
 
-		// myType = JSON_BOOLEAN;
-		// obj = NULL;
-		// arr = NULL;
-		// pParentObject = NULL;
-		// pParentArray = NULL;
-	}
 
 	value::value(const char* V) : m_number(0), m_places(-1), m_boolean(false), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
-		// m_number = 0;
-		// m_places = -1;
-		// m_boolean = false;
-
 		if (V) {
 			str.assign(V);
 			myType = JSON_STRING;
 		} else {
 			myType = JSON_NULL;
 		}
-
-		// obj = NULL;
-		// arr = NULL;
-		// pParentObject = NULL;
-		// pParentArray = NULL;
 	}
 
 	value::value(char* V) : m_number(0), m_places(-1), m_boolean(false), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
-		// m_number = 0;
-		// m_places = -1;
-		// m_boolean = false;
-
 		if (V) {
 			str.assign(V);
 			myType = JSON_STRING;
 		} else {
 			myType = JSON_NULL;
 		}
-
-		// obj = NULL;
-		// arr = NULL;
-		// pParentObject = NULL;
-		// pParentArray = NULL;
-	}
-//	value::value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-//	{
-//	// 	m_number = 0;
-//	// 	m_places = -1;
-//	// 	m_boolean = false;
-//	// 	str.assign(V);
-//	// 	myType = JSON_STRING;
-//	// 	obj = NULL;
-//	// 	arr = NULL;
-//	// 	pParentObject = NULL;
-//	// 	pParentArray = NULL;
-//	}
-
-//	value::value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
-//	{
-//		std::swap(str, V);
-//	// 	m_number = 0;
-//	// 	m_places = -1;
-//	// 	m_boolean = false;
-//	// 	str.assign(V);
-//	// 	myType = JSON_STRING;
-//	// 	obj = NULL;
-//	// 	arr = NULL;
-//	// 	pParentObject = NULL;
-//	// 	pParentArray = NULL;
-//	}
-/*
-	value & value::operator=(const sdstring& V)
-	{
-		if (debug) {
-			if (myType != JSON_STRING) {
-				switch(myType) {
-					case JSON_ARRAY:
-						debug("json operator= changed type from Array to %s, orphanning:\n%s\n", typeName(JSON_STRING), this->print(0, true).c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json operator= changed type from Object to %s, orphanning:\n%s\n", typeName(JSON_STRING), this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
-		}
-		switch (myType) {
-			case JSON_OBJECT:
-				delete obj;
-				obj = NULL;
-				break;
-			case JSON_ARRAY:
-				delete arr;
-				arr = NULL;
-				break;
-
-			default:
-				break;
-		}
-		m_number = 0;
-		m_places = -1;
-		m_boolean = false;
-		str.assign(V);
-		myType = JSON_STRING;
-		if (pParentObject) {
-			pParentObject->setNotEmpty();
-		} else if (pParentArray) {
-			pParentArray->setNotEmpty();
-		}
-		return *this;
 	}
 
-	value & value::operator=(sdstring&& V)
-	{
-		if (debug) {
-			if (myType != JSON_STRING) {
-				switch(myType) {
-					case JSON_ARRAY:
-						debug("json operator= changed type from Array to %s, orphanning:\n%s\n", typeName(JSON_STRING), this->print(0, true).c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json operator= changed type from Object to %s, orphanning:\n%s\n", typeName(JSON_STRING), this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
-		}
-		switch (myType) {
-			case JSON_OBJECT:
-				delete obj;
-				obj = NULL;
-				break;
-			case JSON_ARRAY:
-				delete arr;
-				arr = NULL;
-				break;
-
-			default:
-				break;
-		}
-		m_number = 0;
-		m_places = -1;
-		m_boolean = false;
-		std::swap(str, V);
-		myType = JSON_STRING;
-		if (pParentObject) {
-			pParentObject->setNotEmpty();
-		} else if (pParentArray) {
-			pParentArray->setNotEmpty();
-		}
-		return *this;
-	}
-*/
-//	value::value(sdstring V) {
-//		m_number = 0;
-//		m_places = -1;
-//		m_boolean = false;
-//		str.assign(V);
-//		myType = JSON_STRING;
-//		obj = NULL;
-//		arr = NULL;
-//		pParentObject = NULL;
-//		pParentArray = NULL;
-//	}
-//#if !defined USE_STD_STRING
-//	value::value(const std::string &V) {
-//		m_number = 0;
-//		m_places = -1;
-//		m_boolean = false;
-//		str.assign(V.c_str());
-//		myType = JSON_STRING;
-//		obj = NULL;
-//		arr = NULL;
-//		pParentObject = NULL;
-//		pParentArray = NULL;
-//	}
-//#endif
 	value::value(object& V) {
 		m_number = 0;
 		m_places = -1;
@@ -2262,7 +1827,6 @@ namespace JSON_NAMESPACE
 
 	value& value::at(size_t index)
 	{
-//		assert(i64(index) >= 0);
 		if (index >= std::numeric_limits<size_t>::max() / 2) {
 			if (debug) {
 				debug("json at: index %lu out of bounds", index);
@@ -2290,57 +1854,25 @@ namespace JSON_NAMESPACE
 
 	value& value::emptyArray()
 	{
-		if (myType != JSON_VOID) {
-			if (debug) {
-				switch(myType) {
-					// case JSON_NULL:
-					// 	debug("json emptyArray() changed type from NULL to Array.");
-					// 	break;
+		debugTypeChange(myType != JSON_ARRAY, (*this), value().toArray());
 
-					case JSON_BOOLEAN:
-						debug("json emptyArray() changed type from Boolean to Array.", m_boolean);
-						break;
+		switch (myType) {
+			case JSON_ARRAY:
+				arr->clear();
+				return *this;
 
-					case JSON_NUMBER:
-						debug("json emptyArray() changed type from Number %f to Array.", m_number);
-						break;
+			case JSON_OBJECT:
+				delete obj;
+				break;
 
-					case JSON_STRING:
-						debug("json emptyArray() changed type from String '%s' to Array.", str.c_str());
-						break;
-
-					case JSON_ARRAY:
-						debug("json emptyArray() cleared Array, orphanning:\n%s\n", this->print(0, true).c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json emptyArray() changed type from Object to Array, orphanning:\n%s\n", this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
-			m_number = 0;
-			m_places = -1;
-			m_boolean = false;
-
-			str.clear();
-			switch (myType) {
-				case JSON_OBJECT:
-					delete obj;
-					// obj = NULL;
-					break;
-
-				case JSON_ARRAY:
-					delete arr;
-					// arr = NULL;
-					break;
-
-				default:
-					break;
-			}
+			default:
+				m_number = 0;
+				m_places = -1;
+				m_boolean = false;
+				str.clear();
+				break;
 		}
+
 		myType = JSON_ARRAY;
 		arr = new array();
 		if (pParentObject) {
@@ -2354,58 +1886,25 @@ namespace JSON_NAMESPACE
 
 	value& value::emptyObject()
 	{
-		if (myType != JSON_VOID) {
-			if (debug) {
-				switch(myType) {
-					// case JSON_NULL:
-					// 	debug("json emptyObject() changed type from NULL to Object.");
-					// 	break;
+		debugTypeChange(myType != JSON_OBJECT, (*this), value().toObject(""));
 
-					case JSON_BOOLEAN:
-						debug("json emptyObject() changed type from Boolean to Object.", m_boolean);
-						break;
+		switch (myType) {
+			case JSON_OBJECT:
+				obj->clear();
+				return *this;
 
-					case JSON_NUMBER:
-						debug("json emptyObject() changed type from Number %f to Object.", m_number);
-						break;
+			case JSON_ARRAY:
+				delete arr;
+				break;
 
-					case JSON_STRING:
-						debug("json emptyObject() changed type from String '%s' to Object.", str.c_str());
-						break;
-
-					case JSON_ARRAY:
-						debug("json emptyObject() changed type from Array to Object, orphanning:\n%s\n", this->print(0, true).c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json emptyObject() cleared Object, orphanning:\n%s\n", this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
-			m_number = 0;
-			m_places = -1;
-			m_boolean = false;
-
-			str.clear();
-
-			switch (myType) {
-				case JSON_OBJECT:
-					delete obj;
-					// obj = NULL;
-					break;
-
-				case JSON_ARRAY:
-					delete arr;
-					// arr = NULL;
-					break;
-
-				default:
-					break;
-			}
+			default:
+				m_number = 0;
+				m_places = -1;
+				m_boolean = false;
+				str.clear();
+				break;
 		}
+
 		myType = JSON_OBJECT;
 		obj = new object();
 		if (pParentObject) {
@@ -2422,14 +1921,16 @@ namespace JSON_NAMESPACE
 		if (myType == JSON_ARRAY) {
 			return *this;
 		}
-		value temp = *this;
-		m_number = 0;
-		m_places = -1;
-		m_boolean = false;
-		str.clear();
-		if (myType == JSON_OBJECT) {
-			delete obj;
-			// obj = NULL;
+		std::optional<value> temp;
+		if (myType != JSON_VOID) {
+			temp = *this;
+			m_number = 0;
+			m_places = -1;
+			m_boolean = false;
+			str.clear();
+			if (myType == JSON_OBJECT) {
+				delete obj;
+			}
 		}
 		myType = JSON_ARRAY;
 		arr = new array();
@@ -2438,32 +1939,29 @@ namespace JSON_NAMESPACE
 		} else if (pParentArray) {
 			arr->setParentArray(pParentArray);
 		}
-		temp.setParentArray(arr);
-		temp.setParentObject(NULL);
-		if (!temp.isA(JSON_VOID)) {
-			(*this)[0] = temp;
+		if (temp.has_value()) {
+			temp->setParentArray(arr);
+			temp->setParentObject(nullptr);
+			(*this)[0] = temp.value();
 		}
 		return *this;
 	}
 
 	value & value::toObject(const sdstring& key)
 	{
-		return toObject(key.c_str());
-	}
-
-	value & value::toObject(const char * key)
-	{
 		if (myType == JSON_OBJECT) {
 			return *this;
 		}
-		value temp = *this;
-		m_number = 0;
-		m_places = -1;
-		m_boolean = false;
-		str.clear();
-		if (myType == JSON_ARRAY) {
-			delete arr;
-			arr = NULL;
+		value temp(*this);
+		if (myType != JSON_VOID) {
+			m_number = 0;
+			m_places = -1;
+			m_boolean = false;
+			str.clear();
+			if (myType == JSON_ARRAY) {
+				delete arr;
+				arr = NULL;
+			}
 		}
 		myType = JSON_OBJECT;
 		obj = new object();
@@ -2472,9 +1970,9 @@ namespace JSON_NAMESPACE
 		} else if (pParentArray) {
 			obj->setParentArray(pParentArray);
 		}
-		if (!temp.isA(JSON_VOID)) {
-			(*this)[key] = temp;
-		}
+		temp.setParentArray(nullptr);
+		temp.setParentObject(obj);
+		(*this)[key] = temp;
 		return *this;
 	}
 
@@ -2515,12 +2013,12 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -2690,39 +2188,13 @@ namespace JSON_NAMESPACE
 			if (index == 0) {
 				return *this;
 			}
-			if (debug) {
-				switch(myType) {
-					// case JSON_NULL:
-					// 	debug("json operator[](size_t index = %lu) changed type from NULL to Array.", index);
-					// 	break;
-
-					case JSON_BOOLEAN:
-						debug("json operator[](size_t index = %lu) changed type from Boolean to Array.", index, m_boolean);
-						break;
-
-					case JSON_NUMBER:
-						debug("json operator[](size_t index = %lu) changed type from Number %f to Array.", index, m_number);
-						break;
-
-					case JSON_STRING:
-						debug("json operator[](size_t index = %lu) changed type from String '%s' to Array.", index, str.c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json operator[](size_t index = %lu) changed type from Object to Array, orphanning:\n%s\n", index, this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
+			debugTypeChange(true, (*this), value().emptyArray());
 			m_number = 0;
 			m_places = -1;
 			m_boolean = false;
 			str.clear();
 			if (myType == JSON_OBJECT) {
 				delete obj;
-				// obj = NULL;
 			}
 		}
 
@@ -2736,12 +2208,9 @@ namespace JSON_NAMESPACE
 		arr->resize(index + 1);
 		value & ret = arr->at(index);
 		ret.setParentArray(arr);
+		ret.setParentObject(nullptr);
 		return ret;
 	}
-
-	// value& value::operator[](const sdstring& index) {
-	// 	return operator[](index.c_str());
-	// }
 
 	value& value::operator[](const sdstring& index) {
 		if (myType == JSON_OBJECT) {
@@ -2750,39 +2219,13 @@ namespace JSON_NAMESPACE
 			// ret.m_key.assign(index);
 			return ret;
 		} else if (myType != JSON_VOID) {
-			if (debug) {
-				switch(myType) {
-					// case JSON_NULL:
-					// 	debug("json operator[](sdstring index = '%s') changed type from NULL to Object.", index.c_str());
-					// 	break;
-
-					case JSON_BOOLEAN:
-						debug("json operator[](sdstring index = '%s') changed type from Boolean to Object.", index.c_str(), m_boolean);
-						break;
-
-					case JSON_NUMBER:
-						debug("json operator[](sdstring index = '%s') changed type from Number %f to Object.", index.c_str(), m_number);
-						break;
-
-					case JSON_STRING:
-						debug("json operator[](sdstring index = '%s') changed type from String '%s' to Object.", index.c_str(), str.c_str());
-						break;
-
-					case JSON_ARRAY:
-						debug("json operator[](sdstring index = '%s') changed type from Array to Object(%s), orphanning:\n%s\n", index.c_str(), index.c_str(), this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
+			debugTypeChange(true, (*this), value().emptyObject());
 			m_number = 0;
 			m_places = -1;
 			m_boolean = false;
 			str.clear();
 			if (myType == JSON_ARRAY) {
 				delete arr;
-				// arr = NULL;
 			}
 		}
 		myType = JSON_OBJECT;
@@ -2794,45 +2237,19 @@ namespace JSON_NAMESPACE
 		}
 		value & ret = obj->operator[](index);
 		ret.setParentObject(obj);
-		// ret.m_key.assign(index);
+		ret.setParentArray(nullptr);
 		return ret;
 	}
 
 	void value::push_back(const value& val) {
 		if (myType != JSON_ARRAY) {
-			if (debug) {
-				switch(myType) {
-					// case JSON_NULL:
-					// 	debug("json push_back(value val) changed type from NULL to Array.");
-					// 	break;
-
-					case JSON_BOOLEAN:
-						debug("json push_back(value val) changed type from Boolean to Array.", m_boolean);
-						break;
-
-					case JSON_NUMBER:
-						debug("json push_back(value val) changed type from Number %f to Array.", m_number);
-						break;
-
-					case JSON_STRING:
-						debug("json push_back(value val) changed type from String '%s' to Array.", str.c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json push_back(value val) changed type from Object to Array, orphanning:\n%s\n", this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
+			debugTypeChange(true, (*this), value().emptyArray());
 			m_number = 0;
 			m_places = -1;
 			m_boolean = false;
 			str.clear();
 			if (myType == JSON_OBJECT) {
 				delete obj;
-				// obj = NULL;
 			}
 			myType = JSON_ARRAY;
 			arr = new array();
@@ -2844,6 +2261,7 @@ namespace JSON_NAMESPACE
 		}
 		arr->emplace_back(val);
 		arr->back().setParentArray(arr);
+		arr->back().setParentObject(nullptr);
 
 		if (val.myType != JSON_VOID) {
 			arr->setNotEmpty();
@@ -2852,32 +2270,7 @@ namespace JSON_NAMESPACE
 
 	void value::push_back(value&& val) {
 		if (myType != JSON_ARRAY) {
-			if (debug) {
-				switch(myType) {
-					// case JSON_NULL:
-					// 	debug("json push_back(value val) changed type from NULL to Array.");
-					// 	break;
-
-					case JSON_BOOLEAN:
-						debug("json push_back(value val) changed type from Boolean to Array.", m_boolean);
-						break;
-
-					case JSON_NUMBER:
-						debug("json push_back(value val) changed type from Number %f to Array.", m_number);
-						break;
-
-					case JSON_STRING:
-						debug("json push_back(value val) changed type from String '%s' to Array.", str.c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json push_back(value val) changed type from Object to Array, orphanning:\n%s\n", this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
+			debugTypeChange(true, (*this), value().emptyArray());
 			m_number = 0;
 			m_places = -1;
 			m_boolean = false;
@@ -2896,6 +2289,7 @@ namespace JSON_NAMESPACE
 		}
 		arr->emplace_back(val);
 		arr->back().setParentArray(arr);
+		arr->back().setParentObject(nullptr);
 
 		if (val.myType != JSON_VOID) {
 			arr->setNotEmpty();
@@ -2904,39 +2298,13 @@ namespace JSON_NAMESPACE
 
 	void value::push_front(const value &val) {
 		if (myType != JSON_ARRAY) {
-			if (debug) {
-				switch(myType) {
-					// case JSON_NULL:
-					// 	debug("json push_front(value val) changed type from NULL to Array.");
-					// 	break;
-
-					case JSON_BOOLEAN:
-						debug("json push_front(value val) changed type from Boolean to Array.", m_boolean);
-						break;
-
-					case JSON_NUMBER:
-						debug("json push_front(value val) changed type from Number %f to Array.", m_number);
-						break;
-
-					case JSON_STRING:
-						debug("json push_front(value val) changed type from String '%s' to Array.", str.c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json push_front(value val) changed type from Object to Array, orphanning:\n%s\n", this->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
+			debugTypeChange(true, (*this), value().emptyArray());
 			m_number = 0;
 			m_places = -1;
 			m_boolean = false;
 			str.clear();
 			if (myType == JSON_OBJECT) {
 				delete obj;
-				// obj = NULL;
 			}
 			arr = new array();
 			myType = JSON_ARRAY;
@@ -2948,6 +2316,8 @@ namespace JSON_NAMESPACE
 		}
 		arr->emplace_front(val);
 		arr->front().setParentArray(arr);
+		arr->back().setParentObject(nullptr);
+
 		if (val.myType != JSON_VOID) {
 			arr->setNotEmpty();
 		}
@@ -3263,8 +2633,7 @@ namespace JSON_NAMESPACE
 
 	bool array::empty() const
 	{
-		if (/*!bNotEmpty && */myVec::empty()) {
-			// bNotEmpty = false;
+		if (myVec::empty()) {
 			return true;
 		} else {
 			return !bNotEmpty;
@@ -3329,18 +2698,11 @@ namespace JSON_NAMESPACE
 
 	bool object::empty() const
 	{
-		// for (const std::pair<sdstring, value> &pair: *this) {
-		// 	if (!pair.second.empty()) {
-		// 		return false;
-		// 	}
-		// }
-		if (/*!bNotEmpty && */myMap::empty()) {
-			// bNotEmpty = false;
+		if (myMap::empty()) {
 			return true;
 		} else {
 			return !bNotEmpty;
 		}
-		// return myMap::empty() && !bNotEmpty;
 	}
 	void object::setNotEmpty()
 	{
@@ -3433,67 +2795,66 @@ namespace JSON_NAMESPACE
 		value retVal;
 
 		if (myType == JSON_ARRAY) {
-			array::iterator it;
-			const char* getKey = searchFor.begin().key().c_str();
-			const value getVal = searchFor[getKey];
-			int iGetType = searchFor[getKey].myType;
-			size_t iIndex = 0;
-			for (it = arr->begin(); it != arr->end(); ++it) {
-				if (searchFor.myType == JSON_OBJECT && it->myType == JSON_OBJECT) {
-					if (bSubStr && ((*it)[getKey].myType == JSON_STRING && iGetType == JSON_STRING)) {
-						if ((*it)[getKey].str.find(getVal.str) != sdstring::npos) {
-							retVal[iIndex++] = (*it);
+			const sdstring & getKey = searchFor.begin().key()._sdstring();
+			const value & getVal = searchFor[getKey];
+			int iGetType = getVal.myType;
+			for (auto & val : *arr) {
+				if (searchFor.myType == JSON_OBJECT && val.myType == JSON_OBJECT) {
+					auto & valGetKey = val[getKey];
+					if (bSubStr && (valGetKey.myType == JSON_STRING && iGetType == JSON_STRING)) {
+						if (valGetKey.str.find(getVal.str) != sdstring::npos) {
+							retVal.push_back(val);
 						}
 					} else {
-						if ((*it)[getKey] == getVal) {
-							retVal[iIndex++] = (*it);
+						if (valGetKey== getVal) {
+							retVal.push_back(val);
 						}
 					}
-				} else if (searchFor.myType == JSON_STRING && it->myType == JSON_STRING) {
+				} else if (searchFor.myType == JSON_STRING && val.myType == JSON_STRING) {
 					if (bSubStr) {
 						if (str.find(searchFor.str) != sdstring::npos) {
-							retVal[iIndex++] = (*it);
+							retVal.push_back(val);
 						}
 					} else {
 						if (str == searchFor.str) {
-							retVal[iIndex++] = (*it);
+							retVal.push_back(val);
 						}
 					}
-				} else if (searchFor.myType == it->myType) {
-					if (searchFor == (*it)) {
-						retVal[iIndex++] = (*it);
+				} else if (searchFor.myType == val.myType) {
+					if (searchFor == val) {
+						retVal.push_back(val);
 					}
 				}
 			}
 		} else if (myType == JSON_OBJECT) {
-			object::iterator it;
-			const char* getKey = searchFor.begin().key().c_str();
+			const sdstring & getKey = searchFor.begin().key()._sdstring();
 			const value getVal = searchFor[getKey];
-			int iGetType = searchFor[getKey].myType;
-			for (it = obj->begin(); it != obj->end(); ++it) {
-				if (searchFor.myType == JSON_OBJECT && it->second.myType == JSON_OBJECT) {
-					if (bSubStr && ((it->second)[getKey].myType == JSON_STRING && iGetType == JSON_STRING)) {
-						if ((it->second)[getKey].str.find(getVal.str) != sdstring::npos) {
-							retVal[it->first] = it->second;
+			int iGetType = getVal.myType;
+			for (auto & val : *obj) {
+				if (searchFor.myType == JSON_OBJECT && val.second.myType == JSON_OBJECT) {
+					auto & valGetKey = (val.second)[getKey];
+					if (bSubStr && (valGetKey.myType == JSON_STRING && iGetType == JSON_STRING)) {
+						if (valGetKey.str.find(getVal.str) != sdstring::npos) {
+							retVal[val.first] = val.second;
 						}
 					} else {
-						if ((it->second)[getKey] == getVal) {
-							retVal[it->first] = it->second;
+						if (valGetKey == getVal) {
+							retVal[val.first] = val.second;
 						}
 					}
-				} else if (searchFor.myType == JSON_STRING && it->second.myType == JSON_STRING) {
+				} else if (searchFor.myType == JSON_STRING && val.second.myType == JSON_STRING) {
 					if (bSubStr) {
 						if (str.find(searchFor.str) != sdstring::npos) {
-							retVal[it->first] = it->second;
+							retVal[val.first] = val.second;
 						}
 					} else {
 						if (str == searchFor.str) {
-							retVal[it->first] = it->second;
+							retVal[val.first] = val.second;
 						}
 					}
-				} else if (searchFor.myType == it->second.myType) {
-					if (searchFor == it->second) {
-						retVal[it->first] = it->second;
+				} else if (searchFor.myType == val.second.myType) {
+					if (searchFor == val.second) {
+						retVal[val.first] = val.second;
 					}
 				}
 			}
@@ -3505,20 +2866,21 @@ namespace JSON_NAMESPACE
 		size_t retVal = 0;
 
 		if (myType == JSON_ARRAY) {
-			array::iterator it;
-			for (it = arr->begin(); it != arr->end(); ++it) {
-				if (searchFor.myType == JSON_OBJECT && it->myType == JSON_OBJECT) {
-					const char * key = searchFor.begin().key().c_str();
-					if (bSubStr && ((*it)[key].myType == JSON_STRING && searchFor[key].myType == JSON_STRING)) {
-						if ((*it)[key].str.find(searchFor[key].str) != sdstring::npos) {
+			for (auto & val : *arr) {
+				if (searchFor.myType == JSON_OBJECT && val.myType == JSON_OBJECT) {
+					const sdstring & key = searchFor.begin().key()._sdstring();
+					auto & searchKey = searchFor[key];
+					auto & valKey = val[key];
+					if (bSubStr && (valKey.myType == JSON_STRING &&searchKey.myType == JSON_STRING)) {
+						if (valKey.str.find(searchKey.str) != sdstring::npos) {
 							retVal++;
 						}
 					} else {
-						if ((*it)[key] == searchFor[key]) {
+						if (valKey == searchKey) {
 							retVal++;
 						}
 					}
-				} else if (searchFor.myType == JSON_STRING && it->myType == JSON_STRING) {
+				} else if (searchFor.myType == JSON_STRING && val.myType == JSON_STRING) {
 					if (bSubStr) {
 						if (str.find(searchFor.str) != sdstring::npos) {
 							retVal++;
@@ -3528,27 +2890,28 @@ namespace JSON_NAMESPACE
 							retVal++;
 						}
 					}
-				} else if (searchFor.myType == it->myType) {
-					if (searchFor == (*it)) {
+				} else if (searchFor.myType == val.myType) {
+					if (searchFor == val) {
 						retVal++;
 					}
 				}
 			}
 		} else if (myType == JSON_OBJECT) {
-			object::iterator it;
-			for (it = obj->begin(); it != obj->end(); ++it) {
-				if (searchFor.myType == JSON_OBJECT && it->second.myType == JSON_OBJECT) {
-					const char * key = searchFor.begin().key().c_str();
-					if (bSubStr && ((it->second)[key].myType == JSON_STRING && searchFor[key].myType == JSON_STRING)) {
-						if ((it->second)[key].str.find(searchFor[key].str) != sdstring::npos) {
+			for (auto & val : *obj) {
+				if (searchFor.myType == JSON_OBJECT && val.second.myType == JSON_OBJECT) {
+					const sdstring & key = searchFor.begin().key()._sdstring();
+					auto & valKey = (val.second)[key];
+					auto & searchKey = searchFor[key];
+					if (bSubStr && (valKey.myType == JSON_STRING && searchKey.myType == JSON_STRING)) {
+						if (valKey.str.find(searchKey.str) != sdstring::npos) {
 							retVal++;
 						}
 					} else {
-						if ((it->second)[key] == searchFor[key]) {
+						if (valKey == searchKey) {
 							retVal++;
 						}
 					}
-				} else if (searchFor.myType == JSON_STRING && it->second.myType == JSON_STRING) {
+				} else if (searchFor.myType == JSON_STRING && val.second.myType == JSON_STRING) {
 					if (bSubStr) {
 						if (str.find(searchFor.str) != sdstring::npos) {
 							retVal++;
@@ -3558,8 +2921,8 @@ namespace JSON_NAMESPACE
 							retVal++;
 						}
 					}
-				} else if (searchFor.myType == it->second.myType) {
-					if (searchFor == it->second) {
+				} else if (searchFor.myType == val.second.myType) {
+					if (searchFor == val.second) {
 						retVal++;
 					}
 				}
@@ -3570,25 +2933,14 @@ namespace JSON_NAMESPACE
 
 	void value::clear() {
 		if (myType == JSON_ARRAY) {
-			delete arr;
-			arr = new array();
-			if (pParentObject) {
-				arr->setParentObject(pParentObject);
-			} else if (pParentArray) {
-				arr->setParentArray(pParentArray);
-			}
+			arr->clear();
 		}
 		if (myType == JSON_OBJECT) {
-			delete obj;
-			obj = new object();
-			if (pParentObject) {
-				obj->setParentObject(pParentObject);
-			} else if (pParentArray) {
-				obj->setParentArray(pParentArray);
-			}
+			obj->clear();
 		}
-		if (!str.empty())
+		if (str.size()) {
 			str.clear();
+		}
 
 		m_number = 0;
 		m_places = -1;
@@ -3639,10 +2991,11 @@ namespace JSON_NAMESPACE
 			if (str.empty()) {
 				return 0.0;
 			}
-			std::istringstream convert(str.c_str());
+			std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char>> convert(str.c_str());
 			double d = 0.0;
-			if (!(convert >> d))
+			if (!(convert >> d)) {
 				return 0.0;
+			}
 			return d;
 		}
 		case JSON_OBJECT:
@@ -3650,9 +3003,7 @@ namespace JSON_NAMESPACE
 			iterator it = (*this).find("#value");
 			if (it != (*this).end()) {
 				return (*it).m_number;
-			}/* else {
-				str.erase();
-			}*/
+			}
 			return 0.0;
 		}
 		default:
@@ -3660,64 +3011,32 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	void value::makeStringFromValue() {
+	sdstring& value::makeString(sdstring & dest) const
+	{
 		switch (myType) {
 		case JSON_STRING:
-			break;
-
-		case JSON_NUMBER: {
-			if (str.empty()) {
-				makeStringFromNumber(str, m_places, m_number);
+			if (&dest != &str) {
+				dest.assign(str);
 			}
 			break;
-		}
 
-		case JSON_BOOLEAN:
-			if (m_boolean)
-				str.assign("true");
-			else
-				str.assign("false");
-			break;
-
-		case JSON_OBJECT:
-		{
-			iterator it = (*this).find("#value");
-			if (it != (*this).end()) {
-				str.assign((*it).str);
-			} else {
-				str.erase();
-			}
-			break;
-		}
-
-		default:
-			if (!str.empty()) {
-				str.erase();
-			}
-			break;
-		}
-	}
-
-
-
-	sdstring& value::stringC(sdstring & dest) const {
-		switch (myType) {
-		case JSON_STRING:
-			dest.assign(str);
-			break;
-
-		case JSON_NUMBER: {
-			// if (str.empty()) {
+		case JSON_NUMBER:
+			if (&dest != &str) {
+				dest.clear();
 				makeStringFromNumber(dest, m_places, m_number);
-			// }
+			} else if (dest.empty()) {
+				makeStringFromNumber(dest, m_places, m_number);
+			}
 			break;
-		}
 
 		case JSON_BOOLEAN:
-			if (m_boolean)
-				dest = "true";
-			else
-				dest = "false";
+			if ((&dest != &str) || (dest.data()[0] != 't' && dest.data()[0] != 'f')) {
+				if (m_boolean) {
+					dest.assign("true");
+				} else {
+					dest.assign("false");
+				}
+			}
 			break;
 
 		case JSON_OBJECT:
@@ -3726,19 +3045,19 @@ namespace JSON_NAMESPACE
 			if (it != (*this).end()) {
 				dest.assign((*it).str);
 			} else {
-				dest.erase();
+				dest.clear();
 			}
 			break;
 		}
 
 		default:
-			dest.erase();
+			dest.clear();
 			break;
 		}
 		return dest;
 	}
 
-	sdstring value::print(size_t depth, bool bPretty) const
+	sdstring value::print(size_t depth, bool bPretty)
 	{
 		if (myType == JSON_ARRAY) {
 			arr->resize(size());
@@ -3767,7 +3086,7 @@ namespace JSON_NAMESPACE
 			case JSON_STRING:
 			{
 				sdstring temp;
-				return str == V.stringC(temp);
+				return str == V.makeString(temp);
 			}
 
 			case JSON_ARRAY:
@@ -3807,7 +3126,7 @@ namespace JSON_NAMESPACE
 			case JSON_STRING:
 			{
 				sdstring temp;
-				return str > V.stringC(temp);
+				return str > V.makeString(temp);
 			}
 
 			case JSON_ARRAY:
@@ -3845,7 +3164,7 @@ namespace JSON_NAMESPACE
 			case JSON_STRING:
 			{
 				sdstring temp;
-				return str < V.stringC(temp);
+				return str < V.makeString(temp);
 			}
 
 			case JSON_ARRAY:
@@ -3879,7 +3198,7 @@ namespace JSON_NAMESPACE
 			case JSON_STRING:
 			{
 				sdstring temp;
-				return str <= V.stringC(temp);
+				return str <= V.makeString(temp);
 			}
 
 			case JSON_ARRAY:
@@ -3917,7 +3236,7 @@ namespace JSON_NAMESPACE
 			case JSON_STRING:
 			{
 				sdstring temp;
-				return str >= V.stringC(temp);
+				return str >= V.makeString(temp);
 			}
 
 			case JSON_ARRAY:
@@ -3953,7 +3272,7 @@ namespace JSON_NAMESPACE
 			case JSON_STRING:
 			{
 				sdstring temp;
-				return value(str + V.stringC(temp));
+				return value(str + V.makeString(temp));
 			}
 
 			case JSON_ARRAY:
@@ -3990,7 +3309,8 @@ namespace JSON_NAMESPACE
 			case JSON_OBJECT:
 			{
 				value ret(*this);
-				for (iterator it = V.begin(); it != V.end(); ++it) {
+				iterator end = V.end();
+				for (iterator it = V.begin(); it != end; ++it) {
 					ret.erase(it.key()._sdstring());
 				}
 				return ret;
@@ -4056,7 +3376,7 @@ namespace JSON_NAMESPACE
 			case JSON_STRING:
 			{
 				sdstring temp;
-				str += V.stringC(temp);
+				str += V.makeString(temp);
 				break;
 			}
 
@@ -4291,97 +3611,22 @@ namespace JSON_NAMESPACE
 		return S;
 	}
 
-	document::document(const document& V) : value((const value &)V), strParseResult(V.strParseResult)
+	document::document(const document& V) : value((const value &)V), strParseResult(V.strParseResult), bParseSuccessful(V.bParseSuccessful)
 	{
-		bParseSuccessful = V.bParseSuccessful;
-		// strParseResult = V.strParseResult;
-		// m_number = V.m_number;
-		// m_boolean = V.m_boolean;
-
-		// if (!V.str.empty()) {
-		// 	str.assign(V.str);
-		// }
-
-		// myType = V.myType;
-
-		// obj = NULL;
-		// if (V.obj) {
-		// 	obj = new object(V.obj);
-		// }
-
-		// arr = NULL;
-		// if (V.arr) {
-		// 	arr = new array(V.arr);
-		// }
 	}
 
 	document::document(document&& V) : value((const value &)V), strParseResult(std::move(V.strParseResult))
 	{
 		std::swap(bParseSuccessful, V.bParseSuccessful);
 		std::swap(strParseResult, V.strParseResult);
-		// m_number = V.m_number;
-		// m_boolean = V.m_boolean;
-
-		// if (!V.str.empty()) {
-		// 	str.assign(V.str);
-		// }
-
-		// myType = V.myType;
-
-		// obj = NULL;
-		// if (V.obj) {
-		// 	obj = new object(V.obj);
-		// }
-
-		// arr = NULL;
-		// if (V.arr) {
-		// 	arr = new array(V.arr);
-		// }
 	}
 
 	document& document::operator=(const document& V)
 	{
-		if (this == &V)
+		if (this == &V) {
 			return *this;
-
-		if (debug) {
-			if (myType != V.myType) {
-				switch(myType) {
-						// case JSON_NULL:
-						// 	debug("json operator= changed type from NULL to %s", typeName(V.myType).c_str());
-						// 	break;
-
-					case JSON_BOOLEAN:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Boolean %i to %s", m_boolean, typeName(V.myType));
-						}
-						break;
-
-					case JSON_NUMBER:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Number %f to %s", m_number, typeName(V.myType));
-						}
-						break;
-
-					case JSON_STRING:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from String '%s' to %s", str.c_str(), typeName(V.myType));
-						}
-						break;
-
-					case JSON_ARRAY:
-						debug("json operator= changed type from Array to %s, orphanning:\n%s\n", typeName(V.myType), ((value*)this)->print(0, true).c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json operator= changed type from Object to %s, orphanning:\n%s\n", typeName(V.myType), ((value*)this)->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
 		}
+		debugTypeChange(myType != V.myType, (*this), value().emptyArray());
 
 		m_number = V.m_number;
 		m_places = V.m_places;
@@ -4389,17 +3634,15 @@ namespace JSON_NAMESPACE
 
 		str.assign(V.str);
 
-
-
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -4441,45 +3684,7 @@ namespace JSON_NAMESPACE
 
 	document& document::operator=(document&& V)
 	{
-
-		if (debug) {
-			if (myType != V.myType) {
-				switch(myType) {
-						// case JSON_NULL:
-						// 	debug("json operator= changed type from NULL to %s", typeName(V.myType).c_str());
-						// 	break;
-
-					case JSON_BOOLEAN:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Boolean %i to %s", m_boolean, typeName(V.myType));
-						}
-						break;
-
-					case JSON_NUMBER:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Number %f to %s", m_number, typeName(V.myType));
-						}
-						break;
-
-					case JSON_STRING:
-						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from String '%s' to %s", str.c_str(), typeName(V.myType));
-						}
-						break;
-
-					case JSON_ARRAY:
-						debug("json operator= changed type from Array to %s, orphanning:\n%s\n", typeName(V.myType), ((value*)this)->print(0, true).c_str());
-						break;
-
-					case JSON_OBJECT:
-						debug("json operator= changed type from Object to %s, orphanning:\n%s\n", typeName(V.myType), ((value*)this)->print(0, true).c_str());
-						break;
-
-					default:
-						break;
-				}
-			}
-		}
+		debugTypeChange(myType != V.myType, (*this), value().emptyArray());
 
 		m_number = std::move(V.m_number);
 		m_places = std::move(V.m_places);
@@ -4522,13 +3727,7 @@ namespace JSON_NAMESPACE
 			}
 		}
 
-		// V.m_number = 0;
-		// V.m_places = -1;
-		// V.m_boolean = false;
 		V.myType = JSON_VOID;
-
-		// V.obj = NULL;
-		// V.arr = NULL;
 
 		V.pParentObject = NULL;
 		V.pParentArray = NULL;
@@ -4599,17 +3798,18 @@ namespace JSON_NAMESPACE
 		sdstring sInstrPlusBak(inStr);
 		sInstrPlusBak.append(".bak");
 
+		std::error_code ec;
 		if (fd == NULL) {
-			if (fileExists(sInstrPlusBak.c_str())) {
+			if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
 				fd = fopen(sInstrPlusBak.c_str(), "rb");
 				if (debug && fd) {
 					debug("File opened from backup %s.", sInstrPlusBak.c_str());
 				}
 			}
 		} else {
-			if (fd && fileExists(sInstrPlusBak.c_str())) {
-				if (remove(sInstrPlusBak.c_str()) != 0 && debug) {
-					debug("Failed remove backup of %s.", inStr.c_str());
+			if (fd && std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
+				if (std::filesystem::remove(sInstrPlusBak.c_str()) != 0 && debug) {
+					debug("Failed remove backup of %s: %s", inStr.c_str(), ec.message().c_str());
 				}
 			}
 		}
@@ -4646,17 +3846,17 @@ namespace JSON_NAMESPACE
 		return false;
 	}
 
-	sdstring document::write(bool bPretty, PREWRITEPTR preWriter) const
+	sdstring document::write(bool bPretty, PREWRITEPTR preWriter)
 	{
 		return write(1, bPretty, preWriter);
 	}
 
-	sdstring document::write(size_t iDepth, bool bPretty, PREWRITEPTR preWriter) const
+	sdstring document::write(size_t iDepth, bool bPretty, PREWRITEPTR preWriter)
 	{
 		return write(*this, iDepth, bPretty, preWriter);
 	}
 
-	sdstring document::write(const value & val, size_t iDepth, bool bPretty, PREWRITEPTR preWriter)
+	sdstring document::write(value & val, size_t iDepth, bool bPretty, PREWRITEPTR preWriter)
 	{
 		if (val.isA(JSON_VOID)) {
 			return "";
@@ -4699,16 +3899,7 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	bool fileExists(const char * szName)
-	{
-		if (szName == NULL) {
-			return false;
-		}
-		struct stat buffer;
-		return (stat(szName, &buffer) == 0);
-	}
-
-	bool document::writeFile(const sdstring& inStr, bool bPretty, PREWRITEPTR preWriter) const
+	bool document::writeFile(const sdstring& inStr, bool bPretty, PREWRITEPTR preWriter)
 	{
 #if defined _JSON_TEMP_FILES_
 		sdstring sTempFile(inStr);
@@ -4728,32 +3919,36 @@ namespace JSON_NAMESPACE
 				sdstring sInstrPlusBak(inStr);
 				sInstrPlusBak.append(".bak");
 				fclose(fd);
-				if (fileExists(sInstrPlusBak.c_str())) {
-					if (remove(sInstrPlusBak.c_str()) != 0 && debug) {
-						debug("Failed to remove %s.", sInstrPlusBak.c_str());
+				std::error_code ec;
+				if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
+					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug) {
+						debug("Failed to remove %s: %s", sInstrPlusBak.c_str(), ec.message().c_str());
 					}
 				}
-				if (fileExists(inStr.c_str())) {
-					if (rename(inStr.c_str(), sInstrPlusBak.c_str()) != 0) {
+				if (std::filesystem::exists(inStr.c_str(), ec)) {
+					std::filesystem::rename(inStr.c_str(), sInstrPlusBak.c_str(), ec);
+					if (ec) {
 						if (debug) {
-							debug("Failed to backup %s.", inStr.c_str());
+							debug("Failed to backup %s: %s", inStr.c_str(), ec.message().c_str());
 						}
 						return false;
 					}
 				}
-				if (rename(sTempFile.c_str(), inStr.c_str()) != 0) {
+				std::filesystem::rename(sTempFile.c_str(), inStr.c_str(), ec);
+				if (ec) {
 					if (debug) {
-						debug("Failed rename temp file to %s.", inStr.c_str());
+						debug("Failed rename temp file to %s: %s", inStr.c_str(), ec.message().c_str());
 					}
-					if (rename(sInstrPlusBak.c_str(), inStr.c_str()) != 0 && debug) {
-						debug("Failed restore backup of %s.", inStr.c_str());
+					std::filesystem::rename(sInstrPlusBak.c_str(), inStr.c_str(), ec);
+					if (debug && ec) {
+						debug("Failed restore backup of %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 					return false;
 				}
 
-				if (fileExists(sInstrPlusBak.c_str())) {
-					if (remove(sInstrPlusBak.c_str()) != 0 && debug) {
-						debug("Failed remove backup of %s.", inStr.c_str());
+				if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
+					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug) {
+						debug("Failed remove backup of %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 				}
 
@@ -4772,10 +3967,9 @@ namespace JSON_NAMESPACE
 		return false;
 	}
 
-	int document::appendToArrayFile(const sdstring& sFile, const document & atm, bool bPretty)
+	int document::appendToArrayFile(const sdstring& sFile, document & atm, bool bPretty)
 	{
 		FILE* fd = fopen(sFile.c_str(), "r+b");
-		// int iError = 0;
 		if (!fd) {
 			fd = fopen(sFile.c_str(), "wb");
 			if (fd) {
@@ -4789,56 +3983,41 @@ namespace JSON_NAMESPACE
 			int cFirst = fgetc(fd);
 			if (cFirst == '[') {
 				fseek(fd, -1, SEEK_END);
-				// iError = ferror(fd);
 				while(fgetc(fd) != ']') {
 					fseek(fd, -2, SEEK_CUR);
-					// iError = ferror(fd);
 				};
 				int c;
 				do{
 					fseek(fd, -2, SEEK_CUR);
-					// iError = ferror(fd);
 					c = fgetc(fd);
-					// iError = ferror(fd);
 				} while (c == '\r' || c == '\n' || c == '\t');
 				fseek(fd, 0, SEEK_CUR);
 				if (c != '[') {
 					fputc(',', fd);
-					// iError = ferror(fd);
 				}
 				if (bPretty) {
 					fputc('\n', fd);
-					// iError = ferror(fd);
 					fputc('\t', fd);
-					// iError = ferror(fd);
 				}
 			} else if (cFirst == EOF) {
 				fputc('[', fd);
-				// iError = ferror(fd);
 				if (bPretty) {
 					fputc('\n', fd);
-					// iError = ferror(fd);
 					fputc('\t', fd);
-					// iError = ferror(fd);
 				}
 			} else {
 				fclose(fd);
-				// iError = ferror(fd);
 				return -1;
 			}
 		}
 		if (fd) {
 			sdstring sNew(atm.write(2, bPretty).c_str());
 			fwrite(sNew.data(), 1, sNew.size(), fd);
-			// iError = ferror(fd);
 			if (bPretty) {
 				fputc('\n', fd);
-				// iError = ferror(fd);
 			}
 			fputc(']', fd);
-			// iError = ferror(fd);
 			int iPos = (int)ftell(fd);
-			// iError = ferror(fd);
 			fclose(fd);
 			return iPos;
 		}
@@ -5151,9 +4330,3 @@ namespace JSON_NAMESPACE
 		}
 
 }
-
-
-#if defined __BORLANDC__ && __BORLANDC__ < 0x0600
-#pragma warn + 8026
-#pragma warn + 8027
-#endif

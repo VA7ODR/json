@@ -27,9 +27,8 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #include <limits>
 #include <cstring>
 #include <string>
-// #if defined _WINDOWS && !defined __clang__ && _MSC_VER >= 1900
-// #define noexcept
-// #endif
+#include <iostream>
+
 template <class T>
 struct secure_delete_allocator {
 	typedef T value_type;
@@ -46,22 +45,6 @@ struct secure_delete_allocator {
 	value_type* allocate (std::size_t n) { value_type* p = static_cast<value_type*>(malloc(n*sizeof(value_type))); return p;}
 	void deallocate (value_type* p, std::size_t n) { memset((void*)p, 0, n); free(p); }
 	template <class U> struct rebind { typedef secure_delete_allocator<U> other; };
-
-//	void construct(pointer p, const value_type& val)
-//	{
-//		new(static_cast<void*>(p)) value_type(val);
-//	}
-
-//	void construct(pointer p)
-//	{
-//		new(static_cast<void*>(p)) value_type();
-//	}
-
-//	void destroy(pointer p)
-//	{
-//		p->~value_type();
-//	}
-
 };
 
 template <class T, class U>
@@ -100,7 +83,6 @@ class sdstring : public base_sdstring
 		using base_sdstring::base_sdstring;
 		using base_sdstring::operator[];
 		using base_sdstring::operator=;
-//		using base_sdstring::operator<;
 		using base_sdstring::operator+=;
 		using base_sdstring::append;
 		using base_sdstring::assign;
@@ -208,12 +190,14 @@ inline std::string operator+(const std::string & lhs, const sdstring & rhs)
 	return ret;
 }
 
-inline bool operator==(const std::string & lhs, const sdstring & rhs)
+template <typename T, typename std::enable_if<std::is_same<T, std::string>::value>::type* = nullptr>
+inline bool operator==(const T & lhs, const sdstring & rhs)
 {
 	return (lhs == rhs.c_str());
 }
 
-inline bool operator!=(const std::string & lhs, const sdstring & rhs)
+template <typename T, typename std::enable_if<std::is_same<T, std::string>::value>::type* = nullptr>
+inline bool operator!=(const T & lhs, const sdstring & rhs)
 {
 	return (lhs != rhs.c_str());
 }
@@ -222,3 +206,31 @@ inline size_t operator<(sdstring const& s, sdstring const& s2)
 {
 	return std::less<std::string>{}(static_cast<std::string&>(s), static_cast<std::string&>(s2));
 }
+
+class sdstreambuf : public std::basic_streambuf<char>
+{
+	public:
+		sdstreambuf(sdstring & bufIn) : sBuffer(bufIn) {}
+
+	protected:
+		sdstring & sBuffer;
+
+		std::streamsize xsputn(const std::basic_ostream<char>::char_type* s, std::streamsize n) override
+		{
+			sBuffer.append(s, n);
+			return n;
+		}
+
+		std::basic_ostream<char>::int_type overflow(std::basic_ostream<char>::int_type c) override
+		{
+			sBuffer.push_back((char)c);
+			return c;
+		}
+};
+
+class sdostream : private sdstreambuf , public std::basic_ostream<char>
+{
+	public:
+		sdostream(sdstring & bufIn) : sdstreambuf(bufIn), std::basic_ostream<char>(this) {}
+
+};

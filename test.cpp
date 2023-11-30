@@ -150,7 +150,8 @@ void test(const char * type)
 
 	T j3;
 	j3 = j2;
-	for (auto it = j3.begin(); it != j3.end(); it++) {
+	auto end = j3.end();
+	for (auto it = j3.begin(); it != end; ++it) {
 		cout << " - " << (*it)["001"]["a"][2]._int() << " - " << endl;
 	}
 	cout << "Write File 3:               ";
