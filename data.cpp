@@ -213,7 +213,7 @@ namespace DATA_NAMESPACE
 					}
 					sRootTag = rootElem->Value();
 					for (const TiXmlElement * child = rootElem->FirstChildElement(); child; child = child->NextSiblingElement() ) {
-						if (child != NULL) {
+						if (child != nullptr) {
 							switch (child->Type()) {
 								case TiXmlNode::TINYXML_ELEMENT:
 									{
@@ -305,7 +305,7 @@ namespace DATA_NAMESPACE
 							att = att->Next();
 						}
 						if (elem->Value()) {
-							const TiXmlNode *child = NULL;
+							const TiXmlNode *child = nullptr;
 			
 							bool bEmpty = true;
 			
@@ -1090,16 +1090,16 @@ namespace DATA_NAMESPACE
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
-			arr = NULL;
+			arr = nullptr;
 		} else if (myType == JSON_NAMESPACE::JSON_OBJECT) {
 			delete obj;
-			obj = NULL;
+			obj = nullptr;
 		}
 		myType = JSON_NAMESPACE::JSON_VOID;
 		m_number = 0;
 		m_boolean = false;
 		str.clear();
-		if (preParser == NULL) {
+		if (preParser == nullptr) {
 			JSON_NAMESPACE::instring in(inStr);
 			JSON_NAMESPACE::SkipWhitespace(in);
 			bParseSuccessful = fastParse(in, *this, strParseResult);
@@ -1137,10 +1137,10 @@ namespace DATA_NAMESPACE
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
-			arr = NULL;
+			arr = nullptr;
 		} else if (myType == JSON_NAMESPACE::JSON_OBJECT) {
 			delete obj;
-			obj = NULL;
+			obj = nullptr;
 		}
 		myType = JSON_NAMESPACE::JSON_VOID;
 		m_number = 0;
@@ -1149,7 +1149,7 @@ namespace DATA_NAMESPACE
 
 		TiXmlDocument doc;
 		doc.SetCondenseWhiteSpace(false);
-		if (preParser == NULL) {
+		if (preParser == nullptr) {
 			doc.Parse(inStr.c_str());
 		} else {
 			sdstring sOut;
@@ -1558,7 +1558,7 @@ namespace DATA_NAMESPACE
 			ret.append(">");
 		}
 
-		if (preWriter != NULL) {
+		if (preWriter != nullptr) {
 			sdstring sOut;
 			return preWriter(ret, sOut);
 		}

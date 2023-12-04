@@ -39,7 +39,7 @@ void write(const std::string &sPrefix, ojson::value & val, std::string & dest)
 		case json::JSON_NULL:
 		{
 			dest.append(sPrefix);
-			dest.append(" = (char*)NULL;");
+			dest.append(" = (char*)nullptr;");
 			dest.append(endStr);
 			break;
 		}

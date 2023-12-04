@@ -32,35 +32,35 @@ namespace json
 		query()
 		: document() {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 		}
 		query(const char* V)
 		: document(V) {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 		}
 		query(char* V)
 		: document(V) {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 		}
 		
 		query(value& V)
 		: document(V) {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 		}
 		
 		query(const char* V, value* insearch)
 		: document(V) {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 			setTarget(insearch);
 		}
 		query(char* V, value* insearch)
 		: document(V) {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 			setTarget(insearch);
 		}
 		
@@ -68,14 +68,14 @@ namespace json
 		query(T V, value* insearch)
 		: document(V) {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 			setTarget(insearch);
 		}
 		
 		query(value& V, value* insearch)
 		: document(V) {
 			depth = 0;
-			m_to_search = NULL;
+			m_to_search = nullptr;
 			setTarget(insearch);
 		}
 		

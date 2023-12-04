@@ -66,86 +66,86 @@ namespace JSON_NAMESPACE
 {
 	class MovingCharPointer
 	{
-	public:
-		MovingCharPointer(sdstring & in, size_t reserve);
-		MovingCharPointer(MovingCharPointer&& ptr);
-		~MovingCharPointer() {}
+		public:
+			MovingCharPointer(sdstring & in, size_t reserve);
+			MovingCharPointer(MovingCharPointer&& ptr);
+			~MovingCharPointer() {}
 
-		MovingCharPointer& operator=(MovingCharPointer&& ptr);
+			MovingCharPointer& operator=(MovingCharPointer&& ptr);
 
-		void set(const sdstring& str);
-		void set(const char* n, size_t size);
-		void set(char n);
+			void set(const sdstring& str);
+			void set(const char* n, size_t size);
+			void set(char n);
 
-		char* orig();
+			char* orig();
 
-		char* move();
-	private:
-		sdstring & loc;
-		char* m_orig;
-		char* m_current;
-		char* m_max;
+			char* move();
+		private:
+			sdstring & loc;
+			char* m_orig;
+			char* m_current;
+			char* m_max;
 	};
 
 	const double e[] = { // 1e-308...1e308: 617 * 8 bytes = 4936 bytes
-		1e-308, 1e-307, 1e-306, 1e-305, 1e-304, 1e-303, 1e-302, 1e-301, 1e-300,
-		1e-299, 1e-298, 1e-297, 1e-296, 1e-295, 1e-294, 1e-293, 1e-292, 1e-291, 1e-290, 1e-289, 1e-288, 1e-287, 1e-286, 1e-285, 1e-284, 1e-283, 1e-282, 1e-281, 1e-280,
-		1e-279, 1e-278, 1e-277, 1e-276, 1e-275, 1e-274, 1e-273, 1e-272, 1e-271, 1e-270, 1e-269, 1e-268, 1e-267, 1e-266, 1e-265, 1e-264, 1e-263, 1e-262, 1e-261, 1e-260,
-		1e-259, 1e-258, 1e-257, 1e-256, 1e-255, 1e-254, 1e-253, 1e-252, 1e-251, 1e-250, 1e-249, 1e-248, 1e-247, 1e-246, 1e-245, 1e-244, 1e-243, 1e-242, 1e-241, 1e-240,
-		1e-239, 1e-238, 1e-237, 1e-236, 1e-235, 1e-234, 1e-233, 1e-232, 1e-231, 1e-230, 1e-229, 1e-228, 1e-227, 1e-226, 1e-225, 1e-224, 1e-223, 1e-222, 1e-221, 1e-220,
-		1e-219, 1e-218, 1e-217, 1e-216, 1e-215, 1e-214, 1e-213, 1e-212, 1e-211, 1e-210, 1e-209, 1e-208, 1e-207, 1e-206, 1e-205, 1e-204, 1e-203, 1e-202, 1e-201, 1e-200,
-		1e-199, 1e-198, 1e-197, 1e-196, 1e-195, 1e-194, 1e-193, 1e-192, 1e-191, 1e-190, 1e-189, 1e-188, 1e-187, 1e-186, 1e-185, 1e-184, 1e-183, 1e-182, 1e-181, 1e-180,
-		1e-179, 1e-178, 1e-177, 1e-176, 1e-175, 1e-174, 1e-173, 1e-172, 1e-171, 1e-170, 1e-169, 1e-168, 1e-167, 1e-166, 1e-165, 1e-164, 1e-163, 1e-162, 1e-161, 1e-160,
-		1e-159, 1e-158, 1e-157, 1e-156, 1e-155, 1e-154, 1e-153, 1e-152, 1e-151, 1e-150, 1e-149, 1e-148, 1e-147, 1e-146, 1e-145, 1e-144, 1e-143, 1e-142, 1e-141, 1e-140,
-		1e-139, 1e-138, 1e-137, 1e-136, 1e-135, 1e-134, 1e-133, 1e-132, 1e-131, 1e-130, 1e-129, 1e-128, 1e-127, 1e-126, 1e-125, 1e-124, 1e-123, 1e-122, 1e-121, 1e-120,
-		1e-119, 1e-118, 1e-117, 1e-116, 1e-115, 1e-114, 1e-113, 1e-112, 1e-111, 1e-110, 1e-109, 1e-108, 1e-107, 1e-106, 1e-105, 1e-104, 1e-103, 1e-102, 1e-101, 1e-100,
-		1e-99, 1e-98, 1e-97, 1e-96, 1e-95, 1e-94, 1e-93, 1e-92, 1e-91, 1e-90, 1e-89, 1e-88, 1e-87, 1e-86, 1e-85, 1e-84, 1e-83, 1e-82, 1e-81, 1e-80,
-		1e-79, 1e-78, 1e-77, 1e-76, 1e-75, 1e-74, 1e-73, 1e-72, 1e-71, 1e-70, 1e-69, 1e-68, 1e-67, 1e-66, 1e-65, 1e-64, 1e-63, 1e-62, 1e-61, 1e-60,
-		1e-59, 1e-58, 1e-57, 1e-56, 1e-55, 1e-54, 1e-53, 1e-52, 1e-51, 1e-50, 1e-49, 1e-48, 1e-47, 1e-46, 1e-45, 1e-44, 1e-43, 1e-42, 1e-41, 1e-40,
-		1e-39, 1e-38, 1e-37, 1e-36, 1e-35, 1e-34, 1e-33, 1e-32, 1e-31, 1e-30, 1e-29, 1e-28, 1e-27, 1e-26, 1e-25, 1e-24, 1e-23, 1e-22, 1e-21, 1e-20,
-		1e-19, 1e-18, 1e-17, 1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e+0,
-		1e+1, 1e+2, 1e+3, 1e+4, 1e+5, 1e+6, 1e+7, 1e+8, 1e+9, 1e+10, 1e+11, 1e+12, 1e+13, 1e+14, 1e+15, 1e+16, 1e+17, 1e+18, 1e+19, 1e+20,
-		1e+21, 1e+22, 1e+23, 1e+24, 1e+25, 1e+26, 1e+27, 1e+28, 1e+29, 1e+30, 1e+31, 1e+32, 1e+33, 1e+34, 1e+35, 1e+36, 1e+37, 1e+38, 1e+39, 1e+40,
-		1e+41, 1e+42, 1e+43, 1e+44, 1e+45, 1e+46, 1e+47, 1e+48, 1e+49, 1e+50, 1e+51, 1e+52, 1e+53, 1e+54, 1e+55, 1e+56, 1e+57, 1e+58, 1e+59, 1e+60,
-		1e+61, 1e+62, 1e+63, 1e+64, 1e+65, 1e+66, 1e+67, 1e+68, 1e+69, 1e+70, 1e+71, 1e+72, 1e+73, 1e+74, 1e+75, 1e+76, 1e+77, 1e+78, 1e+79, 1e+80,
-		1e+81, 1e+82, 1e+83, 1e+84, 1e+85, 1e+86, 1e+87, 1e+88, 1e+89, 1e+90, 1e+91, 1e+92, 1e+93, 1e+94, 1e+95, 1e+96, 1e+97, 1e+98, 1e+99, 1e+100,
-		1e+101, 1e+102, 1e+103, 1e+104, 1e+105, 1e+106, 1e+107, 1e+108, 1e+109, 1e+110, 1e+111, 1e+112, 1e+113, 1e+114, 1e+115, 1e+116, 1e+117, 1e+118, 1e+119, 1e+120,
-		1e+121, 1e+122, 1e+123, 1e+124, 1e+125, 1e+126, 1e+127, 1e+128, 1e+129, 1e+130, 1e+131, 1e+132, 1e+133, 1e+134, 1e+135, 1e+136, 1e+137, 1e+138, 1e+139, 1e+140,
-		1e+141, 1e+142, 1e+143, 1e+144, 1e+145, 1e+146, 1e+147, 1e+148, 1e+149, 1e+150, 1e+151, 1e+152, 1e+153, 1e+154, 1e+155, 1e+156, 1e+157, 1e+158, 1e+159, 1e+160,
-		1e+161, 1e+162, 1e+163, 1e+164, 1e+165, 1e+166, 1e+167, 1e+168, 1e+169, 1e+170, 1e+171, 1e+172, 1e+173, 1e+174, 1e+175, 1e+176, 1e+177, 1e+178, 1e+179, 1e+180,
-		1e+181, 1e+182, 1e+183, 1e+184, 1e+185, 1e+186, 1e+187, 1e+188, 1e+189, 1e+190, 1e+191, 1e+192, 1e+193, 1e+194, 1e+195, 1e+196, 1e+197, 1e+198, 1e+199, 1e+200,
-		1e+201, 1e+202, 1e+203, 1e+204, 1e+205, 1e+206, 1e+207, 1e+208, 1e+209, 1e+210, 1e+211, 1e+212, 1e+213, 1e+214, 1e+215, 1e+216, 1e+217, 1e+218, 1e+219, 1e+220,
-		1e+221, 1e+222, 1e+223, 1e+224, 1e+225, 1e+226, 1e+227, 1e+228, 1e+229, 1e+230, 1e+231, 1e+232, 1e+233, 1e+234, 1e+235, 1e+236, 1e+237, 1e+238, 1e+239, 1e+240,
-		1e+241, 1e+242, 1e+243, 1e+244, 1e+245, 1e+246, 1e+247, 1e+248, 1e+249, 1e+250, 1e+251, 1e+252, 1e+253, 1e+254, 1e+255, 1e+256, 1e+257, 1e+258, 1e+259, 1e+260,
-		1e+261, 1e+262, 1e+263, 1e+264, 1e+265, 1e+266, 1e+267, 1e+268, 1e+269, 1e+270, 1e+271, 1e+272, 1e+273, 1e+274, 1e+275, 1e+276, 1e+277, 1e+278, 1e+279, 1e+280,
-		1e+281, 1e+282, 1e+283, 1e+284, 1e+285, 1e+286, 1e+287, 1e+288, 1e+289, 1e+290, 1e+291, 1e+292, 1e+293, 1e+294, 1e+295, 1e+296, 1e+297, 1e+298, 1e+299, 1e+300,
-		1e+301, 1e+302, 1e+303, 1e+304, 1e+305, 1e+306, 1e+307, 1e+308};
+						 1e-308, 1e-307, 1e-306, 1e-305, 1e-304, 1e-303, 1e-302, 1e-301, 1e-300,
+						 1e-299, 1e-298, 1e-297, 1e-296, 1e-295, 1e-294, 1e-293, 1e-292, 1e-291, 1e-290, 1e-289, 1e-288, 1e-287, 1e-286, 1e-285, 1e-284, 1e-283, 1e-282, 1e-281, 1e-280,
+						 1e-279, 1e-278, 1e-277, 1e-276, 1e-275, 1e-274, 1e-273, 1e-272, 1e-271, 1e-270, 1e-269, 1e-268, 1e-267, 1e-266, 1e-265, 1e-264, 1e-263, 1e-262, 1e-261, 1e-260,
+						 1e-259, 1e-258, 1e-257, 1e-256, 1e-255, 1e-254, 1e-253, 1e-252, 1e-251, 1e-250, 1e-249, 1e-248, 1e-247, 1e-246, 1e-245, 1e-244, 1e-243, 1e-242, 1e-241, 1e-240,
+						 1e-239, 1e-238, 1e-237, 1e-236, 1e-235, 1e-234, 1e-233, 1e-232, 1e-231, 1e-230, 1e-229, 1e-228, 1e-227, 1e-226, 1e-225, 1e-224, 1e-223, 1e-222, 1e-221, 1e-220,
+						 1e-219, 1e-218, 1e-217, 1e-216, 1e-215, 1e-214, 1e-213, 1e-212, 1e-211, 1e-210, 1e-209, 1e-208, 1e-207, 1e-206, 1e-205, 1e-204, 1e-203, 1e-202, 1e-201, 1e-200,
+						 1e-199, 1e-198, 1e-197, 1e-196, 1e-195, 1e-194, 1e-193, 1e-192, 1e-191, 1e-190, 1e-189, 1e-188, 1e-187, 1e-186, 1e-185, 1e-184, 1e-183, 1e-182, 1e-181, 1e-180,
+						 1e-179, 1e-178, 1e-177, 1e-176, 1e-175, 1e-174, 1e-173, 1e-172, 1e-171, 1e-170, 1e-169, 1e-168, 1e-167, 1e-166, 1e-165, 1e-164, 1e-163, 1e-162, 1e-161, 1e-160,
+						 1e-159, 1e-158, 1e-157, 1e-156, 1e-155, 1e-154, 1e-153, 1e-152, 1e-151, 1e-150, 1e-149, 1e-148, 1e-147, 1e-146, 1e-145, 1e-144, 1e-143, 1e-142, 1e-141, 1e-140,
+						 1e-139, 1e-138, 1e-137, 1e-136, 1e-135, 1e-134, 1e-133, 1e-132, 1e-131, 1e-130, 1e-129, 1e-128, 1e-127, 1e-126, 1e-125, 1e-124, 1e-123, 1e-122, 1e-121, 1e-120,
+						 1e-119, 1e-118, 1e-117, 1e-116, 1e-115, 1e-114, 1e-113, 1e-112, 1e-111, 1e-110, 1e-109, 1e-108, 1e-107, 1e-106, 1e-105, 1e-104, 1e-103, 1e-102, 1e-101, 1e-100,
+						 1e-99, 1e-98, 1e-97, 1e-96, 1e-95, 1e-94, 1e-93, 1e-92, 1e-91, 1e-90, 1e-89, 1e-88, 1e-87, 1e-86, 1e-85, 1e-84, 1e-83, 1e-82, 1e-81, 1e-80,
+						 1e-79, 1e-78, 1e-77, 1e-76, 1e-75, 1e-74, 1e-73, 1e-72, 1e-71, 1e-70, 1e-69, 1e-68, 1e-67, 1e-66, 1e-65, 1e-64, 1e-63, 1e-62, 1e-61, 1e-60,
+						 1e-59, 1e-58, 1e-57, 1e-56, 1e-55, 1e-54, 1e-53, 1e-52, 1e-51, 1e-50, 1e-49, 1e-48, 1e-47, 1e-46, 1e-45, 1e-44, 1e-43, 1e-42, 1e-41, 1e-40,
+						 1e-39, 1e-38, 1e-37, 1e-36, 1e-35, 1e-34, 1e-33, 1e-32, 1e-31, 1e-30, 1e-29, 1e-28, 1e-27, 1e-26, 1e-25, 1e-24, 1e-23, 1e-22, 1e-21, 1e-20,
+						 1e-19, 1e-18, 1e-17, 1e-16, 1e-15, 1e-14, 1e-13, 1e-12, 1e-11, 1e-10, 1e-9, 1e-8, 1e-7, 1e-6, 1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1e+0,
+						 1e+1, 1e+2, 1e+3, 1e+4, 1e+5, 1e+6, 1e+7, 1e+8, 1e+9, 1e+10, 1e+11, 1e+12, 1e+13, 1e+14, 1e+15, 1e+16, 1e+17, 1e+18, 1e+19, 1e+20,
+						 1e+21, 1e+22, 1e+23, 1e+24, 1e+25, 1e+26, 1e+27, 1e+28, 1e+29, 1e+30, 1e+31, 1e+32, 1e+33, 1e+34, 1e+35, 1e+36, 1e+37, 1e+38, 1e+39, 1e+40,
+						 1e+41, 1e+42, 1e+43, 1e+44, 1e+45, 1e+46, 1e+47, 1e+48, 1e+49, 1e+50, 1e+51, 1e+52, 1e+53, 1e+54, 1e+55, 1e+56, 1e+57, 1e+58, 1e+59, 1e+60,
+						 1e+61, 1e+62, 1e+63, 1e+64, 1e+65, 1e+66, 1e+67, 1e+68, 1e+69, 1e+70, 1e+71, 1e+72, 1e+73, 1e+74, 1e+75, 1e+76, 1e+77, 1e+78, 1e+79, 1e+80,
+						 1e+81, 1e+82, 1e+83, 1e+84, 1e+85, 1e+86, 1e+87, 1e+88, 1e+89, 1e+90, 1e+91, 1e+92, 1e+93, 1e+94, 1e+95, 1e+96, 1e+97, 1e+98, 1e+99, 1e+100,
+						 1e+101, 1e+102, 1e+103, 1e+104, 1e+105, 1e+106, 1e+107, 1e+108, 1e+109, 1e+110, 1e+111, 1e+112, 1e+113, 1e+114, 1e+115, 1e+116, 1e+117, 1e+118, 1e+119, 1e+120,
+						 1e+121, 1e+122, 1e+123, 1e+124, 1e+125, 1e+126, 1e+127, 1e+128, 1e+129, 1e+130, 1e+131, 1e+132, 1e+133, 1e+134, 1e+135, 1e+136, 1e+137, 1e+138, 1e+139, 1e+140,
+						 1e+141, 1e+142, 1e+143, 1e+144, 1e+145, 1e+146, 1e+147, 1e+148, 1e+149, 1e+150, 1e+151, 1e+152, 1e+153, 1e+154, 1e+155, 1e+156, 1e+157, 1e+158, 1e+159, 1e+160,
+						 1e+161, 1e+162, 1e+163, 1e+164, 1e+165, 1e+166, 1e+167, 1e+168, 1e+169, 1e+170, 1e+171, 1e+172, 1e+173, 1e+174, 1e+175, 1e+176, 1e+177, 1e+178, 1e+179, 1e+180,
+						 1e+181, 1e+182, 1e+183, 1e+184, 1e+185, 1e+186, 1e+187, 1e+188, 1e+189, 1e+190, 1e+191, 1e+192, 1e+193, 1e+194, 1e+195, 1e+196, 1e+197, 1e+198, 1e+199, 1e+200,
+						 1e+201, 1e+202, 1e+203, 1e+204, 1e+205, 1e+206, 1e+207, 1e+208, 1e+209, 1e+210, 1e+211, 1e+212, 1e+213, 1e+214, 1e+215, 1e+216, 1e+217, 1e+218, 1e+219, 1e+220,
+						 1e+221, 1e+222, 1e+223, 1e+224, 1e+225, 1e+226, 1e+227, 1e+228, 1e+229, 1e+230, 1e+231, 1e+232, 1e+233, 1e+234, 1e+235, 1e+236, 1e+237, 1e+238, 1e+239, 1e+240,
+						 1e+241, 1e+242, 1e+243, 1e+244, 1e+245, 1e+246, 1e+247, 1e+248, 1e+249, 1e+250, 1e+251, 1e+252, 1e+253, 1e+254, 1e+255, 1e+256, 1e+257, 1e+258, 1e+259, 1e+260,
+						 1e+261, 1e+262, 1e+263, 1e+264, 1e+265, 1e+266, 1e+267, 1e+268, 1e+269, 1e+270, 1e+271, 1e+272, 1e+273, 1e+274, 1e+275, 1e+276, 1e+277, 1e+278, 1e+279, 1e+280,
+						 1e+281, 1e+282, 1e+283, 1e+284, 1e+285, 1e+286, 1e+287, 1e+288, 1e+289, 1e+290, 1e+291, 1e+292, 1e+293, 1e+294, 1e+295, 1e+296, 1e+297, 1e+298, 1e+299, 1e+300,
+						 1e+301, 1e+302, 1e+303, 1e+304, 1e+305, 1e+306, 1e+307, 1e+308};
 
 	template <typename CharType = char>
 	struct UTF8
 	{
-		typedef CharType Ch;
+			typedef CharType Ch;
 
-		static Ch* Encode(Ch* buffer, unsigned codepoint) {
-			if (codepoint <= 0x7F)
-				*buffer++ = codepoint & 0xFF;
-			else if (codepoint <= 0x7FF) {
-				*buffer++ = 0xC0 | ((codepoint >> 6) & 0xFF);
-				*buffer++ = 0x80 | ((codepoint & 0x3F));
-			} else if (codepoint <= 0xFFFF) {
-				*buffer++ = 0xE0 | ((codepoint >> 12) & 0xFF);
-				*buffer++ = 0x80 | ((codepoint >> 6) & 0x3F);
-				*buffer++ = 0x80 | (codepoint & 0x3F);
-			} else {
-				if (!(codepoint <= 0x10FFFF))
-					return buffer;
-				*buffer++ = 0xF0 | ((codepoint >> 18) & 0xFF);
-				*buffer++ = 0x80 | ((codepoint >> 12) & 0x3F);
-				*buffer++ = 0x80 | ((codepoint >> 6) & 0x3F);
-				*buffer++ = 0x80 | (codepoint & 0x3F);
+			static Ch* Encode(Ch* buffer, unsigned codepoint) {
+				if (codepoint <= 0xFF) {
+					*buffer++ = codepoint & 0xFF;
+				} else if (codepoint <= 0x7FF) {
+					*buffer++ = 0xC0 | ((codepoint >> 6) & 0xFF);
+					*buffer++ = 0x80 | ((codepoint & 0x3F));
+				} else if (codepoint <= 0xFFFF) {
+					*buffer++ = 0xE0 | ((codepoint >> 12) & 0xFF);
+					*buffer++ = 0x80 | ((codepoint >> 6) & 0x3F);
+					*buffer++ = 0x80 | (codepoint & 0x3F);
+				} else {
+					if (!(codepoint <= 0x10FFFF))
+						return buffer;
+					*buffer++ = 0xF0 | ((codepoint >> 18) & 0xFF);
+					*buffer++ = 0x80 | ((codepoint >> 12) & 0x3F);
+					*buffer++ = 0x80 | ((codepoint >> 6) & 0x3F);
+					*buffer++ = 0x80 | (codepoint & 0x3F);
+				}
+				return buffer;
 			}
-			return buffer;
-		}
 	};
 
 	double Pow10(int n) {
@@ -191,8 +191,8 @@ namespace JSON_NAMESPACE
 		ret.m_number = 0.0;
 		ret.m_places = -1;
 
-		ret.obj = NULL;
-		ret.arr = NULL;
+		ret.obj = nullptr;
+		ret.arr = nullptr;
 		ret.m_boolean = false;
 	}
 
@@ -213,14 +213,15 @@ namespace JSON_NAMESPACE
 	}
 
 	void SkipWhitespace(instring& in) {
-		while (in.peek() == ' ' || in.peek() == '\n' || in.peek() == '\r' || in.peek() == '\t')
+		while (in.peek() == ' ' || in.peek() == '\n' || in.peek() == '\r' || in.peek() == '\t'){
 			in.skip();
+		}
 	}
 
-	unsigned hex4Parse(instring& s, bool* bFailed) {
+	unsigned hex4Parse(instring& s, sdstring::iterator & take, bool* bFailed) {
 		unsigned ret = 0;
 		for (int i = 0; i < 4; i++) {
-			const char &c = s.take();
+			const char &c = *take++;
 			ret <<= 4;
 			ret += (unsigned)c;
 			if (c >= '0' && c <= '9')
@@ -272,17 +273,23 @@ namespace JSON_NAMESPACE
 
 				case '\\': {
 					const char &cE = *take++;
-					if (escape[(unsigned char)cE])
+					if (escape[(unsigned char)cE]) {
 						*ptr++ = escape[(unsigned char)cE];
-					else if (cE == 'u') { // Unicode
-						unsigned h = hex4Parse(s, bFailed);
+					} else if (cE == 'u') { // Unicode
+						unsigned h = hex4Parse(s, take, bFailed);
+						if (*bFailed) {
+							return;
+						}
 						if (h >= 0xD800 && h <= 0xDBFF) { // Handle UTF-16 surrogate pair
 							if (*take++ != '\\' || *take++ != 'u') {
 								generateError(s, "Error Parsing string.");
 								*bFailed = true;
 								return;
 							}
-							unsigned h2 = hex4Parse(s, bFailed);
+							unsigned h2 = hex4Parse(s, take, bFailed);
+							if (*bFailed) {
+								return;
+							}
 							if (h2 < 0xDC00 || h2 > 0xDFFF) {
 								generateError(s, "Error Parsing string.");
 								*bFailed = true;
@@ -470,17 +477,17 @@ namespace JSON_NAMESPACE
 			SkipWhitespace(inputString);
 
 			switch (inputString.take()) {
-			case ',':
-				SkipWhitespace(inputString);
-				break;
+				case ',':
+					SkipWhitespace(inputString);
+					break;
 
-			case '}':
-				return;
-			default:
-				generateError(inputString, "Must be a comma or '}' after an object member");
-				*bFailed = true;
-				ret = value();
-				return;
+				case '}':
+					return;
+				default:
+					generateError(inputString, "Must be a comma or '}' after an object member");
+					*bFailed = true;
+					ret = value();
+					return;
 			}
 		}
 	}
@@ -525,17 +532,17 @@ namespace JSON_NAMESPACE
 			SkipWhitespace(inputString);
 			char c = inputString.take();
 			switch (c) {
-			case ',':
-				SkipWhitespace(inputString);
-				break;
+				case ',':
+					SkipWhitespace(inputString);
+					break;
 
-			case ']':
-				return;
-			default:
-				generateError(inputString, "Must be a comma or ']' after an array element.");
-				*bFailed = true;
-				arr = value();
-				return;
+				case ']':
+					return;
+				default:
+					generateError(inputString, "Must be a comma or ']' after an array element.");
+					*bFailed = true;
+					arr = value();
+					return;
 			}
 		}
 	}
@@ -543,44 +550,49 @@ namespace JSON_NAMESPACE
 	void valueParse(value& a, instring& inputString, bool* bFailed)
 	{
 		switch (inputString.peek()) {
-		case 'n':
-			nullParse(a, inputString, bFailed);
-			return;
-		case 't':
-			trueParse(a, inputString, bFailed);
-			return;
-		case 'f':
-			falseParse(a, inputString, bFailed);
-			return;
-		case '"': {
-			if (a.myType == JSON_OBJECT)
-				delete a.obj;
-			if (a.myType == JSON_ARRAY)
-				delete a.arr;
-			a.myType = JSON_STRING;
-			a.m_boolean = false;
-			a.m_number = 0.0;
-			a.m_places = -1;
-			if (!a.str.empty())
-				a.str.clear();
+			case 'n':
+				nullParse(a, inputString, bFailed);
+				return;
+			case 't':
+				trueParse(a, inputString, bFailed);
+				return;
+			case 'f':
+				falseParse(a, inputString, bFailed);
+				return;
+			case '"': {
+				if (a.myType == JSON_OBJECT)
+					delete a.obj;
+				if (a.myType == JSON_ARRAY)
+					delete a.arr;
+				a.myType = JSON_STRING;
+				a.m_boolean = false;
+				a.m_number = 0.0;
+				a.m_places = -1;
+				if (!a.str.empty())
+					a.str.clear();
 
-			stringParse(a.str, inputString, bFailed);
-			return;
-		}
-		case '{':
-			objectParse(a, inputString, bFailed);
-			return;
-		case '[':
-			arrayParse(a, inputString, bFailed);
-			return;
+				stringParse(a.str, inputString, bFailed);
+				return;
+			}
+			case '{':
+				objectParse(a, inputString, bFailed);
+				return;
+			case '[':
+				arrayParse(a, inputString, bFailed);
+				return;
 		}
 		numberParse(a, inputString, bFailed);
+	}
+
+	inline bool isValidUTF8Character(const unsigned char& c) {
+		// Check if the byte is a valid start of a UTF-8 character
+		return (c & 0xC0) != 0x80;
 	}
 
 	size_t esize(const sdstring& ins) {
 		size_t ret = 0;
 		static const char escape[256] = {
-		//  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F
+			//  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F
 			6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2, 6, 2, 2, 6, 6, // 00
 			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // 10
 			1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	// 20
@@ -588,20 +600,20 @@ namespace JSON_NAMESPACE
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	// 40
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1,	// 50
 			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 60
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 70
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 80
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // 90
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // A0
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // B0
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // C0
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // D0
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, // E0
-			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1	// F0
+			1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 6, // 70
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // 80
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // 90
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // A0
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // B0
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // C0
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // D0
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // E0
+			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // F0
 		};
-		size_t l = ins.size();
-		const char * in = ins.c_str();
-		for (size_t i = 0; i < l; i++) {
-			ret += (size_t)escape[(unsigned char)(*(in++))];
+		auto end = ins.end();
+		for (auto it = ins.begin(); it != end; ++it) {
+			const char & c = *it;
+			ret += (size_t)escape[(const unsigned char)(c)];
 		}
 		return ret;
 	}
@@ -610,7 +622,7 @@ namespace JSON_NAMESPACE
 	{
 		static const char hexDigits[] = "0123456789ABCDEF";
 		static const char escape[256] = {
-		//   0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
+			//   0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
 			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'b', 't', 'n', 'u', 'f', 'r', 'u', 'u', // 00
 			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // 10
 			 0,   0,  '"',  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 20
@@ -618,33 +630,34 @@ namespace JSON_NAMESPACE
 			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,	// 40																// 30~4F
 			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  '\\', 0,   0,   0,  // 50
 			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 60
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 70
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 80
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 90
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // A0
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // B0
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // C0
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // D0
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // E0
-			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // F0
+			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  'u', // 70
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // 80
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // 90
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // A0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // B0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // C0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // D0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // E0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // F0
 		};
 
-		size_t l = ins.size();
-		const char* in = ins.c_str();
-		for (size_t i = 0; i < l; i++, in++) {
-			switch (escape[(unsigned char)(*in)]) {
-			case 0:
-				ptr.set((*in));
-				break;
-			case 'u':
-				ptr.set("\\u00", 4);
-				ptr.set(hexDigits[(*in) >> 4]);
-				ptr.set(hexDigits[(*in) & 0xF]);
-				break;
-			default:
-				ptr.set('\\');
-				ptr.set(escape[(unsigned char)(*in)]);
-				break;
+		auto end = ins.end();
+		for (auto it = ins.begin(); it != end; ++it) {
+			const unsigned char & c = *it;
+			char e = escape[c];
+			switch (e) {
+				case 0:
+					ptr.set(c);
+					break;
+				default:
+					ptr.set('\\');
+					ptr.set(e);
+					break;
+				case 'u':
+					ptr.set("\\u00", 4);
+					ptr.set(hexDigits[c >> 4]);
+					ptr.set(hexDigits[c & 0xF]);
+					break;
 			}
 		}
 	}
@@ -825,20 +838,20 @@ namespace JSON_NAMESPACE
 
 	bool value::boolean() const {
 		switch (myType) {
-		case JSON_VOID:
-		case JSON_NULL:
-		default:
-			return false;
-		case JSON_BOOLEAN:
-			return m_boolean;
-		case JSON_NUMBER:
-			return m_number != 0.0;
-		case JSON_STRING:
-			return str.size() > 0;
-		case JSON_ARRAY:
-			return !arr->empty();
-		case JSON_OBJECT:
-			return !obj->empty();
+			case JSON_VOID:
+			case JSON_NULL:
+			default:
+				return false;
+			case JSON_BOOLEAN:
+				return m_boolean;
+			case JSON_NUMBER:
+				return m_number != 0.0;
+			case JSON_STRING:
+				return str.size() > 0;
+			case JSON_ARRAY:
+				return !arr->empty();
+			case JSON_OBJECT:
+				return !obj->empty();
 		}
 	}
 
@@ -871,80 +884,80 @@ namespace JSON_NAMESPACE
 	size_t value::psize(size_t depth, bool bPretty)
 	{
 		switch (isA()) {
-		default:
-		case JSON_VOID:
-			return 0;
+			default:
+			case JSON_VOID:
+				return 0;
 
-		case JSON_NULL:
-			return 4;
-
-		case JSON_BOOLEAN:
-			if (m_boolean)
+			case JSON_NULL:
 				return 4;
-			else
-				return 5;
 
-		case JSON_NUMBER: {
-			if (str.empty()) {
-				makeStringFromNumber(str, m_places, m_number);
+			case JSON_BOOLEAN:
+				if (m_boolean)
+					return 4;
+				else
+					return 5;
+
+			case JSON_NUMBER: {
+				if (str.empty()) {
+					makeStringFromNumber(str, m_places, m_number);
+				}
+				return str.size();
 			}
-			return str.size();
-		}
 
-		case JSON_STRING:
-			return esize(str) + 2;
+			case JSON_STRING:
+				return esize(str) + 2;
 
-		case JSON_ARRAY:
-			arr->resize(size());
-			return arr->psize(depth + 1, bPretty);
+			case JSON_ARRAY:
+				arr->resize(size());
+				return arr->psize(depth + 1, bPretty);
 
-		case JSON_OBJECT:
-			return obj->psize(depth + 1, bPretty);
+			case JSON_OBJECT:
+				return obj->psize(depth + 1, bPretty);
 		}
 	}
 
 	void value::cprint(MovingCharPointer& ptr, size_t depth, bool bPretty)
 	{
 		switch (isA()) {
-		default:
-		case JSON_VOID:
-			break;
+			default:
+			case JSON_VOID:
+				break;
 
-		case JSON_NULL:
-			ptr.set("null", 4);
-			break;
+			case JSON_NULL:
+				ptr.set("null", 4);
+				break;
 
-		case JSON_BOOLEAN:
-			if (m_boolean) {
-				ptr.set("true", 4);
-			} else {
-				ptr.set("false", 5);
+			case JSON_BOOLEAN:
+				if (m_boolean) {
+					ptr.set("true", 4);
+				} else {
+					ptr.set("false", 5);
+				}
+				break;
+
+			case JSON_NUMBER: {
+				if (str.empty()) {
+					makeStringFromNumber(str, m_places, m_number);
+				}
+				ptr.set(str.c_str(), str.size());
+
+				break;
 			}
-			break;
 
-		case JSON_NUMBER: {
-			if (str.empty()) {
-				makeStringFromNumber(str, m_places, m_number);
+			case JSON_STRING: {
+				ptr.set('\"');
+				escape(ptr, str);
+				ptr.set('\"');
+				break;
 			}
-			ptr.set(str.c_str(), str.size());
 
-			break;
-		}
+			case JSON_ARRAY:
+				arr->cprint(ptr, depth + 1, bPretty);
+				break;
 
-		case JSON_STRING: {
-			ptr.set('\"');
-			escape(ptr, str);
-			ptr.set('\"');
-			break;
-		}
-
-		case JSON_ARRAY:
-			arr->cprint(ptr, depth + 1, bPretty);
-			break;
-
-		case JSON_OBJECT:
-			obj->cprint(ptr, depth + 1, bPretty);
-			break;
+			case JSON_OBJECT:
+				obj->cprint(ptr, depth + 1, bPretty);
+				break;
 		}
 	}
 
@@ -1153,9 +1166,9 @@ namespace JSON_NAMESPACE
 		} else if (!it.IsArray() && !it.Neither() && obj) {
 			return obj->erase(it.obj());
 		}
-		if (arr != NULL) {
+		if (arr != nullptr) {
 			return arr->end();
-		} else if (obj != NULL) {
+		} else if (obj != nullptr) {
 			return obj->end();
 		}
 		return iterator();
@@ -1180,7 +1193,7 @@ namespace JSON_NAMESPACE
 			}
 			return false;
 		}
-		if (isA(JSON_ARRAY) && arr != NULL) {
+		if (isA(JSON_ARRAY) && arr != nullptr) {
 			if (arr->empty()) {
 				return false;
 			}
@@ -1193,7 +1206,7 @@ namespace JSON_NAMESPACE
 
 	bool value::exists(const sdstring& index)
 	{
-		if (isA(JSON_OBJECT) && obj != NULL) {
+		if (isA(JSON_OBJECT) && obj != nullptr) {
 			if (obj->empty()) {
 				return false;
 			}
@@ -1233,12 +1246,12 @@ namespace JSON_NAMESPACE
 			switch (myType) {
 				case JSON_OBJECT:
 					delete obj;
-					obj = NULL;
+					obj = nullptr;
 					break;
 
 				case JSON_ARRAY:
 					delete arr;
-					arr = NULL;
+					arr = nullptr;
 					break;
 
 				default:
@@ -1277,7 +1290,7 @@ namespace JSON_NAMESPACE
 				obj->setParentArray(pParentArray);
 			}
 			delete arr;
-			arr = NULL;
+			arr = nullptr;
 		}
 		obj->setNotEmpty();
 		return iterator(obj->insert(obj->end(), std::pair<sdstring, value>(index, V)));
@@ -1316,19 +1329,19 @@ namespace JSON_NAMESPACE
 	void value::insert(iterator position, iterator first, iterator last)
 	{
 		if (position.IsArray() && first.IsArray() && last.IsArray()) {
-			if (myType != JSON_ARRAY || arr == NULL) {
+			if (myType != JSON_ARRAY || arr == nullptr) {
 				m_number = 0;
 				m_places = -1;
 				m_boolean = false;
 				switch (myType) {
 					case JSON_OBJECT:
 						delete obj;
-						obj = NULL;
+						obj = nullptr;
 						break;
 
 					case JSON_ARRAY:
 						delete arr;
-						arr = NULL;
+						arr = nullptr;
 						break;
 
 					default:
@@ -1352,15 +1365,15 @@ namespace JSON_NAMESPACE
 #else
 		} else if (!first.IsArray() && !first.Neither() && !last.IsArray() && !last.Neither()) {
 #endif
-			if (myType != JSON_OBJECT || obj == NULL) {
+			if (myType != JSON_OBJECT || obj == nullptr) {
 				m_number = 0;
 				m_places = -1;
 				m_boolean = false;
 				myType = JSON_OBJECT;
-						if (arr) {
-								delete arr;
-							 arr = NULL;
-						}
+				if (arr) {
+					delete arr;
+					arr = nullptr;
+				}
 				if (!str.empty())
 					str.clear();
 				obj = new object();
@@ -1389,12 +1402,12 @@ namespace JSON_NAMESPACE
 				switch (myType) {
 					case JSON_OBJECT:
 						delete obj;
-						obj = NULL;
+						obj = nullptr;
 						break;
 
 					case JSON_ARRAY:
 						delete arr;
-						arr = NULL;
+						arr = nullptr;
 						break;
 
 					default:
@@ -1428,7 +1441,7 @@ namespace JSON_NAMESPACE
 					obj->setParentArray(pParentArray);
 				}
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 			}
 			obj->setNotEmpty();
 			obj->insert(first.obj(), last.obj());
@@ -1477,8 +1490,8 @@ namespace JSON_NAMESPACE
 				break;
 		}
 
-		pParentObject = NULL;
-		pParentArray = NULL;
+		pParentObject = nullptr;
+		pParentArray = nullptr;
 
 		V.myType = JSON_VOID;
 	}
@@ -1533,16 +1546,16 @@ namespace JSON_NAMESPACE
 		myVec(V.begin(), V.end())
 	{
 		bNotEmpty = V.bNotEmpty;
-		pParentArray = NULL;
-		pParentObject = NULL;
+		pParentArray = nullptr;
+		pParentObject = nullptr;
 	}
 
 	array::array(const json::array* V) :
 		myVec(V->begin(), V->end())
 	{
 		bNotEmpty = V->bNotEmpty;
-		pParentArray = NULL;
-		pParentObject = NULL;
+		pParentArray = nullptr;
+		pParentObject = nullptr;
 	}
 
 	object::object(const json::object& V)
@@ -1553,8 +1566,8 @@ namespace JSON_NAMESPACE
 		}
 
 		bNotEmpty = V.bNotEmpty;
-		pParentArray = NULL;
-		pParentObject = NULL;
+		pParentArray = nullptr;
+		pParentObject = nullptr;
 	}
 
 	object::object(const json::object* V)
@@ -1569,8 +1582,8 @@ namespace JSON_NAMESPACE
 		} else {
 			bNotEmpty = false;
 		}
-		pParentArray = NULL;
-		pParentObject = NULL;
+		pParentArray = nullptr;
+		pParentObject = nullptr;
 	}
 #endif
 
@@ -1582,7 +1595,7 @@ namespace JSON_NAMESPACE
 				return("Void (Will not output)");
 
 			case JSON_NULL:
-				return("NULL");
+				return("nullptr");
 
 			case JSON_BOOLEAN:
 				return("Boolean");
@@ -1650,12 +1663,12 @@ namespace JSON_NAMESPACE
 			switch (myType) {
 				case JSON_OBJECT:
 					delete obj;
-					obj = NULL;
+					obj = nullptr;
 					break;
 
 				case JSON_ARRAY:
 					delete arr;
-					arr = NULL;
+					arr = nullptr;
 					break;
 
 				default:
@@ -1740,11 +1753,11 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -1774,8 +1787,8 @@ namespace JSON_NAMESPACE
 
 		V.myType = JSON_VOID;
 
-		V.pParentObject = NULL;
-		V.pParentArray = NULL;
+		V.pParentObject = nullptr;
+		V.pParentArray = nullptr;
 
 		return *this;
 	}
@@ -1809,9 +1822,9 @@ namespace JSON_NAMESPACE
 
 		myType = JSON_OBJECT;
 		obj = new object(V);
-		arr = NULL;
-		pParentObject = NULL;
-		pParentArray = NULL;
+		arr = nullptr;
+		pParentObject = nullptr;
+		pParentArray = nullptr;
 	}
 	value::value(array& V) {
 		m_number = 0;
@@ -1819,10 +1832,10 @@ namespace JSON_NAMESPACE
 		m_boolean = false;
 
 		myType = JSON_ARRAY;
-		obj = NULL;
+		obj = nullptr;
 		arr = new array(V);
-		pParentObject = NULL;
-		pParentArray = NULL;
+		pParentObject = nullptr;
+		pParentArray = nullptr;
 	}
 
 	int value::isA() const
@@ -1998,7 +2011,7 @@ namespace JSON_NAMESPACE
 			str.clear();
 			if (myType == JSON_ARRAY) {
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 			}
 		}
 		myType = JSON_OBJECT;
@@ -2082,12 +2095,12 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -2112,12 +2125,12 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -2155,12 +2168,12 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -2186,12 +2199,12 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -2315,7 +2328,7 @@ namespace JSON_NAMESPACE
 			str.clear();
 			if (myType == JSON_OBJECT) {
 				delete obj;
-				// obj = NULL;
+				// obj = nullptr;
 			}
 			myType = JSON_ARRAY;
 			arr = new array();
@@ -2509,12 +2522,12 @@ namespace JSON_NAMESPACE
 					switch (myType) {
 						case JSON_OBJECT:
 							delete obj;
-							obj = NULL;
+							obj = nullptr;
 							break;
 
 						case JSON_ARRAY:
 							delete arr;
-							arr = NULL;
+							arr = nullptr;
 							break;
 
 						default:
@@ -2540,12 +2553,12 @@ namespace JSON_NAMESPACE
 					switch (myType) {
 						case JSON_OBJECT:
 							delete obj;
-							obj = NULL;
+							obj = nullptr;
 							break;
 
 						case JSON_ARRAY:
 							delete arr;
-							arr = NULL;
+							arr = nullptr;
 							break;
 
 						default:
@@ -2588,12 +2601,12 @@ namespace JSON_NAMESPACE
 					switch (myType) {
 						case JSON_OBJECT:
 							delete obj;
-							obj = NULL;
+							obj = nullptr;
 							break;
 
 						case JSON_ARRAY:
 							delete arr;
-							arr = NULL;
+							arr = nullptr;
 							break;
 
 						default:
@@ -2627,12 +2640,12 @@ namespace JSON_NAMESPACE
 					switch (myType) {
 						case JSON_OBJECT:
 							delete obj;
-							obj = NULL;
+							obj = nullptr;
 							break;
 
 						case JSON_ARRAY:
 							delete arr;
-							arr = NULL;
+							arr = nullptr;
 							break;
 
 						default:
@@ -2782,38 +2795,38 @@ namespace JSON_NAMESPACE
 	size_t value::size() const
 	{
 		switch (myType) {
-		case JSON_ARRAY:
-		{
-			size_t ret = arr->size();
-			auto ritend = rend();
-			for (reverse_iterator it = rbegin(); it != ritend; ++it) {
-                if ((*it).isA(JSON_VOID)) {
-					ret--;
-				} else {
-					break;
+			case JSON_ARRAY:
+			{
+				size_t ret = arr->size();
+				auto ritend = rend();
+				for (reverse_iterator it = rbegin(); it != ritend; ++it) {
+					if ((*it).isA(JSON_VOID)) {
+						ret--;
+					} else {
+						break;
+					}
 				}
+				return ret;
 			}
-			return ret;
-		}
 
-		case JSON_OBJECT:
-		{
-			size_t ret = 0;
-			auto itend = this->end();
-			for (iterator it = this->begin(); it != itend; ++it) {
-                if (!(*it).isA(JSON_VOID)) {
-					ret++;
+			case JSON_OBJECT:
+			{
+				size_t ret = 0;
+				auto itend = this->end();
+				for (iterator it = this->begin(); it != itend; ++it) {
+					if (!(*it).isA(JSON_VOID)) {
+						ret++;
+					}
 				}
+				return ret;
 			}
-			return ret;
-		}
 
-		case JSON_VOID:
-		case JSON_NULL:
-			return 0;
+			case JSON_VOID:
+			case JSON_NULL:
+				return 0;
 
-		default:
-			return 1;
+			default:
+				return 1;
 		}
 	}
 
@@ -2994,12 +3007,12 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -3011,7 +3024,7 @@ namespace JSON_NAMESPACE
 	void value::sort(bool (*compareFunc)(value&, value&)) {
 		if (myType == JSON_ARRAY) {
 			DEBUGPTR oldDebug = debug;
-			debug = NULL;
+			debug = nullptr;
 			std::sort(arr->begin(), arr->end(), compareFunc);
 			debug = oldDebug;
 		}
@@ -3019,78 +3032,78 @@ namespace JSON_NAMESPACE
 
 	double value::number() const {
 		switch (myType) {
-		case JSON_NUMBER:
-			return m_number;
+			case JSON_NUMBER:
+				return m_number;
 
-		case JSON_BOOLEAN:
-			return m_boolean ? 1.0 : 0.0;
+			case JSON_BOOLEAN:
+				return m_boolean ? 1.0 : 0.0;
 
-		case JSON_STRING: {
-			if (str.empty()) {
+			case JSON_STRING: {
+				if (str.empty()) {
+					return 0.0;
+				}
+				std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char>> convert(str.c_str());
+				double d = 0.0;
+				if (!(convert >> d)) {
+					return 0.0;
+				}
+				return d;
+			}
+			case JSON_OBJECT:
+			{
+				iterator it = (*this).find("#value");
+				if (it != (*this).end()) {
+					return (*it).m_number;
+				}
 				return 0.0;
 			}
-			std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char>> convert(str.c_str());
-			double d = 0.0;
-			if (!(convert >> d)) {
+			default:
 				return 0.0;
-			}
-			return d;
-		}
-		case JSON_OBJECT:
-		{
-			iterator it = (*this).find("#value");
-			if (it != (*this).end()) {
-				return (*it).m_number;
-			}
-			return 0.0;
-		}
-		default:
-			return 0.0;
 		}
 	}
 
 	sdstring& value::makeString(sdstring & dest) const
 	{
 		switch (myType) {
-		case JSON_STRING:
-			if (&dest != &str) {
-				dest.assign(str);
-			}
-			break;
-
-		case JSON_NUMBER:
-			if (&dest != &str) {
-				dest.clear();
-				makeStringFromNumber(dest, m_places, m_number);
-			} else if (dest.empty()) {
-				makeStringFromNumber(dest, m_places, m_number);
-			}
-			break;
-
-		case JSON_BOOLEAN:
-			if ((&dest != &str) || (dest.data()[0] != 't' && dest.data()[0] != 'f')) {
-				if (m_boolean) {
-					dest.assign("true");
-				} else {
-					dest.assign("false");
+			case JSON_STRING:
+				if (&dest != &str) {
+					dest.assign(str);
 				}
-			}
-			break;
+				break;
 
-		case JSON_OBJECT:
-		{
-			iterator it = (*this).find("#value");
-			if (it != (*this).end()) {
-				dest.assign((*it).str);
-			} else {
+			case JSON_NUMBER:
+				if (&dest != &str) {
+					dest.clear();
+					makeStringFromNumber(dest, m_places, m_number);
+				} else if (dest.empty()) {
+					makeStringFromNumber(dest, m_places, m_number);
+				}
+				break;
+
+			case JSON_BOOLEAN:
+				if ((&dest != &str) || (dest.data()[0] != 't' && dest.data()[0] != 'f')) {
+					if (m_boolean) {
+						dest.assign("true");
+					} else {
+						dest.assign("false");
+					}
+				}
+				break;
+
+			case JSON_OBJECT:
+			{
+				iterator it = (*this).find("#value");
+				if (it != (*this).end()) {
+					dest.assign((*it).str);
+				} else {
+					dest.clear();
+				}
+				break;
+			}
+
+			default:
 				dest.clear();
-			}
-			break;
-		}
-
-		default:
-			dest.clear();
-			break;
+				break;
 		}
 		return dest;
 	}
@@ -3623,28 +3636,28 @@ namespace JSON_NAMESPACE
 
 	std::ostream& operator<<(std::ostream& S, value& doc) {
 		switch (doc.isA()) {
-		case JSON_VOID:
-		case JSON_NULL:
-		case JSON_ARRAY:
-		case JSON_OBJECT:
-		default:
-			break;
+			case JSON_VOID:
+			case JSON_NULL:
+			case JSON_ARRAY:
+			case JSON_OBJECT:
+			default:
+				break;
 
-		case JSON_BOOLEAN:
-			if (doc.boolean())
-				S << "true";
-			else
-				S << "false";
-			break;
+			case JSON_BOOLEAN:
+				if (doc.boolean())
+					S << "true";
+				else
+					S << "false";
+				break;
 
-		case JSON_NUMBER:
-			S << doc._sdstring();
-			break;
+			case JSON_NUMBER:
+				S << doc._sdstring();
+				break;
 
-		case JSON_STRING: {
-			S << doc._sdstring();
-			break;
-		}
+			case JSON_STRING: {
+				S << doc._sdstring();
+				break;
+			}
 		}
 		return S;
 	}
@@ -3733,11 +3746,11 @@ namespace JSON_NAMESPACE
 		switch (myType) {
 			case JSON_OBJECT:
 				delete obj;
-				obj = NULL;
+				obj = nullptr;
 				break;
 			case JSON_ARRAY:
 				delete arr;
-				arr = NULL;
+				arr = nullptr;
 				break;
 
 			default:
@@ -3767,8 +3780,8 @@ namespace JSON_NAMESPACE
 
 		V.myType = JSON_VOID;
 
-		V.pParentObject = NULL;
-		V.pParentArray = NULL;
+		V.pParentObject = nullptr;
+		V.pParentArray = nullptr;
 
 		std::swap(bParseSuccessful, V.bParseSuccessful);
 		std::swap(strParseResult, V.strParseResult);
@@ -3837,7 +3850,7 @@ namespace JSON_NAMESPACE
 		sInstrPlusBak.append(".bak");
 
 		std::error_code ec;
-		if (fd == NULL) {
+		if (fd == nullptr) {
 			if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
 				fd = fopen(sInstrPlusBak.c_str(), "rb");
 				if (debug && fd) {
@@ -3903,7 +3916,7 @@ namespace JSON_NAMESPACE
 			sdstring ret;
 			MovingCharPointer ptr(ret, l);
 			val.obj->cprint(ptr, iDepth, bPretty);
-			if (preWriter == NULL) {
+			if (preWriter == nullptr) {
 				return ret;
 			} else {
 				sdstring sOut;
@@ -3916,7 +3929,7 @@ namespace JSON_NAMESPACE
 			MovingCharPointer ptr(ret, l);
 			val.arr->cprint(ptr, iDepth, bPretty);
 
-			if (preWriter == NULL) {
+			if (preWriter == nullptr) {
 				return ret;
 			} else {
 				sdstring sOut;
@@ -3927,7 +3940,7 @@ namespace JSON_NAMESPACE
 			sdstring t;
 			MovingCharPointer ptr(t, l);
 			val.cprint(ptr, iDepth, bPretty);
-			if (preWriter == NULL) {
+			if (preWriter == nullptr) {
 				return t;
 			} else {
 				sdstring sDat(t);
@@ -4062,7 +4075,7 @@ namespace JSON_NAMESPACE
 		return -1;
 	}
 
-	iterator::iterator(iterator&& it)// : arr_it(std::move(it.arr_it)), obj_it(std::move(it.obj_it)), bNone(std::move(it.bNone)), bIsArray(std::move(it.bIsArray)), bSetKey(std::move(it.bSetKey)) 
+	iterator::iterator(iterator&& it)// : arr_it(std::move(it.arr_it)), obj_it(std::move(it.obj_it)), bNone(std::move(it.bNone)), bIsArray(std::move(it.bIsArray)), bSetKey(std::move(it.bSetKey))
 	{
 		std::swap(bNone, it.bNone);
 		std::swap(arr_it, it.arr_it);
@@ -4072,7 +4085,7 @@ namespace JSON_NAMESPACE
 		it.bSetKey = false;
 	}
 
-	iterator& iterator::operator=(const iterator& it) 
+	iterator& iterator::operator=(const iterator& it)
 	{
 		if (this == &it) {
 			return *this;
@@ -4086,7 +4099,7 @@ namespace JSON_NAMESPACE
 		return *this;
 	}
 	
-	iterator& iterator::operator=(iterator&& it) 
+	iterator& iterator::operator=(iterator&& it)
 	{
 		std::swap(dumbRet, it.dumbRet);
 		std::swap(bNone, it.bNone);
@@ -4098,14 +4111,14 @@ namespace JSON_NAMESPACE
 		return *this;
 	}
 
-	iterator::~iterator() 
+	iterator::~iterator()
 	{
 		if (bSetKey) {
 			obj_it->second.m_key.clear();
 		}
 	}
 
-	iterator& iterator::operator++() 
+	iterator& iterator::operator++()
 	{
 		if (!bNone) {
 			if (bIsArray) {
@@ -4121,14 +4134,14 @@ namespace JSON_NAMESPACE
 		return *this;
 	}
 
-	iterator iterator::operator++(int) 
+	iterator iterator::operator++(int)
 	{
 		iterator tmp(*this);
 		operator++();
 		return tmp;
 	}
 
-	iterator& iterator::operator--() 
+	iterator& iterator::operator--()
 	{
 		if (!bNone) {
 			if (bIsArray) {
@@ -4144,7 +4157,7 @@ namespace JSON_NAMESPACE
 		return *this;
 	}
 
-	iterator iterator::operator--(int) 
+	iterator iterator::operator--(int)
 	{
 		iterator tmp(*this);
 		operator--();
@@ -4195,7 +4208,7 @@ namespace JSON_NAMESPACE
 		}
 	}
 #endif
-	value& iterator::operator*() 
+	value& iterator::operator*()
 	{
 		if (!bNone) {
 			if (bIsArray) {
@@ -4213,7 +4226,7 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	value iterator::key() 
+	value iterator::key()
 	{
 		if (!bNone) {
 			if (bIsArray)
@@ -4225,146 +4238,146 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-		reverse_iterator::reverse_iterator(reverse_iterator&& it)// : arr_it(it.arr_it), obj_it(it.obj_it), dumbRet() 
-		{
-			std::swap(bNone, it.bNone);
-			std::swap(arr_it, it.arr_it);
-			std::swap(obj_it, it.obj_it);
-			std::swap(bIsArray, it.bIsArray);
-			bSetKey = false;
-			it.bSetKey = false;
-		}
+	reverse_iterator::reverse_iterator(reverse_iterator&& it)// : arr_it(it.arr_it), obj_it(it.obj_it), dumbRet()
+	{
+		std::swap(bNone, it.bNone);
+		std::swap(arr_it, it.arr_it);
+		std::swap(obj_it, it.obj_it);
+		std::swap(bIsArray, it.bIsArray);
+		bSetKey = false;
+		it.bSetKey = false;
+	}
 
-		reverse_iterator & reverse_iterator::operator=(const reverse_iterator& it)
-		{
-			if (this == &it) {
-				return *this;
-			}
-			dumbRet = it.dumbRet;
-			bNone = it.bNone;
-			arr_it = it.arr_it;
-			obj_it = it.obj_it;
-			bIsArray = it.bIsArray;
-			bSetKey = false;
-			// it.bSetKey = false;
+	reverse_iterator & reverse_iterator::operator=(const reverse_iterator& it)
+	{
+		if (this == &it) {
 			return *this;
 		}
+		dumbRet = it.dumbRet;
+		bNone = it.bNone;
+		arr_it = it.arr_it;
+		obj_it = it.obj_it;
+		bIsArray = it.bIsArray;
+		bSetKey = false;
+		// it.bSetKey = false;
+		return *this;
+	}
 
-		reverse_iterator & reverse_iterator::operator=(reverse_iterator&& it)
-		{
-			std::swap(dumbRet, it.dumbRet);
-			std::swap(bNone, it.bNone);
-			std::swap(arr_it, it.arr_it);
-			std::swap(obj_it, it.obj_it);
-			std::swap(bIsArray, it.bIsArray);
-			bSetKey = false;
-			it.bSetKey = false;
-			return *this;
+	reverse_iterator & reverse_iterator::operator=(reverse_iterator&& it)
+	{
+		std::swap(dumbRet, it.dumbRet);
+		std::swap(bNone, it.bNone);
+		std::swap(arr_it, it.arr_it);
+		std::swap(obj_it, it.obj_it);
+		std::swap(bIsArray, it.bIsArray);
+		bSetKey = false;
+		it.bSetKey = false;
+		return *this;
+	}
+
+	reverse_iterator::~reverse_iterator()
+	{
+		if (bSetKey) {
+			obj_it->second.m_key.clear();
 		}
+	}
 
-		reverse_iterator::~reverse_iterator()
-		{
-			if (bSetKey) {
-				obj_it->second.m_key.clear();
-			}
-		}
-
-		reverse_iterator& reverse_iterator::operator++()
-		{
-			if (!bNone) {
-				if (bIsArray) {
-					++arr_it;
-				} else {
-					if (bSetKey) {
-						obj_it->second.m_key.clear();
-						bSetKey = false;
-					}
-					++obj_it;
-				}
-			}
-			return *this;
-		}
-
-		reverse_iterator reverse_iterator::operator++(int)
-		{
-			reverse_iterator tmp(*this);
-			operator++();
-			return tmp;
-		}
-
-		reverse_iterator& reverse_iterator::operator--()
-		{
-			if (!bNone) {
-				if (bIsArray) {
-					--arr_it;
-				} else {
-					if (bSetKey) {
-						obj_it->second.m_key.clear();
-						bSetKey = false;
-					}
-					--obj_it;
-				}
-			}
-			return *this;
-		}
-
-		reverse_iterator reverse_iterator::operator--(int)
-		{
-			reverse_iterator tmp(*this);
-			operator--();
-			return tmp;
-		}
-
-		bool reverse_iterator::operator==(const reverse_iterator& rhs) const
-		{
-			if (bNone && rhs.bNone)
-				return true;
+	reverse_iterator& reverse_iterator::operator++()
+	{
+		if (!bNone) {
 			if (bIsArray) {
-				return arr_it == rhs.arr_it;
+				++arr_it;
 			} else {
-				return obj_it == rhs.obj_it;
-			}
-		}
-
-		bool reverse_iterator::operator!=(const reverse_iterator& rhs) const
-		{
-			if (bNone && rhs.bNone)
-				return false;
-			if (bIsArray) {
-				return arr_it != rhs.arr_it;
-			} else {
-				return obj_it != rhs.obj_it;
-			}
-		}
-
-		value& reverse_iterator::operator*()
-		{
-			if (!bNone) {
-				if (bIsArray) {
-					return *arr_it;
-				} else {
-					if (!bSetKey) {
-						(obj_it->second).m_key.assign(obj_it->first);
-						bSetKey = true;
-					}
-					return obj_it->second;
+				if (bSetKey) {
+					obj_it->second.m_key.clear();
+					bSetKey = false;
 				}
-			} else {
-				dumbRet = value();
-				return dumbRet;
+				++obj_it;
 			}
 		}
+		return *this;
+	}
 
-		value reverse_iterator::key()
-		{
-			if (!bNone) {
-				if (bIsArray)
-					return value();
-				else
-					return value(obj_it->first);
+	reverse_iterator reverse_iterator::operator++(int)
+	{
+		reverse_iterator tmp(*this);
+		operator++();
+		return tmp;
+	}
+
+	reverse_iterator& reverse_iterator::operator--()
+	{
+		if (!bNone) {
+			if (bIsArray) {
+				--arr_it;
 			} else {
+				if (bSetKey) {
+					obj_it->second.m_key.clear();
+					bSetKey = false;
+				}
+				--obj_it;
+			}
+		}
+		return *this;
+	}
+
+	reverse_iterator reverse_iterator::operator--(int)
+	{
+		reverse_iterator tmp(*this);
+		operator--();
+		return tmp;
+	}
+
+	bool reverse_iterator::operator==(const reverse_iterator& rhs) const
+	{
+		if (bNone && rhs.bNone)
+			return true;
+		if (bIsArray) {
+			return arr_it == rhs.arr_it;
+		} else {
+			return obj_it == rhs.obj_it;
+		}
+	}
+
+	bool reverse_iterator::operator!=(const reverse_iterator& rhs) const
+	{
+		if (bNone && rhs.bNone)
+			return false;
+		if (bIsArray) {
+			return arr_it != rhs.arr_it;
+		} else {
+			return obj_it != rhs.obj_it;
+		}
+	}
+
+	value& reverse_iterator::operator*()
+	{
+		if (!bNone) {
+			if (bIsArray) {
+				return *arr_it;
+			} else {
+				if (!bSetKey) {
+					(obj_it->second).m_key.assign(obj_it->first);
+					bSetKey = true;
+				}
+				return obj_it->second;
+			}
+		} else {
+			dumbRet = value();
+			return dumbRet;
+		}
+	}
+
+	value reverse_iterator::key()
+	{
+		if (!bNone) {
+			if (bIsArray)
 				return value();
-			}
+			else
+				return value(obj_it->first);
+		} else {
+			return value();
 		}
+	}
 
 }

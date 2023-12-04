@@ -113,7 +113,37 @@ class basic_sdstring : public std::basic_string<charT, std::char_traits<charT>, 
         {
 			return *((std::basic_string<charT>*) this);
         }
-    
+
+		int compare(const basic_sdstring& rhs)
+		{
+			int iRet = size() - rhs.size();
+			if (iRet) {
+				return iRet;
+			}
+			const char * a = this->c_str();
+			const char * b = rhs.c_str();
+			size_t l = this->size();
+			for (size_t i = 0; i < l && iRet == 0; ++i) {
+				iRet = *(a++) - *(b++);
+			}
+			return iRet;
+		}
+
+		int compare(const std::basic_string<charT>& rhs)
+		{
+			int iRet = size() - rhs.size();
+			if (iRet) {
+				return iRet;
+			}
+			const char * a = this->c_str();
+			const char * b = rhs.c_str();
+			size_t l = this->size();
+			for (size_t i = 0; i < l && iRet == 0; ++i) {
+				iRet = *(a++) - *(b++);
+			}
+			return iRet;
+		}
+
 #if __cplusplus < 202002L
 		bool operator==(const basic_sdstring& rhs) const noexcept
 		{

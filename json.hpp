@@ -203,14 +203,14 @@ namespace JSON_NAMESPACE
 			value(bool V) : m_number((double)V), m_places(-1), m_boolean(V), myType(JSON_BOOLEAN), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
 			value(const char* V);
 			value(char* V);
-			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
-			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
 			value(object& V);
 			value(array& V);
 
 			template <typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
-			value(T V) : m_number((double)V), m_places(-1), m_boolean(!(m_number == 0.0)), myType(JSON_NUMBER), obj(NULL), pParentObject(NULL), pParentArray(NULL) {}
+			value(T V) : m_number((double)V), m_places(-1), m_boolean(!(m_number == 0.0)), myType(JSON_NUMBER), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
 
 			~value();
 
@@ -377,7 +377,7 @@ namespace JSON_NAMESPACE
 
 			bool compact();
 
-			bool empty() const; // Is array empty or object empty or string empty.  Number and booleans return false, NULL and VOID return true.
+			bool empty() const; // Is array empty or object empty or string empty.  Number and booleans return false, nullptr and VOID return true.
 
 			value& at(size_t index);
 
@@ -897,23 +897,23 @@ class iterator
 
 			typedef sdstring& (*PREPARSEPTR)(const sdstring& in, sdstring& out);
 			typedef sdstring& (*PREWRITEPTR)(const sdstring& in, sdstring& out);
-			bool parse(const sdstring& inStr, PREPARSEPTR = NULL);
-			bool parseFile(const sdstring &instr, PREPARSEPTR = NULL);
+			bool parse(const sdstring& inStr, PREPARSEPTR = nullptr);
+			bool parseFile(const sdstring &instr, PREPARSEPTR = nullptr);
 
-			sdstring write(bool bPretty = false, PREWRITEPTR = NULL);
-			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL);
-			static sdstring write(value & val, bool bPretty = false, PREWRITEPTR preWriter = NULL)
+			sdstring write(bool bPretty = false, PREWRITEPTR = nullptr);
+			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = nullptr);
+			static sdstring write(value & val, bool bPretty = false, PREWRITEPTR preWriter = nullptr)
 			{
 				return write(val, 1, bPretty, preWriter);
 			}
-			static sdstring write(value &val, size_t iDepth, bool bPretty = false, PREWRITEPTR = NULL);
+			static sdstring write(value &val, size_t iDepth, bool bPretty = false, PREWRITEPTR = nullptr);
 
-			sdstring print(bool bPretty = false, PREWRITEPTR = NULL)
+			sdstring print(bool bPretty = false, PREWRITEPTR = nullptr)
 			{
 				return write(bPretty);
 			}
 
-			bool writeFile(const sdstring &inStr, bool bPretty = false, PREWRITEPTR = NULL);
+			bool writeFile(const sdstring &inStr, bool bPretty = false, PREWRITEPTR = nullptr);
 
 			sdstring parseResult() const
 			{

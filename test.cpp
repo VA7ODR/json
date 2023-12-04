@@ -107,6 +107,13 @@ void test(const char * type)
 	jEnum[mstring] = "Value";
 	jEnum["Array"][0] = "Value";
 
+	sdstring sBinary;
+	for (unsigned int c = 0; c < 256; ++c) {
+		sBinary.push_back((unsigned char)c);
+	}
+	jEnum["Binary"] = sBinary;
+
+	cout << jEnum.write(true) << endl;
 	jEnum.writeFile("test1.json", true);
 	T j1;
 	cout << "Parse File 1:               ";
