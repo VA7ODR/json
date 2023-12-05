@@ -74,25 +74,23 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #define DEPRECATED(func) func
 #endif
 
-#if !defined JSON_HPP_ || defined OJSON_HPP_START
-#if !defined OJSON_HPP_START
-#define JSON_HPP_
-#endif
+#if !defined JSON_HPP_
+
 #if !defined JSON_DOCUMENT_VERSION
 #define JSON_DOCUMENT_VERSION "1.1.0"
-#endif
-#if !defined JSON_NUMBER_PRECISION
+#define STRINGIFY(x) #x
 #define JSON_NUMBER_PRECISION 14
 #endif
 
 #include <string>
-#include <map>
 #include <deque>
+#include <cstdint>
 
-#if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
+#if defined SUPPORT_ORDERED_JSON && !defined OJSON_HPP_START
+
 #define _USE_ADDED_ORDER_
-
 #define OJSON_HPP_START
+
 namespace json
 {
 	class value;
@@ -110,19 +108,18 @@ namespace ojson
 }
 
 #include "json.hpp"
-
 #undef OJSON_HPP_START
 
 #undef _USE_ADDED_ORDER_
 #endif
 
+#define JSON_HPP_
+
 #if defined _USE_ADDED_ORDER_
 #include "arbitrary_order_map.hpp"
 #define JSON_NAMESPACE ojson
-#if !defined SUPPORT_ORDERED_JSON
-#define SUPPORT_ORDERED_JSON
-#endif
 #else
+#include <map>
 #define JSON_NAMESPACE json
 #endif
 
@@ -130,6 +127,15 @@ namespace ojson
 
 namespace JSON_NAMESPACE
 {
+#if defined MYMAP
+#undef MYMAP
+#endif
+#if defined _USE_ADDED_ORDER_
+#define MYMAP arbitrary_order_map<sdstring, value>
+#else
+#define MYMAP std::map<sdstring, value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, value>>>
+#endif
+
 	enum JSONTypes{
 		JSON_VOID = -1,
 		JSON_NULL,
@@ -139,16 +145,6 @@ namespace JSON_NAMESPACE
 		JSON_ARRAY,
 		JSON_OBJECT,
 	};
-
-#if !defined int64_t
-#include <stdint.h>
-#endif
-#define i64 int64_t
-#define ui64 uint64_t
-#define i32 int32_t
-#define ui32 uint32_t
-#define i16 int16_t
-#define ui16 uint16_t
 
 	class instring;
 	class MovingCharPointer;
@@ -247,30 +243,28 @@ namespace JSON_NAMESPACE
 			value& toNull();
 			value& fixedDecimal(int iPlaces);
 
+			bool boolean() const;
+
 			double number() const;
+
+			double _double() const {
+				return number();
+			}
 
 			float _float() const {
 				return (float)number();
 			}
 
-			i64 integer() const {
-				return (i64)number();
+			int64_t integer() const {
+				return (int64_t)number();
 			}
 
-			ui64 _uint64() const {
-				return (ui64)number();
+			int64_t _int64() const {
+				return (int64_t)number();
 			}
 
-			int _int() const {
-				return (int)number();
-			}
-
-			i64 _integer64() const {
-				return (i64)number();
-			}
-
-			double _double() const {
-				return number();
+			uint64_t _uint64() const {
+				return (uint64_t)number();
 			}
 
 			size_t _size_t() const {
@@ -281,31 +275,53 @@ namespace JSON_NAMESPACE
 				return (long)number();
 			}
 
-			short _short() const {
-				return (short)number();
+			unsigned long _ulong() const {
+				return (unsigned long)number();
 			}
 
-			char _char() const {
-				return (char)number();
+			int _int() const {
+				return (int)number();
+			}
+
+			int _int32() const {
+				return (int32_t)number();
 			}
 
 			unsigned int _uint() const {
 				return (unsigned int)number();
 			}
 
-			unsigned long _ulong() const {
-				return (unsigned long)number();
+			short _short() const {
+				return (short)number();
 			}
 
 			unsigned short _ushort() const {
 				return (unsigned short)number();
 			}
 
+			short _int16() const {
+				return (int16_t)number();
+			}
+
+			short _uint16() const {
+				return (uint16_t)number();
+			}
+
+			char _char() const {
+				return (char)number();
+			}
+
 			unsigned char _uchar() const {
 				return (unsigned char)number();
 			}
 
-			bool boolean() const;
+			char _int8() const {
+				return (int8_t)number();
+			}
+
+			char _uint8() const {
+				return (uint8_t)number();
+			}
 
 			const char* c_str()
 			{
@@ -434,7 +450,7 @@ namespace JSON_NAMESPACE
 			void debugPrint() { if (debug) { debug("%s\n", print(0, true).c_str()); } }
 			static void setDebug(DEBUGPTR setTo) { debug = setTo; }
 
-			static const char* typeName(JSONTypes type);
+			static const char* typeName(int type);
 			const sdstring& key() { return m_key; }
 
 		protected:
@@ -573,13 +589,9 @@ namespace JSON_NAMESPACE
 			sdstring::const_iterator itPos;
 			sdstring sError;
 	};
-#if defined _USE_ADDED_ORDER_
-	typedef arbitrary_order_map<sdstring, value> myMap;
-#else
-	typedef std::map<sdstring, value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, value>>> myMap;
-#endif
-	typedef std::deque<value, secure_delete_allocator<value>> myVec;
 
+	typedef std::deque<value, secure_delete_allocator<value>> myVec;
+	typedef MYMAP myMap;
 	class object : public myMap
 	{
 		public:
@@ -930,6 +942,8 @@ class iterator
 
 			static int appendToArrayFile(const sdstring &sFile, document &atm, bool bPretty);
 
+			const char * classInfo() { return STRINGIFY(JSON_NAMESPACE) "::" STRINGIFY(MYMAP); }
+
 		protected:
 			sdstring strParseResult;
 			bool bParseSuccessful;
@@ -941,4 +955,5 @@ class iterator
 
 #undef JSON_NAMESPACE
 
-#endif /* JSON_HPP_ */
+#endif
+

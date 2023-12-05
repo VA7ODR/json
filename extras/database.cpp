@@ -207,7 +207,7 @@ namespace json
 		}
 		if (bOk){
             size_t lRevs = data["data"][id]["revs"].size();
-            i64 revIndex = data["data"][id]["revindex"].integer() + 1;
+            int64_t revIndex = data["data"][id]["revindex"].integer() + 1;
             data["data"][id]["revindex"] = revIndex;
             std::string newRev = std::to_string(revIndex);
             newRev.append("-");

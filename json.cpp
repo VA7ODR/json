@@ -60,8 +60,6 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #define _CRT_SECURE_NO_WARNINGS 1
 #endif
 
-#define STRINGIFY(X) #X
-
 namespace JSON_NAMESPACE
 {
 	class MovingCharPointer
@@ -592,7 +590,7 @@ namespace JSON_NAMESPACE
 	size_t esize(const sdstring& ins) {
 		size_t ret = 0;
 		static const char escape[256] = {
-			//  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F
+		//  0, 1, 2, 3, 4, 5, 6, 7, 8, 9, A, B, C, D, E, F
 			6, 6, 6, 6, 6, 6, 6, 6, 2, 2, 2, 6, 2, 2, 6, 6, // 00
 			6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, 6, // 10
 			1, 1, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,	// 20
@@ -622,7 +620,7 @@ namespace JSON_NAMESPACE
 	{
 		static const char hexDigits[] = "0123456789ABCDEF";
 		static const char escape[256] = {
-			//   0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
+		//   0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
 			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'b', 't', 'n', 'u', 'f', 'r', 'u', 'u', // 00
 			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // 10
 			 0,   0,  '"',  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 20
@@ -779,7 +777,7 @@ namespace JSON_NAMESPACE
 
 	iterator value::find(size_t index) const
 	{
-		assert(i64(index) >= 0);
+		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
 			if (debug) {
 				debug("json find: index %lu out of bounds", index);
@@ -810,7 +808,7 @@ namespace JSON_NAMESPACE
 	}
 
 	reverse_iterator value::rfind(size_t index) const {
-		assert(i64(index) >= 0);
+		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
 			if (debug) {
 				debug("json rfind: index %lu out of bounds", index);
@@ -1132,7 +1130,7 @@ namespace JSON_NAMESPACE
 
 	void value::erase(size_t index)
 	{
-		assert(i64(index) >= 0);
+		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
 			if (debug) {
 				debug("json erase: index %lu out of bounds", index);
@@ -1186,7 +1184,7 @@ namespace JSON_NAMESPACE
 
 	bool value::exists(size_t index)
 	{
-		assert(i64(index) >= 0);
+		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
 			if (debug) {
 				debug("json exists: index %lu out of bounds", index);
@@ -1232,7 +1230,7 @@ namespace JSON_NAMESPACE
 
 	iterator value::insert(size_t index, value& V)
 	{
-		assert(i64(index) >= 0);
+		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
 			if (debug) {
 				debug("json insert: index %lu out of bounds", index);
@@ -1587,7 +1585,7 @@ namespace JSON_NAMESPACE
 	}
 #endif
 
-	const char* value::typeName(JSONTypes type)
+	const char* value::typeName(int type)
 	{
 		switch(type) {
 			default:
@@ -1595,7 +1593,7 @@ namespace JSON_NAMESPACE
 				return("Void (Will not output)");
 
 			case JSON_NULL:
-				return("nullptr");
+				return("null");
 
 			case JSON_BOOLEAN:
 				return("Boolean");
@@ -2217,7 +2215,7 @@ namespace JSON_NAMESPACE
 	}
 
 	value& value::operator[](size_t index) {
-		assert(i64(index) >= 0);
+		assert(int64_t(index) >= 0);
 		if (index >= std::numeric_limits<size_t>::max() / 2) {
 			if (debug) {
 				debug("json find: index %lu out of bounds", index);
@@ -3407,7 +3405,7 @@ namespace JSON_NAMESPACE
 				return value(0);
 
 			case JSON_NUMBER:
-				return value((i64)m_number % V.integer());
+				return value((int64_t)m_number % V.integer());
 		}
 	}
 
@@ -3515,7 +3513,7 @@ namespace JSON_NAMESPACE
 	{
 		switch (myType) {
 			case JSON_NUMBER:
-				m_number = (double)((i64)m_number % V.integer());
+				m_number = (double)((int64_t)m_number % V.integer());
 				str.clear();
 				break;
 
