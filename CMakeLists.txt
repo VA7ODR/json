@@ -84,10 +84,14 @@ if(STAND_ALONE)
 	 target_compile_definitions(json PUBLIC SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 
     if(TEST_EXAMPLE)
-        add_executable(testbed test.cpp)
-        target_compile_definitions(testbed PRIVATE SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
-        target_link_libraries(testbed PRIVATE json)
-    endif(TEST_EXAMPLE)
+		  add_executable(testbed test.cpp)
+		  target_compile_definitions(testbed PRIVATE SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
+		  target_link_libraries(testbed PRIVATE json)
+
+		  add_executable(benchmark benchmark.cpp)
+		  target_compile_definitions(benchmark PRIVATE SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
+		  target_link_libraries(benchmark PRIVATE json)
+	 endif(TEST_EXAMPLE)
 
     if(SAMPLES)
 		  add_executable(jsonpretty json2xml.cpp)

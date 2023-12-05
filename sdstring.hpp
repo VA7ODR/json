@@ -28,6 +28,9 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #include <cstring>
 #include <string>
 #include <iostream>
+#include <fstream>
+#include <vector>
+#include <streambuf>
 
 template <class T>
 struct secure_delete_allocator {
@@ -263,7 +266,7 @@ class sdstreambuf : public std::basic_streambuf<charT>
 			return n;
 		}
 
-		std::basic_ostream<char>::int_type overflow(typename std::basic_ostream<charT>::int_type c) override
+		virtual std::basic_ostream<char>::int_type overflow(typename std::basic_ostream<charT>::int_type c) override
 		{
 			sBuffer.push_back((char)c);
 			return c;
@@ -271,13 +274,70 @@ class sdstreambuf : public std::basic_streambuf<charT>
 };
 
 template <typename charT>
-class base_sdostream : private sdstreambuf<charT> , public std::basic_ostream<char>
+class base_sdostream : private sdstreambuf<charT> , public std::basic_ostream<charT>
 {
 	public:
-		base_sdostream(basic_sdstring<charT> & bufIn) : sdstreambuf<charT>(bufIn), std::basic_ostream<char>(this) {}
+		base_sdostream(basic_sdstring<charT> & bufIn) : sdstreambuf<charT>(bufIn), std::basic_ostream<charT>(this) {}
 };
 
 typedef basic_sdstring<char> sdstring;
 typedef basic_sdstring<wchar_t> sdwstring;
 typedef base_sdostream<char> sdostream;
 typedef base_sdostream<wchar_t> sdwostream;
+
+//template <typename charT>
+//class sdofstream_base : public base_sdostream<char> {
+//public:
+//	sdofstream_base(const sdstring& filename, basic_sdstring<charT> & bufIn) :
+//		sBuffer(bufIn),
+//		base_sdostream<charT>(bufIn)
+//	{
+//		fd = fopen(filename.c_str(), "wb");
+//	}
+
+//	~sdofstream_base() {
+//	   closeAndSync();
+//	}
+
+//	typename std::char_traits<charT>::int_type overflow(typename std::char_traits<charT>::int_type ch) {
+//		if (ch != std::basic_ios<charT>::traits_type::eof()) {
+//			sBuffer.push_back(ch);
+//			if (sBuffer.size() >= sBuffer.capacity()) {
+//				sync();
+//			}
+//		}
+//		return std::basic_ios<charT>::traits_type::not_eof(ch);
+//	}
+
+//	int sync() {
+//		return my_sync();
+//	}
+
+//	void close() {
+//		closeAndSync();
+//	}
+
+//	using base_sdostream<charT>::write;
+
+//private:
+//	basic_sdstring<charT> & sBuffer;
+//	FILE* fd = nullptr;
+//	int my_sync() {
+//		std::size_t size = sBuffer.size();
+//		if (size > 0) {
+//			if (fd) {
+//				fwrite(sBuffer.data(), sizeof(charT), size, fd);
+//			}
+//			sBuffer.clear();
+//		}
+//		return 0;
+//	}
+
+//	void closeAndSync() {
+//		my_sync();
+//		close();
+//	}
+//};
+
+//typedef sdofstream_base<char> sdofstream;
+//typedef sdofstream_base<wchar_t> sdwofstream;

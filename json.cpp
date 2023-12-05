@@ -464,7 +464,7 @@ namespace JSON_NAMESPACE
 				return;
 			}
 			SkipWhitespace(inputString);
-			value &temp = (*ret.obj)[key];
+			value &temp = (*ret.obj)[std::move(key)];
 			temp.setParentObject(ret.obj);
 			valueParse(temp, inputString, bFailed);
 			if (*bFailed) {
@@ -638,10 +638,10 @@ namespace JSON_NAMESPACE
 			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // E0
 			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // F0
 		};
-
-		auto end = ins.end();
-		for (auto it = ins.begin(); it != end; ++it) {
-			const unsigned char & c = *it;
+		size_t l = ins.size();
+		const unsigned char * p = (const unsigned char *)ins.data();
+		for (size_t i = 0; i < l; ++i, ++p) {
+			const unsigned char & c = *p;
 			char e = escape[c];
 			switch (e) {
 				case 0:
@@ -660,10 +660,54 @@ namespace JSON_NAMESPACE
 		}
 	}
 
+	void escape(std::ostream& S, const sdstring& ins)
+	{
+		static const char hexDigits[] = "0123456789ABCDEF";
+		static const char escape[256] = {
+		//   0    1    2    3    4    5    6    7    8    9    A    B    C    D    E    F
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'b', 't', 'n', 'u', 'f', 'r', 'u', 'u', // 00
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // 10
+			 0,   0,  '"',  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 20
+			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 30
+			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,	// 40																// 30~4F
+			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  '\\', 0,   0,   0,  // 50
+			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  // 60
+			 0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,  'u', // 70
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // 80
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // 90
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // A0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // B0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // C0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // D0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // E0
+			'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', 'u', // F0
+		};
+		size_t l = ins.size();
+		const unsigned char * p = (const unsigned char *)ins.data();
+		for (size_t i = 0; i < l; ++i, ++p) {
+			const unsigned char & c = *p;
+			char e = escape[c];
+			switch (e) {
+				case 0:
+					S.put(c);
+					break;
+				default:
+					S.put('\\');
+					S.put(e);
+					break;
+				case 'u':
+					S.write("\\u00", 4);
+					S.put(hexDigits[c >> 4]);
+					S.put(hexDigits[c & 0xF]);
+					break;
+			}
+		}
+	}
+
 	MovingCharPointer::MovingCharPointer(sdstring &in, size_t reserve) :
 		loc(in)
 	{
-		loc.assign(reserve, 0);
+		loc.resize(reserve);
 		m_orig = loc.data();
 		m_current = m_orig;
 		m_max = m_orig + reserve;
@@ -701,8 +745,7 @@ namespace JSON_NAMESPACE
 	}
 
 	inline void MovingCharPointer::set(char n) {
-		*m_current = n;
-		++m_current;
+		*m_current++ = n;
 	}
 
 	char* MovingCharPointer::orig() {
@@ -3627,12 +3670,128 @@ namespace JSON_NAMESPACE
 		return *this;
 	}
 
-	std::ostream& operator<<(std::ostream& S, document& doc) {
+	void tab(std::ostream& S, size_t depth)
+	{
+		for (size_t i = 0; i < depth; ++i) {
+			S.put('\t');
+		}
+	}
+
+	void value_stream(std::ostream& S, value& val, size_t depth)
+	{
+		switch (val.isA()) {
+			case JSON_VOID:
+				break;
+
+			case JSON_NULL:
+				S.write("NULL", 4);
+				break;
+
+			case JSON_BOOLEAN:
+				val.boolean() ? S.write("true", 4) : S.write("false", 5);
+				break;
+
+			case JSON_NUMBER:
+			{
+				double dNumber = val.number();
+				int iPlaces = val.places();
+				std::ostream::fmtflags ff = S.flags();
+				if (iPlaces >= 0) {
+					double inte;
+					double frac = modf(dNumber, &inte);
+					S << inte;
+					S.put('.');
+					frac = round((frac * pow(10, iPlaces))) / pow(10, iPlaces);
+					S << std::setfill('0') << std::right << std::setw(iPlaces);
+					S << (frac * iPlaces);
+				} else {
+					S << dNumber;
+				}
+				S.flags(ff);
+				break;
+			}
+
+			case JSON_STRING:
+				S << '\"';
+				escape(S, val._sdstring());
+				S << '\"';
+				break;
+
+			case JSON_ARRAY:
+			{
+				std::ostream::fmtflags ff = S.flags();
+				S << '[';
+				bool bFirst = true;
+				for (auto & sub : val) {
+					if (!bFirst) {
+						S.put(',');
+					} else {
+						bFirst = false;
+					}
+					if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+						S.put('\n');
+						tab(S, depth + 1);
+					}
+					value_stream(S, sub, depth + 1);
+				}
+				if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+					S.put('\n');
+					tab(S, depth);
+				}
+				S.put(']');
+				break;
+			}
+
+			case JSON_OBJECT:
+			{
+				std::ostream::fmtflags ff = S.flags();
+				S.put('{');
+				bool bFirst = true;
+				for (auto & sub : val) {
+					if (!bFirst) {
+						S.put(',');
+					} else {
+						bFirst = false;
+					}
+					if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+						S.put('\n');
+						tab(S, depth + 1);
+					}
+					S.put('\"');
+					escape(S, sub.key());
+					S.write("\":", 2);
+					if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+						S.put(' ');
+					}
+					value_stream(S, sub, depth + 1);
+				}
+				if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+					S.put('\n');
+					tab(S, depth);
+				}
+				S.put('}');
+				break;
+			}
+		}
+	}
+
+	std::ostream& operator<<(std::ostream& S, document& doc)
+	{
 		S << doc.write(true).c_str();
 		return S;
 	}
 
-	std::ostream& operator<<(std::ostream& S, value& doc) {
+	std::ostream& newStream(std::ostream& S, document& doc)
+	{
+		std::ostream::fmtflags ff = S.flags();
+		S << std::boolalpha << std::setprecision(JSON_NUMBER_PRECISION) << std::nounitbuf;
+		value_stream(S, doc, 0);
+		S.flags(ff);
+		return S;
+	}
+
+	std::ostream& operator<<(std::ostream& S, value& doc)
+	{
 		switch (doc.isA()) {
 			case JSON_VOID:
 			case JSON_NULL:

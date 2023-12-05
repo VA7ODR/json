@@ -242,6 +242,7 @@ namespace JSON_NAMESPACE
 			value& toBool();
 			value& toNull();
 			value& fixedDecimal(int iPlaces);
+			int places() const { return m_places; };
 
 			bool boolean() const;
 
@@ -672,6 +673,11 @@ namespace JSON_NAMESPACE
 			value & operator[](const sdstring & key)
 			{
 				return static_cast<myMap&>(*this)[key];
+			}
+
+			value & operator[](sdstring && key)
+			{
+				return static_cast<myMap&>(*this)[std::move(key)];
 			}
 
 #if defined _USE_ADDED_ORDER_
