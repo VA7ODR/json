@@ -558,7 +558,11 @@ namespace JSON_NAMESPACE
 						break;
 					}
 					if (*itPos == '\\') {
-						bEscape = true;
+						if (bEscape) {
+							bEscape = false;
+						} else {
+							bEscape = true;
+						}
 					} else {
 						bEscape = false;
 					}
