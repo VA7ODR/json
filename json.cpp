@@ -1200,12 +1200,13 @@ namespace JSON_NAMESPACE
 		return 0;
 	}
 
-	iterator value::erase(iterator it)
+	iterator value::erase(iterator & it)
 	{
 		if (it.IsArray() && arr) {
 			return arr->erase(it.arr());
 		} else if (!it.IsArray() && !it.Neither() && obj) {
 			return obj->erase(it.obj());
+			it.bSetKey = false;
 		}
 		if (arr != nullptr) {
 			return arr->end();
@@ -1215,12 +1216,13 @@ namespace JSON_NAMESPACE
 		return iterator();
 	}
 
-	iterator value::erase(iterator first, iterator last)
+	iterator value::erase(iterator &first, iterator &last)
 	{
 		if (first.IsArray() && last.IsArray() && arr) {
 			arr->erase(first.arr(), last.arr());
 		} else if (!first.IsArray() && !last.IsArray() && !first.Neither() && !last.Neither() && obj) {
 			obj->erase(first.obj(), last.obj());
+			first.bSetKey = false;
 		}
 		return iterator();
 	}

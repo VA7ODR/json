@@ -374,8 +374,8 @@ namespace JSON_NAMESPACE
 
 			void erase(size_t index);						// Array
 			size_t erase(const sdstring &index);			// Object
-			iterator erase(iterator it);					// Array / Object
-			iterator erase(iterator first, iterator last);	// Array / Object
+			iterator erase(iterator &it);					// Array / Object
+			iterator erase(iterator &first, iterator &last);	// Array / Object
 
 			bool exists(size_t index);
 			bool exists(const sdstring& index);
@@ -848,7 +848,8 @@ class iterator
 			myVec::iterator & arr() { return arr_it; }
 			myMap::iterator & obj() { return obj_it; }
 
-		private:
+		protected:
+			friend class value;
 			myVec::iterator arr_it;
 			myMap::iterator obj_it;
 			bool bNone;
