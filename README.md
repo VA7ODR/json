@@ -1,7 +1,7 @@
 json::document
 ==============
 
-The official repository for this library is at https://github.com/VA7ODR/json
+The official repository for this library is at <https://github.com/VA7ODR/json>
 
 The purpose of this library is to allow JSON to be used in C++ with a very simple interface similar to how you would use it in other languages that support it natively.  It is also designed to be fast.  It can parse and write megabytes in milliseconds.  It's been tested in Linux, Windows and MacOS using g++, clang++, Visual C++ and even Borland C++.
 
@@ -27,7 +27,7 @@ The following instructions should work on all systems, but you can tailor to tas
 
 1. Clone the repository:
 
-        git clone https://github.com/odhinnsrunes/json.git json
+        git clone https://github.com/VA7ODR/json.git json
 
 2. Enter the local repository folder:
 
@@ -90,11 +90,11 @@ You can access arrays using a number as the index in the square brackets:
         jDoc[i] = i * 2;
     }
 
-You can access objects using a string or char array as the index in teh square brackets:
+You can access objects using a string or char array as the index in the square brackets:
 
     jDoc["foo"] = 8;
     
-Any numeric value, boolean, char array / string, object or array can be assigned to any JSON value:
+Any numeric value, boolean, char array / string, object, or array can be assigned to any JSON value:
 
     jDoc["null"] = (char*)NULL;
     jDoc["true"] = true;
@@ -104,7 +104,7 @@ Any numeric value, boolean, char array / string, object or array can be assigned
     jDoc["object"] = jDoc["other_object"];
     jDoc["array"] = jDoc["oterh_array"];
     
-You can retrive values from a json::document with several conversion functions:
+You can retrieve values from a json::document with several conversion functions:
 
 - boolean() - returns a bool.
 - number() - returns a double. (Converts from strings as appropriate.)
@@ -122,7 +122,7 @@ Here are some examples:
 
 You can get other information with the following functions:
 
-- size() - returns the number of elements in arrays or objects.  Numbers, strings and booleans return 1 and nulls and non-existant values return 0.
+- size() - returns the number of elements in arrays or objects.  Numbers, strings, and booleans return 1, and nulls and non-existant values return 0.
 - exists(string or number) - returns true if the object or array contains the index value.  False otherwise.
 - isA() - returns the type of value.  Can be:
     - json::JSON_VOID - value does not exist.
@@ -133,16 +133,16 @@ You can get other information with the following functions:
     - json::JSON_ARRAY - value is an array.
     - json::JSON_OBJECT - value is an object.
 - isA(json type) - returns true if the value's type is the same as that passed in the argument.  The types are the same as those returned from the isA() function above.
-- empty() - returns false if an object or an array have items in them or if the value is a string, number or boolean.  Returns true if the value doesn't exist, if it's a NULL or if it is an empty object or array.
+- empty() - returns false if an object or an array has items in it or if the value is a string, number, or boolean.  Returns true if the value doesn't exist, if it's a NULL, or if it is an empty object or array.
 
 Some other functions for working with JSON are:
 - emptyArray() - creates an empty array [] at the location specified.
 - emptyObject() - creates an empty object {} at the location specified.
 - push\_back(value) - pushes the value to the end of an array.  Creates the array if it doesn't exist.
 - push\_front(value) - pushes the value to the start of an array.  Creates the array if it doesn't exist.
-- pop\_back() - returns a json value (json::value) that is the last item in an array and removes it from the array.  Returns an value with an isA() type of json::JSON\_VOID if the array is empty.
-- pop\_front() - returns a json value (json::value) that is the first item in an array and removes it from the array.  Returns an value with an isA() type of json::JSON\_VOID if the array is empty.
-- insert(number, string or iterators and a value) - will insert a new value into an existing array or object at the point indicated.  This will invalidate any iterators referencing the array or object in question.  For an object, this is the same as just adding the value the normal way.
+- pop\_back() - returns a json value (json::value) that is the last item in an array and removes it from the array.  Returns a value with an isA() type of json::JSON\_VOID if the array is empty.
+- pop\_front() - returns a json value (json::value) that is the first item in an array and removes it from the array.  Returns a value with an isA() type of json::JSON\_VOID if the array is empty.
+- insert(number, string, or iterators and a value) - will insert a new value into an existing array or object at the point indicated.  This will invalidate any iterators referencing the array or object in question.  For an object, this is the same as just adding the value the normal way.
 
 Some Examples of these are:
 
@@ -156,7 +156,7 @@ Some Examples of these are:
 
 There are three functions for removing data from a json::document:
 - clear() - this removes the contents of the value it is used on.
-- erase(index, iterator or 2 iterators) - this finds the specified value or range of values and removes it.  The arguments can be either a number for removing an item from an array, a string for removing an item from an object, an iterator that will remove an item from an array or an object or tow iterators, one for the range start and one for the range end that will remove all items from an array or object that fall between the iterators.  Any iterator for the array or object will be invalidated by erase.
+- erase(index, iterator, or 2 iterators) - this finds the specified value or range of values and removes it.  The arguments can be either a number for removing an item from an array, a string for removing an item from an object, an iterator that will remove an item from an array or an object, or two iterators, one for the range start and one for the range end that will remove all items from an array or object that fall between the iterators.  Any iterator for the array or object will be invalidated by erase.
 - destroy() - similar to erase, but removes the item it is called from.
 
 For example:
@@ -170,7 +170,7 @@ For example:
 json::document also has a full set of operators:
 - +, - , *, /, %, +=, -=, *=, /=, %=  work on numbers, some work on booleans and + and += append strings like in std::string.
 - ==, !=, <, >, <=, >= work on all value types.
-- ++, -- and - work on numbers and booleans only.
+- ++, --, and - work on numbers and booleans only.
 
 For example:
 
@@ -180,9 +180,9 @@ For example:
     jDoc["string"] += ", world!";
     jDoc["number"]++;
 
-Although you can use size() and an index to ierate through a json::document array, it will not work for objects.  For both, it is better to use iterators.  Iterators are extremely fast.  The functions for using them are the same as many of the standard container classes:
-- begin() - returns an iterator pointing to the beginning od an array or object.  If a value is not an array or object it will return end().
-- end() - returns an iterator pointint to the end of the array or object (technically it represents one past the end.)
+Although you can use size() and an index to iterate through a json::document array, it will not work for objects.  For both, it is better to use iterators.  Iterators are extremely fast.  The functions for using them are the same as many of the standard container classes:
+- begin() - returns an iterator pointing to the beginning of an array or object.  If a value is not an array or object it will return end().
+- end() - returns an iterator pointing to the end of the array or object (technically it represents one past the end.)
 - rbegin() - returns a reverse iterator pointing to the last item in an array or object.  If a value is not an array or object it will return rend().
 - find(string or number index) - will return an iterator pointing to the given member of an array or object.  Will return end() if it isn't found or the value is not an array or object.
 - rfind(string or number index) - will return a reverse_iterator pointing to the given member of an array or object.  Will return rend() if it isn't found or the value is not an array or object.
