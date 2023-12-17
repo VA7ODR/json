@@ -147,21 +147,11 @@ namespace DATA_NAMESPACE
 		bool parseXMLFile_old(const sdstring &inStr, PREPARSEPTR = nullptr, bool bReWriteFile = false);
 		bool parseXMLFile(const sdstring &inStr, PREPARSEPTR = nullptr, bool bReWriteFile = false);
 
-		sdstring writeXML(const char * in, bool bPretty = true, bool bTabs = true, PREWRITEPTR pre = nullptr) 
-		{ 
-			return writeXML(in, bPretty, bTabs, pre);
-		}
-
 		sdstring writeXML(const sdstring &rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
 		sdstring writeXML(bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
 
 		bool writeXMLFile(const sdstring &inStr, const sdstring &rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
 		bool writeXMLFile(const sdstring &inStr, bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
-
-		bool writeXMLFile(const sdstring &inStr, const char * rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR pWriter = nullptr)
-		{
-			return writeXMLFile(inStr, rootElem, bPretty, bTabs, pWriter);
-		}
 	
 		sdstring rootTag() { return sRootTag; }
 		void rootTag(sdstring rootElem) { sRootTag = rootElem; }

@@ -116,14 +116,14 @@ namespace ojson
 #define JSON_HPP_
 
 #if defined _USE_ADDED_ORDER_
-#include "arbitrary_order_map.hpp"
+#include "ArbitraryOrderMap/arbitrary_order_map.hpp"
 #define JSON_NAMESPACE ojson
 #else
 #include <map>
 #define JSON_NAMESPACE json
 #endif
 
-#include "sdstring.hpp"
+#include "SDString/sdstring.hpp"
 
 namespace JSON_NAMESPACE
 {
