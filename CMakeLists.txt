@@ -56,7 +56,7 @@ if (ORDERED_JSON)
 	set (JSON_TARGET_DEFINES PUBLIC SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 	add_library(ojson STATIC json.cpp)
 	target_compile_definitions(ojson PUBLIC ${JSON_TARGET_DEFINES} JSON_USE_ADDED_ORDER)
-	SET(OJSON_OBJECTS $<TARGET_OBJECTS:ojson>)
+	 SET(OJSON_OBJECTS $<TARGET_OBJECTS:ojson>)
 else (ORDERED_JSON)
 	set (JSON_TARGET_DEFINES PUBLIC _CRT_SECURE_NO_WARNINGS)
 endif (ORDERED_JSON)
@@ -70,14 +70,14 @@ target_compile_definitions(ajson PUBLIC ${JSON_TARGET_DEFINES})
 
 if(DATA_DOCUMENT)
 	add_library(tinyxml STATIC tinyxml/tinystr.cpp tinyxml/tinyxml.cpp tinyxml/tinyxmlerror.cpp tinyxml/tinyxmlparser.cpp)
-	if(ORDERED_JSON)
+	 if(ORDERED_JSON)
 		add_library(odata STATIC data.cpp)
 		target_compile_definitions(odata PUBLIC ${JSON_TARGET_DEFINES} JSON_USE_ADDED_ORDER)
-		SET(ODATA_OBJECTS $<TARGET_OBJECTS:odata>)
-	endif(ORDERED_JSON)
+		  SET(ODATA_OBJECTS $<TARGET_OBJECTS:odata>)
+	 endif(ORDERED_JSON)
 	add_library(adata STATIC data.cpp)
 	target_compile_definitions(adata PUBLIC ${JSON_TARGET_DEFINES})
-	SET(ADATA_OBJECTS $<TARGET_OBJECTS:adata> $<TARGET_OBJECTS:tinyxml>)
+	 SET(ADATA_OBJECTS $<TARGET_OBJECTS:adata> $<TARGET_OBJECTS:tinyxml>)
 endif(DATA_DOCUMENT)
 
 add_library(${PROJECT_NAME} ${OBJECT_TYPE} $<TARGET_OBJECTS:ajson> ${OJSON_OBJECTS} ${ADATA_OBJECTS} ${ODATA_OBJECTS})
@@ -85,56 +85,56 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC ${JSON_TARGET_DEFINES})
 
 if(STAND_ALONE_JSON)
 	if(JSON_TEST_EXAMPLE)
-		add_executable(testbed test.cpp)
+		  add_executable(testbed test.cpp)
 		target_compile_definitions(testbed PUBLIC ${JSON_TARGET_DEFINES})
 		target_link_libraries(testbed PUBLIC ${PROJECT_NAME})
-		
-		add_executable(benchmark benchmark.cpp)
+
+		  add_executable(benchmark benchmark.cpp)
 		target_compile_definitions(benchmark PUBLIC ${JSON_TARGET_DEFINES})
 		target_link_libraries(benchmark PUBLIC ${PROJECT_NAME})
 	endif(JSON_TEST_EXAMPLE)
-	
+
 	if(JSON_SAMPLES)
-		add_executable(jsonpretty json2xml.cpp)
+		  add_executable(jsonpretty json2xml.cpp)
 		target_compile_definitions(jsonpretty PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
 		target_link_libraries(jsonpretty PUBLIC ${PROJECT_NAME})
-		
-		add_executable(json2csv json2csv.cpp)
+
+        add_executable(json2csv json2csv.cpp)
 		target_compile_definitions(json2csv PUBLIC __STANDALONE_CSV__ ${JSON_TARGET_DEFINES})
 		target_link_libraries(json2csv PUBLIC ${PROJECT_NAME})
-		
-		add_executable(csv2json csv2json.cpp)
+
+        add_executable(csv2json csv2json.cpp)
 		target_compile_definitions(csv2json PUBLIC ${JSON_TARGET_DEFINES})
 		target_link_libraries(csv2json PUBLIC ${PROJECT_NAME})
-		
-		install(TARGETS jsonpretty json2csv csv2json RUNTIME DESTINATION bin)
+
+        install(TARGETS jsonpretty json2csv csv2json RUNTIME DESTINATION bin)
 	endif(JSON_SAMPLES)
-	
-	if(DATA_DOCUMENT)
+
+    if(DATA_DOCUMENT)
 		if(JSON_SAMPLES)
-			add_executable(json2xml json2xml.cpp)
+            add_executable(json2xml json2xml.cpp)
 			target_compile_definitions(json2xml PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
 			target_link_libraries(json2xml PUBLIC ${PROJECT_NAME})
-			
-			add_executable(xml2json json2xml.cpp)
+
+            add_executable(xml2json json2xml.cpp)
 			target_compile_definitions(xml2json PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
 			target_link_libraries(xml2json PUBLIC ${PROJECT_NAME})
-			
-			add_executable(xmlpretty json2xml.cpp)
+
+            add_executable(xmlpretty json2xml.cpp)
 			target_compile_definitions(xmlpretty PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
 			target_link_libraries(xmlpretty PUBLIC ${PROJECT_NAME})
-			
-			add_executable(csv2xml csv2json.cpp)
+
+            add_executable(csv2xml csv2json.cpp)
 			target_compile_definitions(csv2xml PUBLIC ${JSON_TARGET_DEFINES})
 			target_link_libraries(csv2xml PUBLIC ${PROJECT_NAME})
-			
-			install(TARGETS json2xml xml2json xmlpretty csv2xml RUNTIME DESTINATION bin)
+
+            install(TARGETS json2xml xml2json xmlpretty csv2xml RUNTIME DESTINATION bin)
 		endif(JSON_SAMPLES)
-		
+
 		install(FILES data.hpp DESTINATION include/${PROJECT_NAME})
-	endif(DATA_DOCUMENT)
-	
+    endif(DATA_DOCUMENT)
+
 	install(FILES json.hpp DESTINATION include/${PROJECT_NAME})
-	
+
 	install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib)
 endif(STAND_ALONE_JSON)
