@@ -22,17 +22,21 @@ THE SOFTWARE.
 The official repository for this library is at https://github.com/VA7ODR/json
 
 */
-#if !defined _DATA_HPP || defined _ODATA_HPP_START
-#if !defined _ODATA_HPP_START
-#define _DATA_HPP
-#endif
+
+#if !defined DATA_HPP
 
 class TiXmlNode;
 
-#if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
-#define _USE_ADDED_ORDER_
+#include <string>
+#include <deque>
+#include <cstdint>
+#include <map>
+#include "SDString/sdstring.hpp"
 
-#define _ODATA_HPP_START
+#include "json.hpp"
+
+#if defined SUPPORT_ORDERED_JSON && !defined DONE_ODATA
+
 namespace json
 {
 	class value;
@@ -40,162 +44,48 @@ namespace json
 	class object;
 	class array;
 }
+
+namespace ojson
+{
+	class value;
+	class document;
+	class object;
+	class array;
+}
+
 namespace data
 {
 	class document;
 }
-#include "data.hpp"
 
-#undef _ODATA_HPP_START
+#define DO_ODATA_STUFF
 
-#undef _USE_ADDED_ORDER_
+#if defined JSON_NAMESPACE
+#undef JSON_NAMESPACE
 #endif
 
-#if defined _USE_ADDED_ORDER_
-#undef _USE_ADDED_ORDER_
-#if !defined SUPPORT_ORDERED_JSON
-#define SUPPORT_ORDERED_JSON
-#endif
-#include "json.hpp"
-#define _USE_ADDED_ORDER_
-// #undef JSON_HPP_
-// #include "json.hpp"
 #define JSON_NAMESPACE ojson
 #define DATA_NAMESPACE odata
-#if !defined SUPPORT_ORDERED_JSON
-#define SUPPORT_ORDERED_JSON
+
+#include "data_main.hpp"
+
+#define DONE_ODATA
+#undef DO_ODATA_STUFF
 #endif
-#else 
-#include "json.hpp"
+
+#if defined JSON_NAMESPACE
+#undef JSON_NAMESPACE
+#endif
+
+#if defined DATA_NAMESPACE
+#undef DATA_NAMESPACE
+#endif
+
 #define JSON_NAMESPACE json
 #define DATA_NAMESPACE data
-#endif
 
-namespace DATA_NAMESPACE
-{
-	sdstring XMLEscape(const sdstring& in, bool bAttribute = false);
-	
-	class document : public JSON_NAMESPACE::document
-	{
-	public:
-		document() : JSON_NAMESPACE::document() 
-		{
-			bForceXMLHeader = false;
-			bNoXMLHeader = false;
-			bStandAlone = true;
-		}
+#include "data_main.hpp"
 
-		document(sdstring& in) 
-		{
-			bForceXMLHeader = false;
-			bNoXMLHeader = false;
-			bStandAlone = true;
-			parseXML(in);
-		}
-		document(const char* in) {
-			bForceXMLHeader = false;
-			bNoXMLHeader = false;
-			bStandAlone = true;
-			parseXML(in);
-		}
-		document(const JSON_NAMESPACE::value& V) : JSON_NAMESPACE::document(V)
-		{
-			bForceXMLHeader = false;
-			bNoXMLHeader = false;
-			bStandAlone = true;
-		}
-
-#if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
-		document(const ojson::value& V) : json::document(V)
-		{
-			bForceXMLHeader = false;
-			bNoXMLHeader = false;
-			bStandAlone = true;
-		}
-#elif defined _USE_ADDED_ORDER_
-		document(const json::value& V) : ojson::document(V)
-		{
-			bForceXMLHeader = false;
-			bNoXMLHeader = false;
-			bStandAlone = true;
-		}
-#endif
-
-		void standAlone(bool bSetTo) { 
-			bStandAlone = bSetTo; 
-		}
-		bool standAlone() { 
-			return bStandAlone; 
-		}
-		typedef sdstring& (*PREPARSEPTR)(const sdstring& in, sdstring& out, sdstring fileName);
-		typedef sdstring& (*PREWRITEPTR)(const sdstring& in, sdstring& out);
-		void forceXMLHeader(bool bSetTo) {
-			bForceXMLHeader = bSetTo;
-		}
-		bool forceXMLHeader() {
-			return bForceXMLHeader;
-		}
-		void noXMLHeader(bool bSetTo) {
-			bNoXMLHeader = bSetTo;
-		}
-		bool noXMLHeader() {
-			return bNoXMLHeader;
-		}
-		bool parseXML_old(const sdstring &inStr, PREPARSEPTR = nullptr, const sdstring &preParseFileName = "");
-		bool parseXML(const sdstring &inStr, PREPARSEPTR = nullptr, const sdstring &preParseFileName = "");
-
-		bool parseXMLFile_old(const sdstring &inStr, PREPARSEPTR = nullptr, bool bReWriteFile = false);
-		bool parseXMLFile(const sdstring &inStr, PREPARSEPTR = nullptr, bool bReWriteFile = false);
-
-		sdstring writeXML(const char * in, bool bPretty = true, bool bTabs = true, PREWRITEPTR pre = nullptr) 
-		{ 
-			return writeXML(in, bPretty, bTabs, pre);
-		}
-
-		sdstring writeXML(const sdstring &rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
-		sdstring writeXML(bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
-
-		bool writeXMLFile(const sdstring &inStr, const sdstring &rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
-		bool writeXMLFile(const sdstring &inStr, bool bPretty = true, bool bTabs = true, PREWRITEPTR = nullptr);
-
-		bool writeXMLFile(const sdstring &inStr, const char * rootElem, bool bPretty = true, bool bTabs = true, PREWRITEPTR pWriter = nullptr)
-		{
-			return writeXMLFile(inStr, rootElem, bPretty, bTabs, pWriter);
-		}
-	
-		sdstring rootTag() { return sRootTag; }
-		void rootTag(sdstring rootElem) { sRootTag = rootElem; }
-
-		static void stripNameSpaces(JSON_NAMESPACE::value & jDoc);
-		static void stripNameSpaces(JSON_NAMESPACE::value & jDoc, JSON_NAMESPACE::document & jNameSpaces, bool begin = true);
-		static void stripNameSpace(JSON_NAMESPACE::value & jDoc, sdstring sNameSpace, bool begin = true);
-		static void addNameSpace(JSON_NAMESPACE::value & jDoc, sdstring sNameSpace, bool begin = true);
-
-		void stripMyNameSpaces();
-		void stripMyNameSpaces(JSON_NAMESPACE::document & jNameSpaces);
-		void stripMyNameSpace(sdstring sNameSpace);
-		void addMyNameSpace(sdstring sNameSpace);
-
-	private:
-		bool fastParse(JSON_NAMESPACE::instring& in, JSON_NAMESPACE::value& out, sdstring& parseResult);
-		void parseXMLElement(JSON_NAMESPACE::value& ret, const TiXmlNode * elem);
-		static void writeXML(sdstring & str, JSON_NAMESPACE::value & ret, size_t depth, bool bPretty = true, bool bTabs = true);
-
-		sdstring sRootTag;
-		bool bForceXMLHeader;
-		bool bNoXMLHeader;
-		bool bStandAlone;
-	};
-
-#if !defined _USE_ADDED_ORDER_
-	#define DATA_ATT(x) sdstring("@") + x
-	#define DATA_VAL "#value"
-	#define DATAENUMKEY(x, y) json::enumKey<x>(y, #y)
-	#define DATAATTENUMKEY(x, y) json::enumKey<x>(y, "@" #y)
-#endif
-}
-
-#undef JSON_NAMESPACE
-#undef DATA_NAMESPACE
+#define DATA_HPP_
 
 #endif //_DATA_HPP

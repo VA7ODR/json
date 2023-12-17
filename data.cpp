@@ -27,23 +27,17 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #include "tinyxml/tinyxml.h"
 #include "tinyxml/tinystr.h"
 #include <chrono>
-
-#if defined _USE_ADDED_ORDER_
-#undef _USE_ADDED_ORDER_
-#if !defined SUPPORT_ORDERED_JSON
-#define SUPPORT_ORDERED_JSON
-#endif
 #include "data.hpp"
-#define _USE_ADDED_ORDER_
-// #undef _DATA_HPP
-// #undef JSON_HPP_
-// #include "data.hpp"
+
+#if defined JSON_USE_ADDED_ORDER
+#if defined DATA_NAMESPACE
+#undef DATA_NAMESPACE
+#endif
+#if defined JSON_NAMESPACE
+#undef JSON_NAMESPACE
+#endif
 #define JSON_NAMESPACE ojson
 #define DATA_NAMESPACE odata
-#else
-#include "data.hpp"
-#define JSON_NAMESPACE json
-#define DATA_NAMESPACE data
 #endif
 
 namespace DATA_NAMESPACE
@@ -1568,7 +1562,7 @@ namespace DATA_NAMESPACE
 
 	bool document::writeXMLFile(const sdstring &inStr, const sdstring &rootElem, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
 	{
-#if defined _JSON_TEMP_FILES_
+#if defined JSON_TEMP_FILES_
 		sdstring sTempFile(inStr);
 		sTempFile.append(".tmp");
 

@@ -1,3 +1,9 @@
 [submodule "tinyxml"]
 	path = tinyxml
 	url = https://github.com/VA7ODR/timyxml.git
+[submodule "ArbitraryOrderMap"]
+	path = ArbitraryOrderMap
+	url = https://github.com/VA7ODR/ArbitraryOrderMap.git
+[submodule "SDString"]
+	path = SDString
+	url = https://github.com/VA7ODR/SDString.git

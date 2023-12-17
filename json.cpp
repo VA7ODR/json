@@ -34,17 +34,13 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #define __uncaught_exception std::uncaught_exception
 #endif
 
-#if defined _USE_ADDED_ORDER_
-#undef _USE_ADDED_ORDER_
-#if !defined SUPPORT_ORDERED_JSON
-#define SUPPORT_ORDERED_JSON
+#include "json.hpp"
+
+#if defined JSON_USE_ADDED_ORDER
+#if defined JSON_NAMESPACE
+#undef JSON_NAMESPACE
 #endif
-#include "json.hpp"
-#define _USE_ADDED_ORDER_
 #define JSON_NAMESPACE ojson
-#else
-#include "json.hpp"
-#define JSON_NAMESPACE json
 #endif
 
 #if defined __GNUC__
@@ -1200,12 +1196,13 @@ namespace JSON_NAMESPACE
 		return 0;
 	}
 
-	iterator value::erase(iterator it)
+	iterator value::erase(iterator & it)
 	{
 		if (it.IsArray() && arr) {
 			return arr->erase(it.arr());
 		} else if (!it.IsArray() && !it.Neither() && obj) {
 			return obj->erase(it.obj());
+			it.bSetKey = false;
 		}
 		if (arr != nullptr) {
 			return arr->end();
@@ -1215,12 +1212,13 @@ namespace JSON_NAMESPACE
 		return iterator();
 	}
 
-	iterator value::erase(iterator first, iterator last)
+	iterator value::erase(iterator &first, iterator &last)
 	{
 		if (first.IsArray() && last.IsArray() && arr) {
 			arr->erase(first.arr(), last.arr());
 		} else if (!first.IsArray() && !last.IsArray() && !first.Neither() && !last.Neither() && obj) {
 			obj->erase(first.obj(), last.obj());
+			first.bSetKey = false;
 		}
 		return iterator();
 	}
@@ -1342,7 +1340,7 @@ namespace JSON_NAMESPACE
 		if (position.IsArray() && myType == JSON_ARRAY) {
 			arr->setNotEmpty();
 			return iterator(arr->insert(position.arr(), V));
-#if defined _USE_ADDED_ORDER_
+#if defined JSON_USE_ADDED_ORDER
 		} else if (!position.IsArray() && !position.Neither() && myType == JSON_OBJECT && V.myType == JSON_OBJECT) {
 			obj->setNotEmpty();
 			return iterator(obj->insert(position.obj(), V.begin().obj(), V.end().obj()));
@@ -1401,7 +1399,7 @@ namespace JSON_NAMESPACE
 			}
 			arr->setNotEmpty();
 			arr->insert(position.arr(), first.arr(), last.arr());
-#if defined _USE_ADDED_ORDER_
+#if defined JSON_USE_ADDED_ORDER
 		} else if (!position.IsArray() && !position.Neither() && !first.IsArray() && !first.Neither() && !last.IsArray() && !last.Neither()) {
 #else
 		} else if (!first.IsArray() && !first.Neither() && !last.IsArray() && !last.Neither()) {
@@ -1424,7 +1422,7 @@ namespace JSON_NAMESPACE
 					obj->setParentArray(pParentArray);
 				}
 			}
-#if defined _USE_ADDED_ORDER_
+#if defined JSON_USE_ADDED_ORDER
 			obj->insert(position.obj(), first.obj(), last.obj());
 #else
 			obj->insert(first.obj(), last.obj());
@@ -1537,7 +1535,7 @@ namespace JSON_NAMESPACE
 		V.myType = JSON_VOID;
 	}
 
-#if defined SUPPORT_ORDERED_JSON && !defined _USE_ADDED_ORDER_
+#if defined SUPPORT_ORDERED_JSON && !defined JSON_USE_ADDED_ORDER
 	value::value(const ojson::value& V) :
 		m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType((JSONTypes)V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
@@ -1572,7 +1570,7 @@ namespace JSON_NAMESPACE
 
 	}
 
-#elif defined _USE_ADDED_ORDER_
+#elif defined JSON_USE_ADDED_ORDER
 	value::value(const json::value& V) : m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(JSONTypes((int)V.myType)), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
 	{
 
@@ -1927,7 +1925,7 @@ namespace JSON_NAMESPACE
 		}
 		if (myType == JSON_OBJECT) {
 			if (index < obj->size()) {
-#if defined _USE_ADDED_ORDER_
+#if defined JSON_USE_ADDED_ORDER
 				return (*obj)[index];
 #else
 				size_t iMyIndex = 0;
@@ -4002,7 +4000,7 @@ namespace JSON_NAMESPACE
 
 	bool document::parseFile(const sdstring &inStr, PREPARSEPTR preParser) {
 		FILE* fd = fopen(inStr.c_str(), "rb");
-#if defined _JSON_TEMP_FILES_ && defined _JSON_RESTORE_TEMP_FILES_
+#if defined JSON_TEMP_FILES_ && defined JSON_RESTORE_TEMP_FILES_
 		sdstring sInstrPlusBak(inStr);
 		sInstrPlusBak.append(".bak");
 
@@ -4109,7 +4107,7 @@ namespace JSON_NAMESPACE
 
 	bool document::writeFile(const sdstring& inStr, bool bPretty, PREWRITEPTR preWriter)
 	{
-#if defined _JSON_TEMP_FILES_
+#if defined JSON_TEMP_FILES_
 		sdstring sTempFile(inStr);
 		sTempFile.append(".tmp");
 
