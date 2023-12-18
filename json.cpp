@@ -462,7 +462,7 @@ namespace JSON_NAMESPACE
 			SkipWhitespace(inputString);
 			value &temp = (*ret.obj)[key];
 			temp.setParentObject(ret.obj);
-			ret.m_key.assign(std::move(key));
+			temp.m_key.assign(key);
 			valueParse(temp, inputString, bFailed);
 			if (*bFailed) {
 				ret = value();
@@ -1500,7 +1500,7 @@ namespace JSON_NAMESPACE
 	}
 
 	value::value(const value& V) :
-		m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+		m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), m_key(V.m_key), pParentObject(nullptr), pParentArray(nullptr)
 	{
 		if (myType == JSON_OBJECT) {
 			obj = new object(V.obj);
@@ -1531,7 +1531,7 @@ namespace JSON_NAMESPACE
 				arr = std::move(V.arr);
 				break;
 		}
-
+		m_key = std::move(V.m_key);
 		pParentObject = nullptr;
 		pParentArray = nullptr;
 
@@ -1739,6 +1739,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentObject(pParentObject);
 				}
+				if (m_key.empty() && V.m_key.size()) {
+					m_key = V.m_key;
+				}
 			} else if (pParentArray) {
 				pParentArray->setNotEmpty();
 				if (myType == JSON_ARRAY) {
@@ -1746,6 +1749,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentArray(pParentArray);
 				}
+				m_key.clear();
+			} else {
+				m_key.clear();
 			}
 		}
 		return *this;
@@ -1817,6 +1823,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentObject(pParentObject);
 				}
+				if (m_key.empty() && V.m_key.size()) {
+					m_key = V.m_key;
+				}
 			} else if (pParentArray) {
 				pParentArray->setNotEmpty();
 				if (myType == JSON_ARRAY) {
@@ -1824,6 +1833,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentArray(pParentArray);
 				}
+				m_key.clear();
+			} else {
+				m_key.clear();
 			}
 		}
 
@@ -4238,7 +4250,7 @@ namespace JSON_NAMESPACE
 		return -1;
 	}
 
-	iterator::iterator(iterator&& it)// : arr_it(std::move(it.arr_it)), obj_it(std::move(it.obj_it)), bNone(std::move(it.bNone)), bIsArray(std::move(it.bIsArray)), bSetKey(std::move(it.bSetKey))
+	iterator::iterator(iterator&& it)
 	{
 		std::swap(bNone, it.bNone);
 		std::swap(arr_it, it.arr_it);
@@ -4355,8 +4367,10 @@ namespace JSON_NAMESPACE
 	{
 		if (!bNone) {
 			if (bIsArray) {
+				arr_it->m_key.clear();
 				return *arr_it;
 			} else {
+				obj_it->second.m_key.assign(obj_it->first);
 				return obj_it->second;
 			}
 		} else {
@@ -4383,8 +4397,6 @@ namespace JSON_NAMESPACE
 		std::swap(arr_it, it.arr_it);
 		std::swap(obj_it, it.obj_it);
 		std::swap(bIsArray, it.bIsArray);
-		bSetKey = false;
-		it.bSetKey = false;
 	}
 
 	reverse_iterator & reverse_iterator::operator=(const reverse_iterator& it)
@@ -4397,8 +4409,6 @@ namespace JSON_NAMESPACE
 		arr_it = it.arr_it;
 		obj_it = it.obj_it;
 		bIsArray = it.bIsArray;
-		bSetKey = false;
-		// it.bSetKey = false;
 		return *this;
 	}
 
@@ -4409,16 +4419,7 @@ namespace JSON_NAMESPACE
 		std::swap(arr_it, it.arr_it);
 		std::swap(obj_it, it.obj_it);
 		std::swap(bIsArray, it.bIsArray);
-		bSetKey = false;
-		it.bSetKey = false;
 		return *this;
-	}
-
-	reverse_iterator::~reverse_iterator()
-	{
-		if (bSetKey) {
-			obj_it->second.m_key.clear();
-		}
 	}
 
 	reverse_iterator& reverse_iterator::operator++()
@@ -4427,10 +4428,6 @@ namespace JSON_NAMESPACE
 			if (bIsArray) {
 				++arr_it;
 			} else {
-				if (bSetKey) {
-					obj_it->second.m_key.clear();
-					bSetKey = false;
-				}
 				++obj_it;
 			}
 		}
@@ -4450,10 +4447,6 @@ namespace JSON_NAMESPACE
 			if (bIsArray) {
 				--arr_it;
 			} else {
-				if (bSetKey) {
-					obj_it->second.m_key.clear();
-					bSetKey = false;
-				}
 				--obj_it;
 			}
 		}
@@ -4493,12 +4486,10 @@ namespace JSON_NAMESPACE
 	{
 		if (!bNone) {
 			if (bIsArray) {
+				arr_it->m_key.clear();
 				return *arr_it;
 			} else {
-				if (!bSetKey) {
-					(obj_it->second).m_key.assign(obj_it->first);
-					bSetKey = true;
-				}
+				obj_it->second.m_key.assign(obj_it->first);
 				return obj_it->second;
 			}
 		} else {
@@ -4518,5 +4509,4 @@ namespace JSON_NAMESPACE
 			return value();
 		}
 	}
-
 }

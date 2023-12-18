@@ -818,18 +818,17 @@ class iterator
 	class reverse_iterator : public std::reverse_iterator<iterator>
 	{
 		public:
-			reverse_iterator() : bNone(true), bIsArray(false), bSetKey(false) {}
-			reverse_iterator(const myMap::reverse_iterator & it) : obj_it(it), bNone(false), bIsArray(false), bSetKey(false) {}
-			reverse_iterator(const myVec::reverse_iterator & it) : arr_it(it), bNone(false), bIsArray(true), bSetKey(false) {}
-			reverse_iterator(const myMap::iterator & it) : obj_it(myMap::reverse_iterator(it)), bNone(false), bIsArray(false), bSetKey(false) {}
-			reverse_iterator(const myVec::iterator & it) : arr_it(myVec::reverse_iterator(it)), bNone(false), bIsArray(true), bSetKey(false) {}
-			reverse_iterator(const reverse_iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), bSetKey(false), dumbRet() {}
-			reverse_iterator(const JSON_NAMESPACE::iterator& it) : arr_it(myVec::reverse_iterator(it.arr_it)), obj_it(myMap::reverse_iterator(it.obj_it)) , bNone(it.bNone), bIsArray(it.bIsArray), bSetKey(false) {}
+			reverse_iterator() : bNone(true), bIsArray(false) {}
+			reverse_iterator(const myMap::reverse_iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+			reverse_iterator(const myVec::reverse_iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+			reverse_iterator(const myMap::iterator & it) : obj_it(myMap::reverse_iterator(it)), bNone(false), bIsArray(false) {}
+			reverse_iterator(const myVec::iterator & it) : arr_it(myVec::reverse_iterator(it)), bNone(false), bIsArray(true) {}
+			reverse_iterator(const reverse_iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
+			reverse_iterator(const JSON_NAMESPACE::iterator& it) : arr_it(myVec::reverse_iterator(it.arr_it)), obj_it(myMap::reverse_iterator(it.obj_it)) , bNone(it.bNone), bIsArray(it.bIsArray) {}
 
 			reverse_iterator(reverse_iterator&& it);
 			reverse_iterator & operator=(const reverse_iterator& it);
 			reverse_iterator & operator=(reverse_iterator&& it);
-			~reverse_iterator();
 
 			reverse_iterator& operator++();
 			reverse_iterator operator++(int);
@@ -851,7 +850,6 @@ class iterator
 			myMap::reverse_iterator obj_it;
 			bool bNone;
 			bool bIsArray;
-			bool bSetKey;
 			value dumbRet;
 	};
 
