@@ -22,14 +22,14 @@
 
 cmake_minimum_required(VERSION 3.5)
 
-cmake_policy(SET CMP0077 NEW)							#silence CMAKE warning:
-#For compatibility with older versions of CMake, option is clearing the normal variable 'STAND_ALONE_JSON'.
+#cmake_policy(SET CMP0077 NEW)							#silence CMAKE warning:
+##For compatibility with older versions of CMake, option is clearing the normal variable 'JSON_STAND_ALONE'.
 
 project(json_document)
 
-option(ORDERED_JSON "Is the ordered json (ojson::document) class required" ON)
-option(DATA_DOCUMENT "Is the xml functionality (data/odata::document) class(es) required" ON)
-option(STAND_ALONE_JSON "Stand Alone or part of another project." ON)
+option(JSON_ORDERED "Is the ordered json (ojson::document) class required" ON)
+option(JSON_DATA_DOCUMENT "Is the xml functionality (data/odata::document) class(es) required" ON)
+#option(JSON_STAND_ALONE "Stand Alone or part of another project." OFF)
 option(JSON_SAMPLES "Create sample programs" OFF)
 option(JSON_TEST_EXAMPLE "Creates a sample used for testing features." OFF)
 option(JSON_USE_TEMP_FILES "Makes json::document and derived classes use temp files for data protection." OFF)
@@ -37,12 +37,12 @@ option(JSON_RESTORE_TEMP_FILES "Makes json::document and derived classes automat
 
 set (CMAKE_CXX_STANDARD 17)
 
-if(STAND_ALONE_JSON)
-	set(OBJECT_TYPE SHARED)
-	add_compile_options(-fPIC)
-else(STAND_ALONE_JSON)
-	set(OBJECT_TYPE STATIC)
-endif(STAND_ALONE_JSON)
+#if(JSON_STAND_ALONE)
+#	set(OBJECT_TYPE SHARED)
+#	add_compile_options(-fPIC)
+#else(JSON_STAND_ALONE)
+#	set(OBJECT_TYPE STATIC)
+#endif(JSON_STAND_ALONE)
 
 if(JSON_USE_TEMP_FILES)
 	if (JSON_RESTORE_TEMP_FILES)
@@ -52,35 +52,35 @@ if(JSON_USE_TEMP_FILES)
 	endif (JSON_RESTORE_TEMP_FILES)
 endif(JSON_USE_TEMP_FILES)
 
-if (ORDERED_JSON)
+if (JSON_ORDERED)
 	set (JSON_TARGET_DEFINES PUBLIC SUPPORT_ORDERED_JSON _CRT_SECURE_NO_WARNINGS)
 	add_library(ojson STATIC json.cpp)
 	target_compile_definitions(ojson PUBLIC ${JSON_TARGET_DEFINES} JSON_USE_ADDED_ORDER)
 	 SET(OJSON_OBJECTS $<TARGET_OBJECTS:ojson>)
-else (ORDERED_JSON)
+else (JSON_ORDERED)
 	set (JSON_TARGET_DEFINES PUBLIC _CRT_SECURE_NO_WARNINGS)
-endif (ORDERED_JSON)
+endif (JSON_ORDERED)
 
-if (DATA_DOCUMENT)
+if (JSON_DATA_DOCUMENT)
 	set(DATA_DOCUMENT_DEFINES USE_DATA_DOCUMENT)
-endif(DATA_DOCUMENT)
+endif(JSON_DATA_DOCUMENT)
 
 add_library(ajson STATIC json.cpp)
 target_compile_definitions(ajson PUBLIC ${JSON_TARGET_DEFINES})
 
-if(DATA_DOCUMENT)
+if(JSON_DATA_DOCUMENT)
 	add_library(tinyxml STATIC tinyxml/tinystr.cpp tinyxml/tinyxml.cpp tinyxml/tinyxmlerror.cpp tinyxml/tinyxmlparser.cpp)
-	 if(ORDERED_JSON)
+	 if(JSON_ORDERED)
 		add_library(odata STATIC data.cpp)
 		target_compile_definitions(odata PUBLIC ${JSON_TARGET_DEFINES} JSON_USE_ADDED_ORDER)
 		  SET(ODATA_OBJECTS $<TARGET_OBJECTS:odata>)
-	 endif(ORDERED_JSON)
+	 endif(JSON_ORDERED)
 	add_library(adata STATIC data.cpp)
 	target_compile_definitions(adata PUBLIC ${JSON_TARGET_DEFINES})
 	 SET(ADATA_OBJECTS $<TARGET_OBJECTS:adata> $<TARGET_OBJECTS:tinyxml>)
-endif(DATA_DOCUMENT)
+endif(JSON_DATA_DOCUMENT)
 
-add_library(${PROJECT_NAME} ${OBJECT_TYPE} $<TARGET_OBJECTS:ajson> ${OJSON_OBJECTS} ${ADATA_OBJECTS} ${ODATA_OBJECTS})
+add_library(${PROJECT_NAME} STATIC $<TARGET_OBJECTS:ajson> ${OJSON_OBJECTS} ${ADATA_OBJECTS} ${ODATA_OBJECTS})
 target_compile_definitions(${PROJECT_NAME} PUBLIC ${JSON_TARGET_DEFINES})
 
 if(STAND_ALONE_JSON)
@@ -110,7 +110,7 @@ if(STAND_ALONE_JSON)
         install(TARGETS jsonpretty json2csv csv2json RUNTIME DESTINATION bin)
 	endif(JSON_SAMPLES)
 
-    if(DATA_DOCUMENT)
+	 if(JSON_DATA_DOCUMENT)
 		if(JSON_SAMPLES)
             add_executable(json2xml json2xml.cpp)
 			target_compile_definitions(json2xml PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
@@ -132,7 +132,7 @@ if(STAND_ALONE_JSON)
 		endif(JSON_SAMPLES)
 
 		install(FILES data.hpp DESTINATION include/${PROJECT_NAME})
-    endif(DATA_DOCUMENT)
+    endif(JSON_DATA_DOCUMENT)
 
 	install(FILES json.hpp DESTINATION include/${PROJECT_NAME})
 

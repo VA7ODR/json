@@ -407,8 +407,8 @@ namespace JSON_NAMESPACE
 			reverse_iterator rfind(const char* index) const;
 
 			typedef void (*DEBUGPTR)(const char *, ...);
-			void debugPrint() { if (debug) { debug("%s\n", print(0, true).c_str()); } }
-			static void setDebug(DEBUGPTR setTo) { debug = setTo; }
+			void debugPrint() { if (debug()) { debug()("%s\n", print(0, true).c_str()); } }
+			static void setDebug(DEBUGPTR setTo) { debug() = setTo; }
 
 			static const char* typeName(int type);
 			const sdstring& key() { return m_key; }
@@ -437,7 +437,7 @@ namespace JSON_NAMESPACE
 			array* pParentArray;
 
 			friend void debugTypeChangeReal(const sdstring & func, value& oldType, value& newType);
-			static DEBUGPTR debug;
+			static DEBUGPTR& debug();
 
 		private:
 			static sdstring &makeStringFromNumber(sdstring & in, int iPlaces, double dNumber);
@@ -778,14 +778,13 @@ class iterator
 			typedef value*   					pointer;
 			typedef value& 						reference;
 		
-			iterator() : bNone(true), bIsArray(false), bSetKey(false) {}
-			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false), bSetKey(false) {}
-			iterator(const myVec::iterator & it) : arr_it(it), bNone(false), bIsArray(true), bSetKey(false) {}
-			iterator(const iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), bSetKey(false), dumbRet() {}
+			iterator() : bNone(true), bIsArray(false) {}
+			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+			iterator(const myVec::iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+			iterator(const iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
 			iterator(iterator&& it);
 			iterator& operator=(const iterator& it);
 			iterator& operator=(iterator&& it);
-			~iterator();
 
 			iterator& operator++();
 			iterator operator++(int);
@@ -813,7 +812,6 @@ class iterator
 			myMap::iterator obj_it;
 			bool bNone;
 			bool bIsArray;
-			bool bSetKey;
 			value dumbRet;
 	};
 
