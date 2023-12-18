@@ -207,7 +207,7 @@ namespace json
 		}
 		if (bOk){
             size_t lRevs = data["data"][id]["revs"].size();
-            i64 revIndex = data["data"][id]["revindex"].integer() + 1;
+            int64_t revIndex = data["data"][id]["revindex"].integer() + 1;
             data["data"][id]["revindex"] = revIndex;
             std::string newRev = std::to_string(revIndex);
             newRev.append("-");
@@ -324,7 +324,7 @@ namespace json
             mtx.unlock();
             return ret;
 		}
-		if (bReduce && views[mmName].reduce == NULL){
+		if (bReduce && views[mmName].reduce == nullptr){
             ret["error"] = "query_parse_error";
             ret["reason"] = "Reduce is invalid for map-only views.";
             mtx.unlock();
@@ -371,9 +371,9 @@ namespace json
 					rere.push_back(val["value"]);
 				}
 				ret["rows"].clear();
-				value n = value((char*)NULL);
+				value n = value((char*)nullptr);
 				ret["rows"][0]["value"] = views[mmName].reduce(n, rere, true);
-				ret["rows"][0]["key"] = (char*)NULL;
+				ret["rows"][0]["key"] = (char*)nullptr;
 //				ret["total_rows"] = 1;
 			}
 		} else {
@@ -410,7 +410,7 @@ namespace json
 			}
 			ret["rows"].clear();
 			ret["rows"][0]["value"] = views[sName].reduce(keys, values, false);
-			ret["rows"][0]["key"] = (char*)NULL;
+			ret["rows"][0]["key"] = (char*)nullptr;
 			ret["total_rows"] = 1;
 		}
 //		ret["name"] = sName;

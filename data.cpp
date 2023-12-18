@@ -27,29 +27,23 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #include "tinyxml/tinyxml.h"
 #include "tinyxml/tinystr.h"
 #include <chrono>
-
-#if defined _USE_ADDED_ORDER_
-#undef _USE_ADDED_ORDER_
-#if !defined SUPPORT_ORDERED_JSON
-#define SUPPORT_ORDERED_JSON
-#endif
 #include "data.hpp"
-#define _USE_ADDED_ORDER_
-// #undef _DATA_HPP
-// #undef JSON_HPP_
-// #include "data.hpp"
+
+#if defined JSON_USE_ADDED_ORDER
+#if defined DATA_NAMESPACE
+#undef DATA_NAMESPACE
+#endif
+#if defined JSON_NAMESPACE
+#undef JSON_NAMESPACE
+#endif
 #define JSON_NAMESPACE ojson
 #define DATA_NAMESPACE odata
-#else
-#include "data.hpp"
-#define JSON_NAMESPACE json
-#define DATA_NAMESPACE data
 #endif
 
 namespace DATA_NAMESPACE
 {
 
-	int isNumeric(sdstring data) {
+	int isNumeric(const sdstring & data) {
 		size_t l = data.size();
 		if (l == 0 || l > JSON_NUMBER_PRECISION) {
 			return 0;
@@ -59,28 +53,29 @@ namespace DATA_NAMESPACE
 		bool bHaveDot = false;
 		bool bHaveSpace = false;
 		bool bHaveMinus = false;
-		for (sdstring::iterator it = data.begin(); it != data.end(); ++it) {
+
+		for (auto & c : data) {
 			bool bOk = false;
 			for (size_t i = 0; i < 10; i++) {
-				if (szOk[i] == (*it)) {
+				if (szOk[i] == c) {
 					if (bHaveSpace) {
 						return 0;
 					}
 					bHaveDigit = true;
 					bOk = true;
 					break;
-				} else if ((*it) == '-') {
+				} else if (c == '-') {
 					if (bHaveDigit || bHaveMinus || bHaveDot || bHaveSpace) {
 						return 0;
 					}
 					bHaveMinus = true;
 					bOk = true;
 					break;
-				} else if ((*it) == ' ') {
+				} else if (c == ' ') {
 					bHaveSpace = true;
 					bOk = true;
 					break;
-				} else if ((*it) == '.') {
+				} else if (c == '.') {
 					if (bHaveDot || bHaveSpace) {
 						return 0;
 					}
@@ -212,7 +207,7 @@ namespace DATA_NAMESPACE
 					}
 					sRootTag = rootElem->Value();
 					for (const TiXmlElement * child = rootElem->FirstChildElement(); child; child = child->NextSiblingElement() ) {
-						if (child != NULL) {
+						if (child != nullptr) {
 							switch (child->Type()) {
 								case TiXmlNode::TINYXML_ELEMENT:
 									{
@@ -304,7 +299,7 @@ namespace DATA_NAMESPACE
 							att = att->Next();
 						}
 						if (elem->Value()) {
-							const TiXmlNode *child = NULL;
+							const TiXmlNode *child = nullptr;
 			
 							bool bEmpty = true;
 			
@@ -413,26 +408,6 @@ namespace DATA_NAMESPACE
 		}
 	}
 
-	sdstring generateError(JSON_NAMESPACE::instring& inputString, const sdstring& szError) {
-		sdstring in = inputString.SoFar();
-		size_t l = in.size();
-		size_t pos = 1;
-		size_t line = 1;
-		for (size_t i = 0; i < l; i++) {
-			if (in[i] == '\n') {
-				line++;
-				pos = 1;
-			} else {
-				if (in[i] != '\r')
-					pos++;
-			}
-		}
-
-		std::ostringstream s;
-		s << szError << "  Line: " << line <<  " Column: " << pos;
-		return s.str().c_str();
-	}
-
 #if defined DONT_DO_THIS
 	bool document::fastParse(JSON_NAMESPACE::instring& in, JSON_NAMESPACE::value& out, sdstring& parseResult)
 	{
@@ -506,7 +481,7 @@ namespace DATA_NAMESPACE
 							if (bHadChars) {
 								size_t len = (size_t)(ptr - retVal);
 								if (bHadNonNumber || (*retVal == '0' && *(retVal+1) != '.' && len > 1)) {
-									sdstring sTemp(std::string(retVal, len));
+									sdstring sTemp(sdstring(retVal, len));
 									int iIsBool = IsBool(sTemp);
 									switch (iIsBool) {
 										default:
@@ -530,7 +505,7 @@ namespace DATA_NAMESPACE
 										}
 									}
 								} else {
-									std::istringstream convert(std::string(retVal, len));
+									std::std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char>> convert(sdstring(retVal, len));
 									double d = 0.0;
 									if (!(convert >> d)) {
 										out = 0.0;
@@ -542,8 +517,7 @@ namespace DATA_NAMESPACE
 										}
 									}
 								}
-//								out = std::string(retVal, (size_t)(ptr - retVal));
-							}
+\							}
 							bHadChars = false;
 							bHadSign = false;
 							bHadDecimal = false;
@@ -997,7 +971,7 @@ namespace DATA_NAMESPACE
 						{
 							size_t len = (size_t)(ptr - retVal);
 							if (bHadNonNumber || !bHadChars || (*retVal == '0' && *(retVal+1) != '.' && len > 1)) {
-								sdstring sTemp(std::string(retVal, len));
+								sdstring sTemp(sdstring(retVal, len));
 								int iIsBool = IsBool(sTemp);
 								switch (iIsBool) {
 									default:
@@ -1018,7 +992,7 @@ namespace DATA_NAMESPACE
 									}
 								}
 							} else {
-								sdistringstream convert(sdstring(retVal, len));
+								std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char>> convert(sdstring(retVal, len));
 								double d = 0.0;
 								if (!(convert >> d)) {
 									(*pTag)[sAttribute] = 0.0;
@@ -1110,16 +1084,16 @@ namespace DATA_NAMESPACE
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
-			arr = NULL;
+			arr = nullptr;
 		} else if (myType == JSON_NAMESPACE::JSON_OBJECT) {
 			delete obj;
-			obj = NULL;
+			obj = nullptr;
 		}
 		myType = JSON_NAMESPACE::JSON_VOID;
 		m_number = 0;
 		m_boolean = false;
 		str.clear();
-		if (preParser == NULL) {
+		if (preParser == nullptr) {
 			JSON_NAMESPACE::instring in(inStr);
 			JSON_NAMESPACE::SkipWhitespace(in);
 			bParseSuccessful = fastParse(in, *this, strParseResult);
@@ -1157,10 +1131,10 @@ namespace DATA_NAMESPACE
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
-			arr = NULL;
+			arr = nullptr;
 		} else if (myType == JSON_NAMESPACE::JSON_OBJECT) {
 			delete obj;
-			obj = NULL;
+			obj = nullptr;
 		}
 		myType = JSON_NAMESPACE::JSON_VOID;
 		m_number = 0;
@@ -1169,7 +1143,7 @@ namespace DATA_NAMESPACE
 
 		TiXmlDocument doc;
 		doc.SetCondenseWhiteSpace(false);
-		if (preParser == NULL) {
+		if (preParser == nullptr) {
 			doc.Parse(inStr.c_str());
 		} else {
 			sdstring sOut;
@@ -1200,65 +1174,29 @@ namespace DATA_NAMESPACE
 
 	bool document::parseXMLFile(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile)
 	{
-//		auto start = std::chrono::steady_clock::now();
 		FILE* fd = fopen(inStr.c_str(), "rb");
-//		auto mainStart = start;
 		if (fd) {
-//			auto end = std::chrono::steady_clock::now();
-//			std::cout << "open: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-
 			fseek(fd, 0, SEEK_END);
 			size_t l = (size_t)ftell(fd);
 			fseek(fd, 0, SEEK_SET);
 
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "size: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			sdstring sDat(l, 0);
 
-			char* buffer = static_cast<char*>(malloc(l + 1));
-			if (!buffer) {
-				fclose(fd);
-				strParseResult = "Couldn't allocate memory for parsing file " + inStr;
-				bParseSuccessful = false;
-				return false;
-			}
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "allocate: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-
-			buffer[l] = 0;
-			size_t br = fread(buffer, 1, l, fd);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "read: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			size_t br = fread(sDat.data(), 1, l, fd);
 			if (debug && br != l) {
 				debug("File size mismatch in %s.", inStr.c_str());
 			}
+
 			fclose(fd);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "close: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
 			bool bRetVal;
-			sdstring sDat(buffer, l);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "sdstring: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+
 			if (bReWriteFile) {
 				bRetVal = parseXML(sDat, preParser, inStr);
 			} else {
 				bRetVal = parseXML(sDat, preParser);
 			}
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "parsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+
 			bParseSuccessful = bRetVal;
-			memset(buffer, 0, l + 1);
-			free(buffer);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "freed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			std::cout << "TOTAL: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - mainStart).count() << std::endl << std::endl;
-//			start = end;
 			return bRetVal;
 		}
 		strParseResult = "Couldn't open file " + inStr;
@@ -1333,16 +1271,16 @@ namespace DATA_NAMESPACE
 #endif
 	sdstring XMLEscape(const sdstring& in, bool bAttribute) {
 		sdstring out;
+		out.reserve(in.size() * 2);
 		for (const char &c: in) {
 			switch (c) {
 				default:
 				{
 					if (c < ' ' && c > 0) {
-						std::stringstream stream;
-						char szByte[6];
+						sdostream stream(out);
+						char szByte[24];
 						sprintf(szByte, "%.2x", c & 0xFF);
-						stream << "&#x" << szByte << ";";
-						out.append(stream.str().c_str());
+						stream << "&#x" << std::hex << (c & 0xFF) << ";";
 					} else {
 						out.push_back(c);
 					}
@@ -1389,6 +1327,7 @@ namespace DATA_NAMESPACE
 					break;
 			}
 		}
+		out.shrink_to_fit();
 		return out;
 	}
 
@@ -1404,11 +1343,11 @@ namespace DATA_NAMESPACE
 
 			case JSON_NAMESPACE::JSON_NUMBER:
 			{
-				strParameter.append(XMLEscape(ret.string()));
+				strParameter.append(XMLEscape(ret._sdstring()));
 				break;
 			}
 			case JSON_NAMESPACE::JSON_STRING:
-				strParameter.append(XMLEscape(ret.string()));
+				strParameter.append(XMLEscape(ret._sdstring()));
 				break;
 
 			case JSON_NAMESPACE::JSON_OBJECT:
@@ -1416,28 +1355,28 @@ namespace DATA_NAMESPACE
 
 				for (JSON_NAMESPACE::value & val : ret) {
 					bool bEmpty = true;
-					sdstring key = val.key();
+					const sdstring & key = val.key();
 					if (key.size() > 1) {
 						if (key[0] == '@') {
 							continue;
 						}
 					}
 					if (key == DATA_VAL) {
-						strParameter.append(XMLEscape(val.string()));
+						strParameter.append(XMLEscape(val._sdstring()));
 						continue;
 					}
 					bool bIsNumericKey = false;
-					if (strchr("1234567890", key[0])) {
+					const char & c = key[0];
+					if (c >= '0' && c <= '9') {
 						bIsNumericKey = true;
 					}
 					if (bPretty && strParameter.size() && !val.isA(JSON_NAMESPACE::JSON_VOID)) {
-						if (strParameter[strParameter.size() - 1] != '\n')
+						if (strParameter[strParameter.size() - 1] != '\n') {
 							strParameter.append("\n");
+						}
 
 						if (bTabs) {
-						// for (int k = 0; k < depth; k++) {
 							strParameter.append(depth, '\t');
-						// }
 						}
 					}
 					if (val.isA(JSON_NAMESPACE::JSON_ARRAY)) {
@@ -1445,9 +1384,7 @@ namespace DATA_NAMESPACE
 						size_t l = val.size();
 						for (size_t j = 0; j < l; j++) {
 							if (bPretty && bTabs && j > 0) {
-							// for (int i = 0; i < depth; i++) {
 								strParameter.append(depth, '\t');
-							// }
 							}
 							strParameter.push_back('<');
 							if (bIsNumericKey) {
@@ -1456,13 +1393,13 @@ namespace DATA_NAMESPACE
 							strParameter.append(key);
 							size_t attCount = 0;
 							for (JSON_NAMESPACE::value & val2 : val[j]) {
-								sdstring subKey = val2.key();
+								const sdstring & subKey = val2.key();
 								if (subKey.size() > 1) {
 									if (subKey[0] == '@' && !val2.isA(JSON_NAMESPACE::JSON_VOID)) {
 										strParameter.push_back(' ');
 										strParameter.append(subKey.substr(1));
 										strParameter.append("=\"");
-										strParameter.append(XMLEscape(val2.string(), true));
+										strParameter.append(XMLEscape(val2._sdstring(), true));
 										strParameter.push_back('\"');
 										attCount++;
 									}
@@ -1504,7 +1441,7 @@ namespace DATA_NAMESPACE
 									strParameter.push_back(' ');
 									strParameter.append(subKey.substr(1));
 									strParameter.append("=\"");
-									strParameter.append(XMLEscape(val2.string(), true));
+									strParameter.append(XMLEscape(val2._sdstring(), true));
 									strParameter.push_back('\"');
 									attCount++;
 								}
@@ -1588,7 +1525,7 @@ namespace DATA_NAMESPACE
 							ret.append(" ");
 							ret.append(key.substr(1));
 							ret.append("=\"");
-							ret.append(XMLEscape(val.string(), true));
+							ret.append(XMLEscape(val._sdstring(), true));
 							ret.append("\"");
 						}
 					}
@@ -1615,7 +1552,7 @@ namespace DATA_NAMESPACE
 			ret.append(">");
 		}
 
-		if (preWriter != NULL) {
+		if (preWriter != nullptr) {
 			sdstring sOut;
 			return preWriter(ret, sOut);
 		}
@@ -1625,7 +1562,7 @@ namespace DATA_NAMESPACE
 
 	bool document::writeXMLFile(const sdstring &inStr, const sdstring &rootElem, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
 	{
-#if defined _JSON_TEMP_FILES_
+#if defined JSON_TEMP_FILES_
 		sdstring sTempFile(inStr);
 		sTempFile.append(".tmp");
 
@@ -1642,32 +1579,39 @@ namespace DATA_NAMESPACE
 				fclose(fd);
 				sdstring sInstrPlusBak(inStr);
 				sInstrPlusBak.append(".bak");
-				if (json::fileExists(sInstrPlusBak.c_str())) {
+				std::error_code ec;
+				if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
 					std::error_code ec;
 
 					std::filesystem::remove((inStr + ".bak").c_str(), ec);
+					if (debug && ec) {
+						debug("Failed remove old backup %s: %s", inStr.c_str(), ec.message().c_str());
+					}
 				}
-				if (json::fileExists(inStr.c_str())) {
-					if (rename(inStr.c_str(), sInstrPlusBak.c_str()) != 0) {
+				if (std::filesystem::exists(inStr.c_str(), ec)) {
+					std::filesystem::rename(inStr.c_str(), sInstrPlusBak.c_str(), ec);
+					if (ec) {
 						if (debug) {
-							debug("Failed to backup %s.", inStr.c_str());
+							debug("Failed to backup %s: %s", inStr.c_str(), ec.message().c_str());
 						}
 						return false;
 					}
 				}
-				if (rename(sTempFile.c_str(), inStr.c_str()) != 0) {
+				std::filesystem::rename(sTempFile.c_str(), inStr.c_str(), ec);
+				if (ec) {
 					if (debug) {
-						debug("Failed rename temp file to %s.", inStr.c_str());
+						debug("Failed rename temp file to %s: %s", inStr.c_str(), ec.message().c_str());
 					}
-					if (rename(sInstrPlusBak.c_str(), inStr.c_str()) != 0 && debug) {
-						debug("Failed restore backup of %s.", inStr.c_str());
+					std::filesystem::rename(sInstrPlusBak.c_str(), inStr.c_str(), ec);
+					if (debug && ec) {
+						debug("Failed restore backup of %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 					return false;
 				}
 
-				if (json::fileExists(sInstrPlusBak.c_str())) {
-					if (remove(sInstrPlusBak.c_str()) != 0 && debug) {
-						debug("Failed remove backup of %s.", inStr.c_str());
+				if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
+					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug) {
+						debug("Failed remove backup of %s: ", inStr.c_str(), ec.message().c_str());
 					}
 				}
 
@@ -1706,7 +1650,7 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				if (sKey.size() > 2) {
 					if (sKey[0] == '@') {
 						size_t stLast = sKey.find_last_of(':');
@@ -1738,7 +1682,7 @@ namespace DATA_NAMESPACE
 		if (begin) {
 			JSON_NAMESPACE::iterator end = jNameSpaces.end();
 			for (JSON_NAMESPACE::iterator it = jNameSpaces.begin(); it != end; ++it) {
-				sdstring sNS = (*it).string();
+				sdstring sNS = (*it)._sdstring();
 				if (sNS[sNS.size() - 1] != ':') {
 					sNS.append(":");
 					(*it) = sNS;
@@ -1749,19 +1693,19 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				JSON_NAMESPACE::iterator end = jNameSpaces.end();
 				for (JSON_NAMESPACE::iterator nit = jNameSpaces.begin(); nit != end; ++nit) {
 					if (sKey[0] == '@') {
-						if (sKey.size() > (*nit).string().size()) {
-							if (sKey.substr(1, (*nit).string().size()) == (*nit)._sdstring()) {
+						if (sKey.size() > (*nit)._sdstring().size()) {
+							if (sKey.substr(1, (*nit)._sdstring().size()) == (*nit)._sdstring()) {
 								sKey = sdstring("@") + sKey.substr((*nit)._sdstring().size() + 1);
 							}
 						}
 					} else {
-						if (sKey.size() > (*nit).string().size()) {
-							if (sKey.substr(0, (*nit).string().size()) == (*nit)._sdstring()) {
-								sKey = sKey.substr((*nit).string().size());
+						if (sKey.size() > (*nit)._sdstring().size()) {
+							if (sKey.substr(0, (*nit)._sdstring().size()) == (*nit)._sdstring()) {
+								sKey = sKey.substr((*nit)._sdstring().size());
 							}
 						}
 					}
@@ -1793,7 +1737,7 @@ namespace DATA_NAMESPACE
 				if ((*it).isA(JSON_NAMESPACE::JSON_VOID) ) {
 					continue;
 				}
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				if (sKey.size() > sNameSpace.size()) {
 					if (sKey[0] == '@') {
 						if (sKey.substr(1, sNameSpace.size()) == sNameSpace) {
@@ -1829,7 +1773,7 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				sdstring sKey = it.key().string();
+				sdstring sKey = it.key()._sdstring();
 				if (sKey[0] == '@') {
 					sKey.insert(1, sNameSpace);
 				} else {
@@ -1860,14 +1804,14 @@ namespace DATA_NAMESPACE
 	{
 		JSON_NAMESPACE::iterator end = jNameSpaces.end();
 		for (JSON_NAMESPACE::iterator it = jNameSpaces.begin(); it != end; ++it) {
-			sdstring sNS = (*it).string();
+			sdstring sNS = (*it)._sdstring();
 			if (sNS[sNS.size() - 1] != ':') {
 				sNS.append(":");
 				(*it) = sNS;
 			}
-			if (sRootTag.size() > (*it).string().size()) {
-				if (sRootTag.substr(0, (*it).string().size()) == (*it)._sdstring()) {
-					sRootTag = sRootTag.substr((*it).string().size());
+			if (sRootTag.size() > (*it)._sdstring().size()) {
+				if (sRootTag.substr(0, (*it)._sdstring().size()) == (*it)._sdstring()) {
+					sRootTag = sRootTag.substr((*it)._sdstring().size());
 				}
 			}
 		}
