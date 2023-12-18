@@ -65,6 +65,16 @@ The official repository for this library is at https://github.com/VA7ODR/json
  \endcode
  */
 
+#include <string>
+#include <deque>
+#include <cstdint>
+#include <map>
+#include "SDString/sdstring.hpp"
+
+#if defined DO_OJSON_STUFF
+#include "ArbitraryOrderMap/arbitrary_order_map.hpp"
+#endif
+
 #if !defined JSON_HPP_
 #if !defined JSON_NAMESPACE
 #define JSON_HPP_
@@ -234,6 +244,9 @@ namespace JSON_NAMESPACE
 				return (int32_t)number();
 			}
 
+			uint32_t _uint32() const {
+				return (uint32_t)number();
+			}
 			unsigned int _uint() const {
 				return (unsigned int)number();
 			}
