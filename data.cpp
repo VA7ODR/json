@@ -1103,9 +1103,9 @@ namespace DATA_NAMESPACE
 			if (sOut.size() == 0) {
 				bParseSuccessful = false;
 				strParseResult = "XML Document failed to pre-parse.";
-				if (debug) {
-					debug("%s", strParseResult.c_str());
-					debug("%s", inStr.c_str());
+				if (debug()) {
+					debug()("%s", strParseResult.c_str());
+					debug()("%s", inStr.c_str());
 				}
 				return false;
 			}
@@ -1151,9 +1151,9 @@ namespace DATA_NAMESPACE
 			if (sOut.size() == 0) {
 				bParseSuccessful = false;
 				strParseResult = "XML Document failed to pre-parse.";
-				if (debug) {
-					debug("%s", strParseResult.c_str());
-					debug("%s", inStr.c_str());
+				if (debug()) {
+					debug()("%s", strParseResult.c_str());
+					debug()("%s", inStr.c_str());
 				}
 				return false;
 			}
@@ -1183,8 +1183,8 @@ namespace DATA_NAMESPACE
 			sdstring sDat(l, 0);
 
 			size_t br = fread(sDat.data(), 1, l, fd);
-			if (debug && br != l) {
-				debug("File size mismatch in %s.", inStr.c_str());
+			if (debug() && br != l) {
+				debug()("File size mismatch in %s.", inStr.c_str());
 			}
 
 			fclose(fd);
@@ -1235,8 +1235,8 @@ namespace DATA_NAMESPACE
 //			end = std::chrono::steady_clock::now();
 //			std::cout << "read: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
 //			start = end;
-			if (debug && br != l) {
-				debug("File size mismatch in %s.", inStr.c_str());
+			if (debug() && br != l) {
+				debug()("File size mismatch in %s.", inStr.c_str());
 			}
 			fclose(fd);
 //			end = std::chrono::steady_clock::now();
@@ -1570,8 +1570,8 @@ namespace DATA_NAMESPACE
 		if (fd) {
 			sdstring w = writeXML(rootElem, bPretty, bTabs, preWriter);
 			if (fwrite(w.data(), 1, w.size(), fd) != w.size()) {
-				if (debug) {
-					debug("Failed Writing to %s.", inStr.c_str());
+				if (debug()) {
+					debug()("Failed Writing to %s.", inStr.c_str());
 				}
 				fclose(fd);
 				return false;
@@ -1584,34 +1584,34 @@ namespace DATA_NAMESPACE
 					std::error_code ec;
 
 					std::filesystem::remove((inStr + ".bak").c_str(), ec);
-					if (debug && ec) {
-						debug("Failed remove old backup %s: %s", inStr.c_str(), ec.message().c_str());
+					if (debug() && ec) {
+						debug()("Failed remove old backup %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 				}
 				if (std::filesystem::exists(inStr.c_str(), ec)) {
 					std::filesystem::rename(inStr.c_str(), sInstrPlusBak.c_str(), ec);
 					if (ec) {
-						if (debug) {
-							debug("Failed to backup %s: %s", inStr.c_str(), ec.message().c_str());
+						if (debug()) {
+							debug()("Failed to backup %s: %s", inStr.c_str(), ec.message().c_str());
 						}
 						return false;
 					}
 				}
 				std::filesystem::rename(sTempFile.c_str(), inStr.c_str(), ec);
 				if (ec) {
-					if (debug) {
-						debug("Failed rename temp file to %s: %s", inStr.c_str(), ec.message().c_str());
+					if (debug()) {
+						debug()("Failed rename temp file to %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 					std::filesystem::rename(sInstrPlusBak.c_str(), inStr.c_str(), ec);
-					if (debug && ec) {
-						debug("Failed restore backup of %s: %s", inStr.c_str(), ec.message().c_str());
+					if (debug() && ec) {
+						debug()("Failed restore backup of %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 					return false;
 				}
 
 				if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
-					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug) {
-						debug("Failed remove backup of %s: ", inStr.c_str(), ec.message().c_str());
+					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug()) {
+						debug()("Failed remove backup of %s: ", inStr.c_str(), ec.message().c_str());
 					}
 				}
 

@@ -23,11 +23,48 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 */
 
-#include <string>
-#include <deque>
-#include <cstdint>
-#include <map>
-#include "SDString/sdstring.hpp"
+/*!
+ * \mainpage
+ * For more information on the JSON standard, visit: http://www.json.org/
+ *
+ * This library is designed to seamlessly integrate JSON parsing, encoding
+ * and data access into c++ in a way that looks similar to Javascript or c++ structures.
+ *
+ * For example:
+ \code
+ #include <iostream>
+ #include "json.hpp"
+
+ int main(int argc, char ** argv) {
+ document doc;
+
+ for (int i = 0; i < 10; i++) {
+ doc["one"][i] = true;
+ }
+
+ std::cout << doc.write(true);
+
+ return 0;
+ }
+ \endcode
+ * Will produce the following JSON:
+ \code
+ {
+ "one": [
+ true,
+ true,
+ true,
+ true,
+ true,
+ true,
+ true,
+ true,
+ true,
+ true
+ ]
+ }
+ \endcode
+ */
 
 #if !defined JSON_HPP_
 
@@ -55,7 +92,6 @@ namespace json
 
 #define DO_OJSON_STUFF
 #define JSON_NAMESPACE ojson
-#include "ArbitraryOrderMap/arbitrary_order_map.hpp"
 #include "json_main.hpp"
 #undef DO_OJSON_STUFF
 #undef JSON_NAMESPACE

@@ -65,6 +65,16 @@ The official repository for this library is at https://github.com/VA7ODR/json
  \endcode
  */
 
+#include <string>
+#include <deque>
+#include <cstdint>
+#include <map>
+#include "SDString/sdstring.hpp"
+
+#if defined DO_OJSON_STUFF
+#include "ArbitraryOrderMap/arbitrary_order_map.hpp"
+#endif
+
 #if !defined JSON_HPP_
 #if !defined JSON_NAMESPACE
 #define JSON_HPP_
@@ -234,6 +244,9 @@ namespace JSON_NAMESPACE
 				return (int32_t)number();
 			}
 
+			uint32_t _uint32() const {
+				return (uint32_t)number();
+			}
 			unsigned int _uint() const {
 				return (unsigned int)number();
 			}
@@ -394,8 +407,8 @@ namespace JSON_NAMESPACE
 			reverse_iterator rfind(const char* index) const;
 
 			typedef void (*DEBUGPTR)(const char *, ...);
-			void debugPrint() { if (debug) { debug("%s\n", print(0, true).c_str()); } }
-			static void setDebug(DEBUGPTR setTo) { debug = setTo; }
+			void debugPrint() { if (debug()) { debug()("%s\n", print(0, true).c_str()); } }
+			static void setDebug(DEBUGPTR setTo) { debug() = setTo; }
 
 			static const char* typeName(int type);
 			const sdstring& key() { return m_key; }
@@ -424,7 +437,7 @@ namespace JSON_NAMESPACE
 			array* pParentArray;
 
 			friend void debugTypeChangeReal(const sdstring & func, value& oldType, value& newType);
-			static DEBUGPTR debug;
+			static DEBUGPTR& debug();
 
 		private:
 			static sdstring &makeStringFromNumber(sdstring & in, int iPlaces, double dNumber);
@@ -765,14 +778,13 @@ class iterator
 			typedef value*   					pointer;
 			typedef value& 						reference;
 		
-			iterator() : bNone(true), bIsArray(false), bSetKey(false) {}
-			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false), bSetKey(false) {}
-			iterator(const myVec::iterator & it) : arr_it(it), bNone(false), bIsArray(true), bSetKey(false) {}
-			iterator(const iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), bSetKey(false), dumbRet() {}
+			iterator() : bNone(true), bIsArray(false) {}
+			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+			iterator(const myVec::iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+			iterator(const iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
 			iterator(iterator&& it);
 			iterator& operator=(const iterator& it);
 			iterator& operator=(iterator&& it);
-			~iterator();
 
 			iterator& operator++();
 			iterator operator++(int);
@@ -800,25 +812,23 @@ class iterator
 			myMap::iterator obj_it;
 			bool bNone;
 			bool bIsArray;
-			bool bSetKey;
 			value dumbRet;
 	};
 
 	class reverse_iterator : public std::reverse_iterator<iterator>
 	{
 		public:
-			reverse_iterator() : bNone(true), bIsArray(false), bSetKey(false) {}
-			reverse_iterator(const myMap::reverse_iterator & it) : obj_it(it), bNone(false), bIsArray(false), bSetKey(false) {}
-			reverse_iterator(const myVec::reverse_iterator & it) : arr_it(it), bNone(false), bIsArray(true), bSetKey(false) {}
-			reverse_iterator(const myMap::iterator & it) : obj_it(myMap::reverse_iterator(it)), bNone(false), bIsArray(false), bSetKey(false) {}
-			reverse_iterator(const myVec::iterator & it) : arr_it(myVec::reverse_iterator(it)), bNone(false), bIsArray(true), bSetKey(false) {}
-			reverse_iterator(const reverse_iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), bSetKey(false), dumbRet() {}
-			reverse_iterator(const JSON_NAMESPACE::iterator& it) : arr_it(myVec::reverse_iterator(it.arr_it)), obj_it(myMap::reverse_iterator(it.obj_it)) , bNone(it.bNone), bIsArray(it.bIsArray), bSetKey(false) {}
+			reverse_iterator() : bNone(true), bIsArray(false) {}
+			reverse_iterator(const myMap::reverse_iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+			reverse_iterator(const myVec::reverse_iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+			reverse_iterator(const myMap::iterator & it) : obj_it(myMap::reverse_iterator(it)), bNone(false), bIsArray(false) {}
+			reverse_iterator(const myVec::iterator & it) : arr_it(myVec::reverse_iterator(it)), bNone(false), bIsArray(true) {}
+			reverse_iterator(const reverse_iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
+			reverse_iterator(const JSON_NAMESPACE::iterator& it) : arr_it(myVec::reverse_iterator(it.arr_it)), obj_it(myMap::reverse_iterator(it.obj_it)) , bNone(it.bNone), bIsArray(it.bIsArray) {}
 
 			reverse_iterator(reverse_iterator&& it);
 			reverse_iterator & operator=(const reverse_iterator& it);
 			reverse_iterator & operator=(reverse_iterator&& it);
-			~reverse_iterator();
 
 			reverse_iterator& operator++();
 			reverse_iterator operator++(int);
@@ -840,7 +850,6 @@ class iterator
 			myMap::reverse_iterator obj_it;
 			bool bNone;
 			bool bIsArray;
-			bool bSetKey;
 			value dumbRet;
 	};
 

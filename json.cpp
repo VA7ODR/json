@@ -460,8 +460,9 @@ namespace JSON_NAMESPACE
 				return;
 			}
 			SkipWhitespace(inputString);
-			value &temp = (*ret.obj)[std::move(key)];
+			value &temp = (*ret.obj)[key];
 			temp.setParentObject(ret.obj);
+			temp.m_key.assign(key);
 			valueParse(temp, inputString, bFailed);
 			if (*bFailed) {
 				ret = value();
@@ -818,8 +819,8 @@ namespace JSON_NAMESPACE
 	{
 		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
-			if (debug) {
-				debug("json find: index %lu out of bounds", index);
+			if (debug()) {
+				debug()("json find: index %lu out of bounds", index);
 			}
 			return iterator();
 		}
@@ -849,8 +850,8 @@ namespace JSON_NAMESPACE
 	reverse_iterator value::rfind(size_t index) const {
 		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
-			if (debug) {
-				debug("json rfind: index %lu out of bounds", index);
+			if (debug()) {
+				debug()("json rfind: index %lu out of bounds", index);
 			}
 			return reverse_iterator();
 		}
@@ -1171,8 +1172,8 @@ namespace JSON_NAMESPACE
 	{
 		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
-			if (debug) {
-				debug("json erase: index %lu out of bounds", index);
+			if (debug()) {
+				debug()("json erase: index %lu out of bounds", index);
 			}
 			return;
 		}
@@ -1202,7 +1203,6 @@ namespace JSON_NAMESPACE
 			return arr->erase(it.arr());
 		} else if (!it.IsArray() && !it.Neither() && obj) {
 			return obj->erase(it.obj());
-			it.bSetKey = false;
 		}
 		if (arr != nullptr) {
 			return arr->end();
@@ -1218,7 +1218,6 @@ namespace JSON_NAMESPACE
 			arr->erase(first.arr(), last.arr());
 		} else if (!first.IsArray() && !last.IsArray() && !first.Neither() && !last.Neither() && obj) {
 			obj->erase(first.obj(), last.obj());
-			first.bSetKey = false;
 		}
 		return iterator();
 	}
@@ -1227,8 +1226,8 @@ namespace JSON_NAMESPACE
 	{
 		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
-			if (debug) {
-				debug("json exists: index %lu out of bounds", index);
+			if (debug()) {
+				debug()("json exists: index %lu out of bounds", index);
 			}
 			return false;
 		}
@@ -1273,8 +1272,8 @@ namespace JSON_NAMESPACE
 	{
 		assert(int64_t(index) >= 0);
 		if (index > size_t(-1) / size_t(2) - 1) {
-			if (debug) {
-				debug("json insert: index %lu out of bounds", index);
+			if (debug()) {
+				debug()("json insert: index %lu out of bounds", index);
 			}
 			return iterator();
 		}
@@ -1494,10 +1493,14 @@ namespace JSON_NAMESPACE
 		return ret;
 	}
 
-	value::DEBUGPTR value::debug = nullptr;
+	value::DEBUGPTR& value::debug()
+	{
+		static value::DEBUGPTR ptr = nullptr;
+		return ptr;
+	}
 
 	value::value(const value& V) :
-		m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+		m_number(V.m_number), m_places(V.m_places), m_boolean(V.m_boolean), str(V.str), myType(V.myType), obj(nullptr), m_key(V.m_key), pParentObject(nullptr), pParentArray(nullptr)
 	{
 		if (myType == JSON_OBJECT) {
 			obj = new object(V.obj);
@@ -1528,7 +1531,7 @@ namespace JSON_NAMESPACE
 				arr = std::move(V.arr);
 				break;
 		}
-
+		m_key = std::move(V.m_key);
 		pParentObject = nullptr;
 		pParentArray = nullptr;
 
@@ -1657,33 +1660,33 @@ namespace JSON_NAMESPACE
 		if (this == &V)
 			return *this;
 
-		if (debug) {
+		if (debug()) {
 			if (myType != V.myType) {
 				switch(myType) {
 					case JSON_BOOLEAN:
 						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Boolean %i to %s", m_boolean, typeName(V.myType));
+							debug()("json operator= changed type from Boolean %i to %s", m_boolean, typeName(V.myType));
 						}
 						break;
 
 					case JSON_NUMBER:
 						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from Number %f to %s", m_number, typeName(V.myType));
+							debug()("json operator= changed type from Number %f to %s", m_number, typeName(V.myType));
 						}
 						break;
 
 					case JSON_STRING:
 						if (V.myType == JSON_OBJECT || V.myType == JSON_ARRAY) {
-							debug("json operator= changed type from String '%s' to %s", str.c_str(), typeName(V.myType));
+							debug()("json operator= changed type from String '%s' to %s", str.c_str(), typeName(V.myType));
 						}
 						break;
 
 					case JSON_ARRAY:
-						debug("json operator= changed type from Array to %s, orphanning:\n%s\n", typeName(V.myType), this->print(0, true).c_str());
+						debug()("json operator= changed type from Array to %s, orphanning:\n%s\n", typeName(V.myType), this->print(0, true).c_str());
 						break;
 
 					case JSON_OBJECT:
-						debug("json operator= changed type from Object to %s, orphanning:\n%s\n", typeName(V.myType), this->print(0, true).c_str());
+						debug()("json operator= changed type from Object to %s, orphanning:\n%s\n", typeName(V.myType), this->print(0, true).c_str());
 						break;
 
 					default:
@@ -1736,6 +1739,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentObject(pParentObject);
 				}
+				if (m_key.empty() && V.m_key.size()) {
+					m_key = V.m_key;
+				}
 			} else if (pParentArray) {
 				pParentArray->setNotEmpty();
 				if (myType == JSON_ARRAY) {
@@ -1743,6 +1749,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentArray(pParentArray);
 				}
+				m_key.clear();
+			} else {
+				m_key.clear();
 			}
 		}
 		return *this;
@@ -1774,11 +1783,11 @@ namespace JSON_NAMESPACE
 				break;
 		}
 
-		value::debug("%s::value::%s changed type from %s '%s...' to %s '%s...'.", STRINGIFY(JSON_NAMESPACE), func.c_str(), value::typeName(oldType.myType), sOldData.c_str(), value::typeName(newType.myType), sNewData.c_str());
+		value::debug()("%s::value::%s changed type from %s '%s...' to %s '%s...'.", STRINGIFY(JSON_NAMESPACE), func.c_str(), value::typeName(oldType.myType), sOldData.c_str(), value::typeName(newType.myType), sNewData.c_str());
 
 	}
 
-#define debugTypeChange(C, O, N) if (O.myType != JSON_VOID && value::debug && C) { debugTypeChangeReal(__func__, O, N); }
+#define debugTypeChange(C, O, N) if (O.myType != JSON_VOID && value::debug() && C) { debugTypeChangeReal(__func__, O, N); }
 
 	value& value::operator=(value&& V) {
 		debugTypeChange(myType != V.myType, (*this), V);
@@ -1814,6 +1823,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentObject(pParentObject);
 				}
+				if (m_key.empty() && V.m_key.size()) {
+					m_key = V.m_key;
+				}
 			} else if (pParentArray) {
 				pParentArray->setNotEmpty();
 				if (myType == JSON_ARRAY) {
@@ -1821,6 +1833,9 @@ namespace JSON_NAMESPACE
 				} else if (myType == JSON_OBJECT) {
 					obj->setParentArray(pParentArray);
 				}
+				m_key.clear();
+			} else {
+				m_key.clear();
 			}
 		}
 
@@ -1918,8 +1933,8 @@ namespace JSON_NAMESPACE
 	value& value::at(size_t index)
 	{
 		if (index >= std::numeric_limits<size_t>::max() / 2) {
-			if (debug) {
-				debug("json at: index %lu out of bounds", index);
+			if (debug()) {
+				debug()("json at: index %lu out of bounds", index);
 			}
 			return *this;
 		}
@@ -2032,6 +2047,7 @@ namespace JSON_NAMESPACE
 		if (temp.has_value()) {
 			temp->setParentArray(arr);
 			temp->setParentObject(nullptr);
+			temp->m_key.clear();
 			(*this)[0] = temp.value();
 		}
 		return *this;
@@ -2258,8 +2274,8 @@ namespace JSON_NAMESPACE
 	value& value::operator[](size_t index) {
 		assert(int64_t(index) >= 0);
 		if (index >= std::numeric_limits<size_t>::max() / 2) {
-			if (debug) {
-				debug("json find: index %lu out of bounds", index);
+			if (debug()) {
+				debug()("json find: index %lu out of bounds", index);
 			}
 			return *this;
 		}
@@ -2299,6 +2315,7 @@ namespace JSON_NAMESPACE
 		value & ret = arr->at(index);
 		ret.setParentArray(arr);
 		ret.setParentObject(nullptr);
+		ret.m_key.clear();
 		return ret;
 	}
 
@@ -2306,7 +2323,7 @@ namespace JSON_NAMESPACE
 		if (myType == JSON_OBJECT) {
 			value& ret = obj->operator[](index);
 			ret.setParentObject(obj);
-			// ret.m_key.assign(index);
+			ret.m_key.assign(index);
 			return ret;
 		} else if (myType != JSON_VOID) {
 			debugTypeChange(true, (*this), value().emptyObject());
@@ -2328,6 +2345,7 @@ namespace JSON_NAMESPACE
 		value & ret = obj->operator[](index);
 		ret.setParentObject(obj);
 		ret.setParentArray(nullptr);
+		ret.m_key.assign(index);
 		return ret;
 	}
 
@@ -2352,6 +2370,7 @@ namespace JSON_NAMESPACE
 		arr->emplace_back(val);
 		arr->back().setParentArray(arr);
 		arr->back().setParentObject(nullptr);
+		arr->back().m_key.clear();
 
 		if (val.myType != JSON_VOID) {
 			arr->setNotEmpty();
@@ -2380,7 +2399,7 @@ namespace JSON_NAMESPACE
 		arr->emplace_back(val);
 		arr->back().setParentArray(arr);
 		arr->back().setParentObject(nullptr);
-
+		arr->back().m_key.clear();
 		if (val.myType != JSON_VOID) {
 			arr->setNotEmpty();
 		}
@@ -2407,6 +2426,7 @@ namespace JSON_NAMESPACE
 		arr->emplace_front(val);
 		arr->front().setParentArray(arr);
 		arr->back().setParentObject(nullptr);
+		arr->back().m_key.clear();
 
 		if (val.myType != JSON_VOID) {
 			arr->setNotEmpty();
@@ -3062,10 +3082,10 @@ namespace JSON_NAMESPACE
 
 	void value::sort(bool (*compareFunc)(value&, value&)) {
 		if (myType == JSON_ARRAY) {
-			DEBUGPTR oldDebug = debug;
-			debug = nullptr;
+			DEBUGPTR oldDebug = debug();
+			debug() = nullptr;
 			std::sort(arr->begin(), arr->end(), compareFunc);
-			debug = oldDebug;
+			debug() = oldDebug;
 		}
 	}
 
@@ -3975,8 +3995,8 @@ namespace JSON_NAMESPACE
 				bParseSuccessful = false;
 				bFailed = true;
 				strParseResult = "JSON Document failed to pre-parse.";
-				if (debug) {
-					debug("%s", strParseResult.c_str());
+				if (debug()) {
+					debug()("%s", strParseResult.c_str());
 				}
 				return false;
 			}
@@ -3991,8 +4011,8 @@ namespace JSON_NAMESPACE
 		if (bFailed) {
 			strParseResult = in.Error();
 			bParseSuccessful = false;
-			if (debug) {
-				debug("%s", strParseResult.c_str());
+			if (debug()) {
+				debug()("%s", strParseResult.c_str());
 			}
 		}
 		return !bFailed;
@@ -4008,14 +4028,14 @@ namespace JSON_NAMESPACE
 		if (fd == nullptr) {
 			if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
 				fd = fopen(sInstrPlusBak.c_str(), "rb");
-				if (debug && fd) {
+				if (debug() && fd) {
 					debug("File opened from backup %s.", sInstrPlusBak.c_str());
 				}
 			}
 		} else {
 			if (fd && std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
-				if (std::filesystem::remove(sInstrPlusBak.c_str()) != 0 && debug) {
-					debug("Failed remove backup of %s: %s", inStr.c_str(), ec.message().c_str());
+				if (std::filesystem::remove(sInstrPlusBak.c_str()) != 0 && debug()) {
+					debug()("Failed remove backup of %s: %s", inStr.c_str(), ec.message().c_str());
 				}
 			}
 		}
@@ -4030,8 +4050,8 @@ namespace JSON_NAMESPACE
 				size_t br = fread(buffer.data(), 1, l, fd);
 				if (br != l) {
 					buffer.resize(br);
-					if (debug) {
-						debug("JSON File size mismatch in %s.", inStr.c_str());
+					if (debug()) {
+						debug()("JSON File size mismatch in %s.", inStr.c_str());
 					}
 					bParseSuccessful = false;
 					strParseResult = "JSON File size mismatch in " + inStr + ".";
@@ -4041,8 +4061,8 @@ namespace JSON_NAMESPACE
 				fclose(fd);
 				bool bRetVal = parse(buffer, preParser);
 				bParseSuccessful = bRetVal;
-				if (debug && !bParseSuccessful) {
-					debug("JSON could not parse %s.", inStr.c_str());
+				if (debug() && !bParseSuccessful) {
+					debug()("JSON could not parse %s.", inStr.c_str());
 				}
 				return bRetVal;
 			}
@@ -4116,8 +4136,8 @@ namespace JSON_NAMESPACE
 			sdstring w = write(bPretty, preWriter);
 
 			if (fwrite(w.data(), 1, w.size(), fd) != w.size()) {
-				if (debug) {
-					debug("Failed Writing to %s.", inStr.c_str());
+				if (debug()) {
+					debug()("Failed Writing to %s.", inStr.c_str());
 				}
 				fclose(fd);
 				return false;
@@ -4127,34 +4147,34 @@ namespace JSON_NAMESPACE
 				fclose(fd);
 				std::error_code ec;
 				if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
-					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug) {
-						debug("Failed to remove %s: %s", sInstrPlusBak.c_str(), ec.message().c_str());
+					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug()) {
+						debug()("Failed to remove %s: %s", sInstrPlusBak.c_str(), ec.message().c_str());
 					}
 				}
 				if (std::filesystem::exists(inStr.c_str(), ec)) {
 					std::filesystem::rename(inStr.c_str(), sInstrPlusBak.c_str(), ec);
 					if (ec) {
-						if (debug) {
-							debug("Failed to backup %s: %s", inStr.c_str(), ec.message().c_str());
+						if (debug()) {
+							debug()("Failed to backup %s: %s", inStr.c_str(), ec.message().c_str());
 						}
 						return false;
 					}
 				}
 				std::filesystem::rename(sTempFile.c_str(), inStr.c_str(), ec);
 				if (ec) {
-					if (debug) {
-						debug("Failed rename temp file to %s: %s", inStr.c_str(), ec.message().c_str());
+					if (debug()) {
+						debug()("Failed rename temp file to %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 					std::filesystem::rename(sInstrPlusBak.c_str(), inStr.c_str(), ec);
-					if (debug && ec) {
-						debug("Failed restore backup of %s: %s", inStr.c_str(), ec.message().c_str());
+					if (debug() && ec) {
+						debug()("Failed restore backup of %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 					return false;
 				}
 
 				if (std::filesystem::exists(sInstrPlusBak.c_str(), ec)) {
-					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug) {
-						debug("Failed remove backup of %s: %s", inStr.c_str(), ec.message().c_str());
+					if (std::filesystem::remove(sInstrPlusBak.c_str(), ec) == false && debug()) {
+						debug()("Failed remove backup of %s: %s", inStr.c_str(), ec.message().c_str());
 					}
 				}
 
@@ -4230,14 +4250,12 @@ namespace JSON_NAMESPACE
 		return -1;
 	}
 
-	iterator::iterator(iterator&& it)// : arr_it(std::move(it.arr_it)), obj_it(std::move(it.obj_it)), bNone(std::move(it.bNone)), bIsArray(std::move(it.bIsArray)), bSetKey(std::move(it.bSetKey))
+	iterator::iterator(iterator&& it)
 	{
 		std::swap(bNone, it.bNone);
 		std::swap(arr_it, it.arr_it);
 		std::swap(obj_it, it.obj_it);
 		std::swap(bIsArray, it.bIsArray);
-		bSetKey = false;
-		it.bSetKey = false;
 	}
 
 	iterator& iterator::operator=(const iterator& it)
@@ -4250,7 +4268,6 @@ namespace JSON_NAMESPACE
 		arr_it = it.arr_it;
 		obj_it = it.obj_it;
 		bIsArray = it.bIsArray;
-		bSetKey = false;
 		return *this;
 	}
 	
@@ -4261,16 +4278,7 @@ namespace JSON_NAMESPACE
 		std::swap(arr_it, it.arr_it);
 		std::swap(obj_it, it.obj_it);
 		std::swap(bIsArray, it.bIsArray);
-		bSetKey = false;
-		it.bSetKey = false;
 		return *this;
-	}
-
-	iterator::~iterator()
-	{
-		if (bSetKey) {
-			obj_it->second.m_key.clear();
-		}
 	}
 
 	iterator& iterator::operator++()
@@ -4279,10 +4287,6 @@ namespace JSON_NAMESPACE
 			if (bIsArray) {
 				++arr_it;
 			} else {
-				if (bSetKey) {
-					obj_it->second.m_key.clear();
-					bSetKey = false;
-				}
 				++obj_it;
 			}
 		}
@@ -4302,10 +4306,6 @@ namespace JSON_NAMESPACE
 			if (bIsArray) {
 				--arr_it;
 			} else {
-				if (bSetKey) {
-					obj_it->second.m_key.clear();
-					bSetKey = false;
-				}
 				--obj_it;
 			}
 		}
@@ -4367,12 +4367,10 @@ namespace JSON_NAMESPACE
 	{
 		if (!bNone) {
 			if (bIsArray) {
+				arr_it->m_key.clear();
 				return *arr_it;
 			} else {
-				if (!bSetKey) {
-					obj_it->second.m_key.assign(obj_it->first);
-					bSetKey = true;
-				}
+				obj_it->second.m_key.assign(obj_it->first);
 				return obj_it->second;
 			}
 		} else {
@@ -4399,8 +4397,6 @@ namespace JSON_NAMESPACE
 		std::swap(arr_it, it.arr_it);
 		std::swap(obj_it, it.obj_it);
 		std::swap(bIsArray, it.bIsArray);
-		bSetKey = false;
-		it.bSetKey = false;
 	}
 
 	reverse_iterator & reverse_iterator::operator=(const reverse_iterator& it)
@@ -4413,8 +4409,6 @@ namespace JSON_NAMESPACE
 		arr_it = it.arr_it;
 		obj_it = it.obj_it;
 		bIsArray = it.bIsArray;
-		bSetKey = false;
-		// it.bSetKey = false;
 		return *this;
 	}
 
@@ -4425,16 +4419,7 @@ namespace JSON_NAMESPACE
 		std::swap(arr_it, it.arr_it);
 		std::swap(obj_it, it.obj_it);
 		std::swap(bIsArray, it.bIsArray);
-		bSetKey = false;
-		it.bSetKey = false;
 		return *this;
-	}
-
-	reverse_iterator::~reverse_iterator()
-	{
-		if (bSetKey) {
-			obj_it->second.m_key.clear();
-		}
 	}
 
 	reverse_iterator& reverse_iterator::operator++()
@@ -4443,10 +4428,6 @@ namespace JSON_NAMESPACE
 			if (bIsArray) {
 				++arr_it;
 			} else {
-				if (bSetKey) {
-					obj_it->second.m_key.clear();
-					bSetKey = false;
-				}
 				++obj_it;
 			}
 		}
@@ -4466,10 +4447,6 @@ namespace JSON_NAMESPACE
 			if (bIsArray) {
 				--arr_it;
 			} else {
-				if (bSetKey) {
-					obj_it->second.m_key.clear();
-					bSetKey = false;
-				}
 				--obj_it;
 			}
 		}
@@ -4509,12 +4486,10 @@ namespace JSON_NAMESPACE
 	{
 		if (!bNone) {
 			if (bIsArray) {
+				arr_it->m_key.clear();
 				return *arr_it;
 			} else {
-				if (!bSetKey) {
-					(obj_it->second).m_key.assign(obj_it->first);
-					bSetKey = true;
-				}
+				obj_it->second.m_key.assign(obj_it->first);
 				return obj_it->second;
 			}
 		} else {
@@ -4534,5 +4509,4 @@ namespace JSON_NAMESPACE
 			return value();
 		}
 	}
-
 }
