@@ -302,8 +302,8 @@ namespace JSON_NAMESPACE
 					default:
 						break;
 				}
-				if (debug) {
-					debug("json operator[value]: of type %s used as index. Returning self: ", typeName(index.myType));
+				if (debug()) {
+					debug()("json operator[value]: of type %s used as index. Returning self: ", typeName(index.myType));
 				}
 				return *this;
 			}
