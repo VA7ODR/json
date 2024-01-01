@@ -22,37 +22,38 @@ THE SOFTWARE.
 The official repository for this library is at https://github.com/VA7ODR/json
 
 */
-#include <filesystem>
-#include <iomanip>
-#include "tinyxml/tinyxml.h"
-#include "tinyxml/tinystr.h"
-#include <chrono>
 #include "data.hpp"
 
-#if defined JSON_USE_ADDED_ORDER
-#if defined DATA_NAMESPACE
-#undef DATA_NAMESPACE
-#endif
-#if defined JSON_NAMESPACE
-#undef JSON_NAMESPACE
-#endif
-#define JSON_NAMESPACE ojson
-#define DATA_NAMESPACE odata
-#endif
+#include "tinyxml/tinystr.h"
+#include "tinyxml/tinyxml.h"
 
+#include <chrono>
+#include <filesystem>
+#include <iomanip>
+
+#if defined JSON_USE_ADDED_ORDER
+#	if defined DATA_NAMESPACE
+#		undef DATA_NAMESPACE
+#	endif
+#	if defined JSON_NAMESPACE
+#		undef JSON_NAMESPACE
+#	endif
+#	define JSON_NAMESPACE ojson
+#	define DATA_NAMESPACE odata
+#endif
 namespace DATA_NAMESPACE
 {
-
-	int isNumeric(const sdstring & data) {
+	int isNumeric(const sdstring & data)
+	{
 		size_t l = data.size();
 		if (l == 0 || l > JSON_NUMBER_PRECISION) {
 			return 0;
 		}
 		const char szOk[] = "1234567890";
-		bool bHaveDigit = false;
-		bool bHaveDot = false;
-		bool bHaveSpace = false;
-		bool bHaveMinus = false;
+		bool bHaveDigit	  = false;
+		bool bHaveDot	  = false;
+		bool bHaveSpace	  = false;
+		bool bHaveMinus	  = false;
 
 		for (auto & c : data) {
 			bool bOk = false;
@@ -62,25 +63,25 @@ namespace DATA_NAMESPACE
 						return 0;
 					}
 					bHaveDigit = true;
-					bOk = true;
+					bOk		   = true;
 					break;
 				} else if (c == '-') {
 					if (bHaveDigit || bHaveMinus || bHaveDot || bHaveSpace) {
 						return 0;
 					}
 					bHaveMinus = true;
-					bOk = true;
+					bOk		   = true;
 					break;
 				} else if (c == ' ') {
 					bHaveSpace = true;
-					bOk = true;
+					bOk		   = true;
 					break;
 				} else if (c == '.') {
 					if (bHaveDot || bHaveSpace) {
 						return 0;
 					}
 					bHaveDot = true;
-					bOk = true;
+					bOk		 = true;
 					break;
 				}
 			}
@@ -101,7 +102,7 @@ namespace DATA_NAMESPACE
 	int IsBool(const sdstring & str)
 	{
 		char first = str[0];
-		size_t l = str.size();
+		size_t l   = str.size();
 		if (first == 't' && l == 4) {
 			if (str == "true") {
 				return 2;
@@ -135,7 +136,7 @@ namespace DATA_NAMESPACE
 		if (elem) {
 			switch (elem->Type()) {
 				default:
-				break;
+					break;
 
 				case TiXmlNode::TINYXML_DOCUMENT:
 				{
@@ -147,8 +148,8 @@ namespace DATA_NAMESPACE
 					while (att) {
 						sdstring childName = "@";
 						childName.append(att->Name());
-						JSON_NAMESPACE::value& childref = ret[childName];
-						int iValType = isNumeric(att->Value());
+						JSON_NAMESPACE::value & childref = ret[childName];
+						int iValType					 = isNumeric(att->Value());
 						if (iValType != 0) {
 							sdstring sValue = att->Value();
 
@@ -172,7 +173,6 @@ namespace DATA_NAMESPACE
 									case 1:
 										childref[DATA_VAL] = false;
 										break;
-
 								}
 								// if (val == "true" || val == "YES") {
 								// 	childref[DATA_VAL] = true;
@@ -192,7 +192,6 @@ namespace DATA_NAMESPACE
 									case 1:
 										childref = false;
 										break;
-
 								}
 								// if (val == "true" || val == "YES") {
 								// 	ret[childName] = true;
@@ -206,30 +205,29 @@ namespace DATA_NAMESPACE
 						att = att->Next();
 					}
 					sRootTag = rootElem->Value();
-					for (const TiXmlElement * child = rootElem->FirstChildElement(); child; child = child->NextSiblingElement() ) {
+					for (const TiXmlElement * child = rootElem->FirstChildElement(); child; child = child->NextSiblingElement()) {
 						if (child != nullptr) {
 							switch (child->Type()) {
 								case TiXmlNode::TINYXML_ELEMENT:
-									{
-										sdstring childName = child->Value();
-										if (childName[0] == '_' && strchr("1234567890", childName[1])) {
-											childName = childName.substr(1);
-										}
-										if (ret.exists(childName)) {
-											if (!ret[childName].isA(JSON_NAMESPACE::JSON_ARRAY)) {
-												JSON_NAMESPACE::value a;
-	/*											JSON_NAMESPACE::value& b = ret[childName];
-												std::swap(a, b);
-												std::swap(b[0], a);*/
-												std::swap(ret[childName], a);
-												std::swap(ret[childName][0], a);
-											}
-											parseXMLElement(ret[childName][ret[childName].size()], child);
-										} else {
-											parseXMLElement(ret[childName], child);
-										}
+								{
+									sdstring childName = child->Value();
+									if (childName[0] == '_' && strchr("1234567890", childName[1])) {
+										childName = childName.substr(1);
 									}
-									break;
+									if (ret.exists(childName)) {
+										if (!ret[childName].isA(JSON_NAMESPACE::JSON_ARRAY)) {
+											JSON_NAMESPACE::value a;
+											/*											JSON_NAMESPACE::value& b = ret[childName];
+																						std::swap(a, b);
+																						std::swap(b[0], a);*/
+											std::swap(ret[childName], a);
+											std::swap(ret[childName][0], a);
+										}
+										parseXMLElement(ret[childName][ret[childName].size()], child);
+									} else {
+										parseXMLElement(ret[childName], child);
+									}
+								} break;
 
 								default:
 									parseXMLElement(ret, child);
@@ -241,177 +239,171 @@ namespace DATA_NAMESPACE
 				}
 
 				case TiXmlNode::TINYXML_ELEMENT:
-					{
-						const TiXmlAttribute * att = elem->ToElement()->FirstAttribute();
-					
-						while (att) {
-							sdstring childName("@");
-					
-							childName.append(att->Name());
-					
-							int iValType = isNumeric(att->Value());
-					
-							JSON_NAMESPACE::value& childref = ret[childName];
-					
-							if (iValType != 0) {
-								sdstring sValue = att->Value();
+				{
+					const TiXmlAttribute * att = elem->ToElement()->FirstAttribute();
 
-								JSON_NAMESPACE::instring in(sValue);
-					
-								bool bFailed = false;
-					
-								if (childref.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-									JSON_NAMESPACE::numberParse(childref[DATA_VAL], in, &bFailed);
-								} else {
-									JSON_NAMESPACE::numberParse(childref, in, &bFailed);
+					while (att) {
+						sdstring childName("@");
+
+						childName.append(att->Name());
+
+						int iValType = isNumeric(att->Value());
+
+						JSON_NAMESPACE::value & childref = ret[childName];
+
+						if (iValType != 0) {
+							sdstring sValue = att->Value();
+
+							JSON_NAMESPACE::instring in(sValue);
+
+							bool bFailed = false;
+
+							if (childref.isA(JSON_NAMESPACE::JSON_OBJECT)) {
+								JSON_NAMESPACE::numberParse(childref[DATA_VAL], in, &bFailed);
+							} else {
+								JSON_NAMESPACE::numberParse(childref, in, &bFailed);
+							}
+						} else {
+							sdstring val = att->Value();
+
+							if (childref.isA(JSON_NAMESPACE::JSON_OBJECT)) {
+								switch (IsBool(val)) {
+									default:
+										childref[DATA_VAL] = elem->Value();
+										break;
+									case 2:
+										childref[DATA_VAL] = true;
+										break;
+									case 1:
+										childref[DATA_VAL] = false;
+										break;
 								}
 							} else {
-								sdstring val = att->Value();
-					
-								if (childref.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-									switch (IsBool(val)) {
-										default:
-											childref[DATA_VAL] = elem->Value();
-											break;
-										case 2:
-											childref[DATA_VAL] = true;
-											break;
-										case 1:
-											childref[DATA_VAL] = false;
-											break;
-
-									}
-								} else {
-									switch (IsBool(val)) {
-										default:
-											childref = att->Value();
-											break;
-										case 2:
-											childref = true;
-											break;
-										case 1:
-											childref = false;
-											break;
-
-									}
+								switch (IsBool(val)) {
+									default:
+										childref = att->Value();
+										break;
+									case 2:
+										childref = true;
+										break;
+									case 1:
+										childref = false;
+										break;
 								}
 							}
-							att = att->Next();
 						}
-						if (elem->Value()) {
-							const TiXmlNode *child = nullptr;
-			
-							bool bEmpty = true;
-			
-							do {
-								child = elem->IterateChildren(child);
-								if (child) {
-									bEmpty = false;
-									switch (child->Type()) {
-										case TiXmlNode::TINYXML_ELEMENT:
-											{
-												sdstring childName = child->Value();
+						att = att->Next();
+					}
+					if (elem->Value()) {
+						const TiXmlNode * child = nullptr;
 
-												if (childName[0] == '_' && strchr("1234567890", childName[1])) {
-													childName = childName.substr(1);
-												}
-												if (ret.exists(childName)) {
-													JSON_NAMESPACE::value& jChild = ret[childName];
-													if (!jChild.isA(JSON_NAMESPACE::JSON_ARRAY)) {
-														JSON_NAMESPACE::value a;
-			
-														std::swap(jChild, a);
-														std::swap(jChild[0], a);
-													}
-													parseXMLElement(jChild[jChild.size()], child);
-												} else {
-													parseXMLElement(ret[childName], child);
-												}
+						bool bEmpty = true;
+
+						do {
+							child = elem->IterateChildren(child);
+							if (child) {
+								bEmpty = false;
+								switch (child->Type()) {
+									case TiXmlNode::TINYXML_ELEMENT:
+									{
+										sdstring childName = child->Value();
+
+										if (childName[0] == '_' && strchr("1234567890", childName[1])) {
+											childName = childName.substr(1);
+										}
+										if (ret.exists(childName)) {
+											JSON_NAMESPACE::value & jChild = ret[childName];
+											if (!jChild.isA(JSON_NAMESPACE::JSON_ARRAY)) {
+												JSON_NAMESPACE::value a;
+
+												std::swap(jChild, a);
+												std::swap(jChild[0], a);
 											}
-											break;
+											parseXMLElement(jChild[jChild.size()], child);
+										} else {
+											parseXMLElement(ret[childName], child);
+										}
+									} break;
 
-										default:
-											parseXMLElement(ret, child);
-											break;
-									}
+									default:
+										parseXMLElement(ret, child);
+										break;
 								}
-							} while (child);
-							if (bEmpty) {
-								if (!ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-									ret = "";
+							}
+						} while (child);
+						if (bEmpty) {
+							if (!ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
+								ret = "";
+							}
+						}
+					}
+				} break;
+
+				case TiXmlNode::TINYXML_TEXT:
+					if (elem->Value()) {
+						int iValType = isNumeric(elem->Value());
+						if (iValType != 0) {
+							sdstring sValue = elem->Value();
+
+							JSON_NAMESPACE::instring in(sValue);
+							bool bFailed = false;
+							if (ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
+								JSON_NAMESPACE::numberParse(ret[DATA_VAL], in, &bFailed);
+							} else {
+								JSON_NAMESPACE::numberParse(ret, in, &bFailed);
+							}
+						} else {
+							sdstring val = elem->Value();
+							if (ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
+								switch (IsBool(val)) {
+									default:
+										ret[DATA_VAL] = elem->Value();
+										break;
+									case 2:
+										ret[DATA_VAL] = true;
+										break;
+									case 1:
+										ret[DATA_VAL] = false;
+										break;
 								}
+								// if (val == "true" || val == "YES") {
+								// 	ret[DATA_VAL] = true;
+								// } else if (val == "false" || val == "NO") {
+								// 	ret[DATA_VAL] = false;
+								// } else {
+								// 	ret[DATA_VAL] = elem->Value();
+								// }
+							} else {
+								switch (IsBool(val)) {
+									default:
+										ret = elem->Value();
+										break;
+									case 2:
+										ret = true;
+										break;
+									case 1:
+										ret = false;
+										break;
+								}
+								// if (val == "true" || val == "YES") {
+								// 	ret = true;
+								// } else if (val == "false" || val == "NO") {
+								// 	ret = false;
+								// } else {
+								// 	ret = elem->Value();
+								// }
 							}
 						}
 					}
 					break;
-
-				case TiXmlNode::TINYXML_TEXT:
-				if (elem->Value()) {
-					int iValType = isNumeric(elem->Value());
-					if (iValType != 0) {
-						sdstring sValue = elem->Value();
-
-						JSON_NAMESPACE::instring in(sValue);
-						bool bFailed = false;
-						if (ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-							JSON_NAMESPACE::numberParse(ret[DATA_VAL], in, &bFailed);
-						} else {
-							JSON_NAMESPACE::numberParse(ret, in, &bFailed);
-						}
-					} else {
-						sdstring val = elem->Value();
-						if (ret.isA(JSON_NAMESPACE::JSON_OBJECT)) {
-							switch (IsBool(val)) {
-								default:
-									ret[DATA_VAL] = elem->Value();
-									break;
-								case 2:
-									ret[DATA_VAL] = true;
-									break;
-								case 1:
-									ret[DATA_VAL] = false;
-									break;
-
-							}
-							// if (val == "true" || val == "YES") {
-							// 	ret[DATA_VAL] = true;
-							// } else if (val == "false" || val == "NO") {
-							// 	ret[DATA_VAL] = false;
-							// } else {
-							// 	ret[DATA_VAL] = elem->Value();
-							// }
-						} else {
-							switch (IsBool(val)) {
-								default:
-									ret = elem->Value();
-									break;
-								case 2:
-									ret = true;
-									break;
-								case 1:
-									ret = false;
-									break;
-
-							}
-							// if (val == "true" || val == "YES") {
-							// 	ret = true;
-							// } else if (val == "false" || val == "NO") {
-							// 	ret = false;
-							// } else {
-							// 	ret = elem->Value();
-							// }
-						}
-					}
-				}
-				break;
 			}
 		}
 	}
-
 #if defined DONT_DO_THIS
-	bool document::fastParse(JSON_NAMESPACE::instring& in, JSON_NAMESPACE::value& out, sdstring& parseResult)
+	bool document::fastParse(JSON_NAMESPACE::instring & in, JSON_NAMESPACE::value & out, sdstring & parseResult)
 	{
-		enum eState {
+		enum eState
+		{
 			eRoot,
 			eTag,
 			eEndTag,
@@ -421,27 +413,29 @@ namespace DATA_NAMESPACE
 			eEscape,
 			eInfo,
 		};
-		eState state = eRoot;
-		eState lastState = eRoot;
-		const char* ptr = in.getPos();
-		const char* retVal = ptr;
+
+		eState state		= eRoot;
+		eState lastState	= eRoot;
+		const char * ptr	= in.getPos();
+		const char * retVal = ptr;
 		sdstring sTag;
 		sdstring sAttribute;
 		JSON_NAMESPACE::value * pTag = nullptr;
-		bool bHadChars = false;
-		bool bHadNonNumber = false;
-		bool bHadDecimal = false;
-		bool bHadSign = false;
-		bool bHaveAtts = false;
-		size_t decimalPos = 0;
+		bool bHadChars				 = false;
+		bool bHadNonNumber			 = false;
+		bool bHadDecimal			 = false;
+		bool bHadSign				 = false;
+		bool bHaveAtts				 = false;
+		size_t decimalPos			 = 0;
 		for (;;) {
-//			std::cout << sz << ", " << tl << std::endl;
-			const char &c = in.take();
+			//			std::cout << sz << ", " << tl << std::endl;
+			const char & c = in.take();
 			switch (state) {
 				case eRoot:
 				{
 					switch (c) {
-						default: {
+						default:
+						{
 							*ptr = c;
 							++ptr;
 							if (c == '+' || c == '-') {
@@ -455,13 +449,13 @@ namespace DATA_NAMESPACE
 									if (bHadDecimal) {
 										bHadNonNumber = true;
 									} else {
-										decimalPos = size_t(ptr - retVal);
+										decimalPos	= size_t(ptr - retVal);
 										bHadDecimal = true;
 									}
 								} else {
 									bHadNonNumber = true;
 								}
-							} else if (c < '0' || c > '9')  {
+							} else if (c < '0' || c > '9') {
 								bHadNonNumber = true;
 							}
 							if (c != ' ' && c != '\r' && c != '\n' && c != '\t') {
@@ -474,13 +468,13 @@ namespace DATA_NAMESPACE
 							JSON_NAMESPACE::SkipWhitespace(in);
 							if (bHadChars && in.peek() != '/') {
 								char sMessage[256];
-								sprintf (sMessage, "tags inline with text not permitted. '%c'", in.peek());
+								sprintf(sMessage, "tags inline with text not permitted. '%c'", in.peek());
 								parseResult = generateError(in, sMessage);
 								return false;
 							}
 							if (bHadChars) {
 								size_t len = (size_t)(ptr - retVal);
-								if (bHadNonNumber || (*retVal == '0' && *(retVal+1) != '.' && len > 1)) {
+								if (bHadNonNumber || (*retVal == '0' && *(retVal + 1) != '.' && len > 1)) {
 									sdstring sTemp(sdstring(retVal, len));
 									int iIsBool = IsBool(sTemp);
 									switch (iIsBool) {
@@ -517,21 +511,21 @@ namespace DATA_NAMESPACE
 										}
 									}
 								}
-\							}
-							bHadChars = false;
-							bHadSign = false;
-							bHadDecimal = false;
+							}
+							bHadChars	  = false;
+							bHadSign	  = false;
+							bHadDecimal	  = false;
 							bHadNonNumber = false;
-							decimalPos = 0;
-							state = eTag;
-							ptr = in.getPos();
-							retVal = ptr;
+							decimalPos	  = 0;
+							state		  = eTag;
+							ptr			  = in.getPos();
+							retVal		  = ptr;
 							break;
 						}
 						case '&':
 						{
 							lastState = state;
-							state = eEscape;
+							state	  = eEscape;
 							break;
 						}
 						case '>':
@@ -539,7 +533,7 @@ namespace DATA_NAMESPACE
 							parseResult = generateError(in, "Unexpected >");
 							return false;
 						}
-					}		
+					}
 					break;
 				}
 
@@ -562,7 +556,7 @@ namespace DATA_NAMESPACE
 						{
 							sTag.assign(retVal, (size_t)(ptr - retVal));
 							if (out.exists(sTag)) {
-								JSON_NAMESPACE::value& jChild = out[sTag];
+								JSON_NAMESPACE::value & jChild = out[sTag];
 								if (!jChild.isA(JSON_NAMESPACE::JSON_ARRAY)) {
 									JSON_NAMESPACE::value a;
 
@@ -576,9 +570,9 @@ namespace DATA_NAMESPACE
 								pTag = &(out[sTag]);
 							}
 
-							ptr = in.getPos();
+							ptr	   = in.getPos();
 							retVal = ptr;
-							state = eAttribute;
+							state  = eAttribute;
 							JSON_NAMESPACE::SkipWhitespace(in);
 							break;
 						}
@@ -586,7 +580,7 @@ namespace DATA_NAMESPACE
 						case '>':
 						{
 							sTag.assign(retVal, (size_t)(ptr - retVal));
-							JSON_NAMESPACE::value& jChild(out[sTag]);
+							JSON_NAMESPACE::value & jChild(out[sTag]);
 							int iIs = jChild.isA();
 							if (iIs != JSON_NAMESPACE::JSON_VOID) {
 								if (iIs != JSON_NAMESPACE::JSON_ARRAY) {
@@ -604,16 +598,16 @@ namespace DATA_NAMESPACE
 							if (fastParse(in, *pTag, parseResult) == false) {
 								return false;
 							} else {
-								pTag = nullptr;
+								pTag		  = nullptr;
 								bHadNonNumber = false;
-								bHadDecimal = false;
-								decimalPos = 0;
-								bHadSign = false;
-								bHadChars = false;
-								bHaveAtts = false;
-								state = eRoot;
+								bHadDecimal	  = false;
+								decimalPos	  = 0;
+								bHadSign	  = false;
+								bHadChars	  = false;
+								bHaveAtts	  = false;
+								state		  = eRoot;
 							}
-							ptr = in.getPos();
+							ptr	   = in.getPos();
 							retVal = ptr;
 
 							break;
@@ -627,18 +621,18 @@ namespace DATA_NAMESPACE
 									parseResult = generateError(in, "Improper end tag");
 									return false;
 								}
-								JSON_NAMESPACE::value &jValue = out[sTag];
+								JSON_NAMESPACE::value & jValue = out[sTag];
 								if (jValue.isA(JSON_NAMESPACE::JSON_VOID)) {
 									jValue = "";
 								}
-								state = eRoot;
-								pTag = nullptr;
+								state		  = eRoot;
+								pTag		  = nullptr;
 								bHadNonNumber = false;
-								bHadDecimal = false;
-								decimalPos = 0;
-								bHadSign = false;
-								bHadChars = false;
-								bHaveAtts = false;
+								bHadDecimal	  = false;
+								decimalPos	  = 0;
+								bHadSign	  = false;
+								bHadChars	  = false;
+								bHaveAtts	  = false;
 							} else {
 								state = eEndTag;
 							}
@@ -649,7 +643,7 @@ namespace DATA_NAMESPACE
 						{
 							if (!bHadChars) {
 								lastState = state;
-								state = eInfo;
+								state	  = eInfo;
 								break;
 							} else {
 								parseResult = generateError(in, "Unexpected ?");
@@ -667,7 +661,7 @@ namespace DATA_NAMESPACE
 									parseResult = generateError(in, "Improperly formed comment.");
 								}
 								lastState = state;
-								state = eComment;
+								state	  = eComment;
 								break;
 							} else {
 								parseResult = generateError(in, "Unexpected !");
@@ -704,15 +698,14 @@ namespace DATA_NAMESPACE
 						}
 						case '>':
 						{
-//							JSON_NAMESPACE::value &jValue = out[sTag];
-//							if (jValue.isA(JSON_NAMESPACE::JSON_VOID)) {
-//								jValue = "";
-//							}
+							//							JSON_NAMESPACE::value &jValue = out[sTag];
+							//							if (jValue.isA(JSON_NAMESPACE::JSON_VOID)) {
+							//								jValue = "";
+							//							}
 							parseResult.assign(retVal, (size_t)(ptr - retVal));
 							JSON_NAMESPACE::SkipWhitespace(in);
 							return true;
 						}
-
 					}
 					break;
 				}
@@ -733,7 +726,7 @@ namespace DATA_NAMESPACE
 									*ptr = '&';
 									++ptr;
 									bHadChars = true;
-									state = lastState;
+									state	  = lastState;
 									break;
 								}
 							} else if (c2 == 'p') {
@@ -741,7 +734,7 @@ namespace DATA_NAMESPACE
 									*ptr = '\'';
 									++ptr;
 									bHadChars = true;
-									state = lastState;
+									state	  = lastState;
 									break;
 								}
 							}
@@ -753,7 +746,7 @@ namespace DATA_NAMESPACE
 								*ptr = '>';
 								++ptr;
 								bHadChars = true;
-								state = lastState;
+								state	  = lastState;
 								break;
 							}
 							parseResult = generateError(in, "Invalid Escape.");
@@ -764,7 +757,7 @@ namespace DATA_NAMESPACE
 								*ptr = '<';
 								++ptr;
 								bHadChars = true;
-								state = lastState;
+								state	  = lastState;
 								break;
 							}
 							parseResult = generateError(in, "Invalid Escape.");
@@ -775,12 +768,11 @@ namespace DATA_NAMESPACE
 								*ptr = '"';
 								++ptr;
 								bHadChars = true;
-								state = lastState;
+								state	  = lastState;
 								break;
 							}
 							parseResult = generateError(in, "Invalid Escape.");
 							return false;
-
 					}
 					break;
 				}
@@ -805,10 +797,10 @@ namespace DATA_NAMESPACE
 								return false;
 							} else if (cNext == '>') {
 								if (out.exists(sTag)) {
-									JSON_NAMESPACE::value& jChild = out[sTag];
+									JSON_NAMESPACE::value & jChild = out[sTag];
 									if (jChild.isA(JSON_NAMESPACE::JSON_ARRAY)) {
 										pTag = &(jChild[jChild.size()]);
-									} else  {
+									} else {
 										pTag = &jChild;
 									}
 								} else {
@@ -817,15 +809,15 @@ namespace DATA_NAMESPACE
 								if (fastParse(in, *pTag, parseResult) == false) {
 									return false;
 								} else {
-									pTag = nullptr;
-									ptr = in.getPos();
-									retVal = ptr;
+									pTag		  = nullptr;
+									ptr			  = in.getPos();
+									retVal		  = ptr;
 									bHadNonNumber = false;
-									bHadDecimal = false;
-									decimalPos = 0;
-									bHadSign = false;
-									bHadChars = false;
-									state = eRoot;
+									bHadDecimal	  = false;
+									decimalPos	  = 0;
+									bHadSign	  = false;
+									bHadChars	  = false;
+									state		  = eRoot;
 								}
 							} else if (cNext == '/') {
 								JSON_NAMESPACE::SkipWhitespace(in);
@@ -838,15 +830,15 @@ namespace DATA_NAMESPACE
 								JSON_NAMESPACE::SkipWhitespace(in);
 								if (in.take() == '"') {
 									sAttribute.assign(retVal, (size_t)(ptr - retVal));
-									ptr = in.getPos();
+									ptr	   = in.getPos();
 									retVal = ptr;
 									sAttribute.insert(0, "@");
-									state = eValue;
+									state		  = eValue;
 									bHadNonNumber = false;
-									bHadDecimal = false;
-									decimalPos = 0;
-									bHadSign = false;
-									bHadChars = false;
+									bHadDecimal	  = false;
+									decimalPos	  = 0;
+									bHadSign	  = false;
+									bHadChars	  = false;
 									break;
 								} else {
 									parseResult = generateError(in, "Attributes must be in quotes.");
@@ -859,10 +851,10 @@ namespace DATA_NAMESPACE
 
 						case '>':
 						{
-							ptr = in.getPos();
+							ptr	   = in.getPos();
 							retVal = ptr;
 							if (out.exists(sTag)) {
-								JSON_NAMESPACE::value& jChild = out[sTag];
+								JSON_NAMESPACE::value & jChild = out[sTag];
 								if (jChild.isA(JSON_NAMESPACE::JSON_ARRAY)) {
 									pTag = &(jChild[jChild.size() - 1]);
 								} else {
@@ -874,15 +866,15 @@ namespace DATA_NAMESPACE
 							if (fastParse(in, *pTag, parseResult) == false) {
 								return false;
 							} else {
-								pTag = nullptr;
-								ptr = in.getPos();
-								retVal = ptr;
+								pTag		  = nullptr;
+								ptr			  = in.getPos();
+								retVal		  = ptr;
 								bHadNonNumber = false;
-								bHadDecimal = false;
-								decimalPos = 0;
-								bHadSign = false;
-								bHadChars = false;
-								state = eRoot;
+								bHadDecimal	  = false;
+								decimalPos	  = 0;
+								bHadSign	  = false;
+								bHadChars	  = false;
+								state		  = eRoot;
 							}
 							break;
 						}
@@ -893,15 +885,15 @@ namespace DATA_NAMESPACE
 							JSON_NAMESPACE::SkipWhitespace(in);
 							if (in.take() == '"') {
 								sAttribute.assign(retVal, (size_t)(ptr - retVal));
-								ptr = in.getPos();
+								ptr	   = in.getPos();
 								retVal = ptr;
 								sAttribute.insert(0, "@");
-								bHadChars = false;
+								bHadChars	  = false;
 								bHadNonNumber = false;
-								bHadSign = false;
-								bHadDecimal = false;
-								decimalPos = 0;
-								state = eValue;
+								bHadSign	  = false;
+								bHadDecimal	  = false;
+								decimalPos	  = 0;
+								state		  = eValue;
 								break;
 							} else {
 								parseResult = generateError(in, "Attributes must be in quotes.");
@@ -916,12 +908,12 @@ namespace DATA_NAMESPACE
 								parseResult = generateError(in, "invalid end tag.");
 								return false;
 							}
-							bHadChars = false;
-							bHadNonNumber = false;
-							bHadSign = false;
-							bHadDecimal = false;
-							decimalPos = 0;
-							JSON_NAMESPACE::value &jValue = out[sTag];
+							bHadChars					   = false;
+							bHadNonNumber				   = false;
+							bHadSign					   = false;
+							bHadDecimal					   = false;
+							decimalPos					   = 0;
+							JSON_NAMESPACE::value & jValue = out[sTag];
 							if (jValue.isA(JSON_NAMESPACE::JSON_VOID)) {
 								jValue = "";
 							}
@@ -955,7 +947,7 @@ namespace DATA_NAMESPACE
 								} else {
 									bHadNonNumber = true;
 								}
-							} else if (c < '0' || c > '9')  {
+							} else if (c < '0' || c > '9') {
 								bHadNonNumber = true;
 							}
 							bHadChars = true;
@@ -964,13 +956,13 @@ namespace DATA_NAMESPACE
 						case '&':
 						{
 							lastState = state;
-							state = eEscape;
+							state	  = eEscape;
 							break;
 						}
 						case '"':
 						{
 							size_t len = (size_t)(ptr - retVal);
-							if (bHadNonNumber || !bHadChars || (*retVal == '0' && *(retVal+1) != '.' && len > 1)) {
+							if (bHadNonNumber || !bHadChars || (*retVal == '0' && *(retVal + 1) != '.' && len > 1)) {
 								sdstring sTemp(sdstring(retVal, len));
 								int iIsBool = IsBool(sTemp);
 								switch (iIsBool) {
@@ -1004,21 +996,21 @@ namespace DATA_NAMESPACE
 									}
 								}
 							}
-							ptr = in.getPos();
+							ptr	   = in.getPos();
 							retVal = ptr;
-							state = eAttribute;
+							state  = eAttribute;
 							JSON_NAMESPACE::SkipWhitespace(in);
-							bHaveAtts = true;
-							bHadChars = false;
-							bHadSign = false;
+							bHaveAtts	  = true;
+							bHadChars	  = false;
+							bHadSign	  = false;
 							bHadNonNumber = false;
-							bHadDecimal = false;
-							decimalPos = 0;
+							bHadDecimal	  = false;
+							decimalPos	  = 0;
 							break;
 						}
 						case '>':
 						{
-							JSON_NAMESPACE::value &jValue = out[sTag];
+							JSON_NAMESPACE::value & jValue = out[sTag];
 							if (jValue.isA(JSON_NAMESPACE::JSON_VOID)) {
 								jValue = "";
 							}
@@ -1031,8 +1023,7 @@ namespace DATA_NAMESPACE
 
 				case eComment:
 				{
-					switch (c) 
-					{
+					switch (c) {
 						default:
 							*ptr = c;
 							++ptr;
@@ -1048,9 +1039,9 @@ namespace DATA_NAMESPACE
 								++ptr;
 								break;
 							}
-							ptr = in.getPos();
+							ptr	   = in.getPos();
 							retVal = ptr;
-							state = eRoot;
+							state  = eRoot;
 							break;
 					}
 					break;
@@ -1058,16 +1049,15 @@ namespace DATA_NAMESPACE
 
 				case eInfo:
 				{
-					switch (c) 
-					{
+					switch (c) {
 						default:
 							*ptr = c;
 							++ptr;
 							break;
 						case '>':
-							ptr = in.getPos();
+							ptr	   = in.getPos();
 							retVal = ptr;
-							state = eRoot;
+							state  = eRoot;
 							JSON_NAMESPACE::SkipWhitespace(in);
 							break;
 					}
@@ -1080,7 +1070,8 @@ namespace DATA_NAMESPACE
 		}
 		return true;
 	}
-	bool document::parseXML_old(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
+
+	bool document::parseXML_old(const sdstring & inStr, PREPARSEPTR preParser, const sdstring & preParseFileName)
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
@@ -1089,8 +1080,8 @@ namespace DATA_NAMESPACE
 			delete obj;
 			obj = nullptr;
 		}
-		myType = JSON_NAMESPACE::JSON_VOID;
-		m_number = 0;
+		myType	  = JSON_NAMESPACE::JSON_VOID;
+		m_number  = 0;
 		m_boolean = false;
 		str.clear();
 		if (preParser == nullptr) {
@@ -1102,7 +1093,7 @@ namespace DATA_NAMESPACE
 			preParser(inStr, sOut, preParseFileName);
 			if (sOut.size() == 0) {
 				bParseSuccessful = false;
-				strParseResult = "XML Document failed to pre-parse.";
+				strParseResult	 = "XML Document failed to pre-parse.";
 				if (debug()) {
 					debug()("%s", strParseResult.c_str());
 					debug()("%s", inStr.c_str());
@@ -1118,7 +1109,7 @@ namespace DATA_NAMESPACE
 			auto beg = this->begin();
 			sRootTag = beg.key().string();
 			std::swap(*(beg), a);
-			std::swap(*(static_cast<JSON_NAMESPACE::value*>(this)), a);
+			std::swap(*(static_cast<JSON_NAMESPACE::value *>(this)), a);
 			return bParseSuccessful;
 		} else {
 			strParseResult = "XML Requires there be only one root tag.";
@@ -1126,8 +1117,7 @@ namespace DATA_NAMESPACE
 		}
 	}
 #endif
-
-	bool document::parseXML(const sdstring &inStr, PREPARSEPTR preParser, const sdstring &preParseFileName)
+	bool document::parseXML(const sdstring & inStr, PREPARSEPTR preParser, const sdstring & preParseFileName)
 	{
 		if (myType == JSON_NAMESPACE::JSON_ARRAY) {
 			delete arr;
@@ -1136,8 +1126,8 @@ namespace DATA_NAMESPACE
 			delete obj;
 			obj = nullptr;
 		}
-		myType = JSON_NAMESPACE::JSON_VOID;
-		m_number = 0;
+		myType	  = JSON_NAMESPACE::JSON_VOID;
+		m_number  = 0;
 		m_boolean = false;
 		str.clear();
 
@@ -1150,7 +1140,7 @@ namespace DATA_NAMESPACE
 			preParser(inStr, sOut, preParseFileName);
 			if (sOut.size() == 0) {
 				bParseSuccessful = false;
-				strParseResult = "XML Document failed to pre-parse.";
+				strParseResult	 = "XML Document failed to pre-parse.";
 				if (debug()) {
 					debug()("%s", strParseResult.c_str());
 					debug()("%s", inStr.c_str());
@@ -1161,20 +1151,20 @@ namespace DATA_NAMESPACE
 		}
 		if (doc.Error()) {
 			bParseSuccessful = false;
-			strParseResult = "XML Parsing failed: " + sdstring(doc.ErrorDesc());
+			strParseResult	 = "XML Parsing failed: " + sdstring(doc.ErrorDesc());
 			return false;
 		}
 		sRootTag.clear();
 		parseXMLElement(*this, &doc);
 
 		bParseSuccessful = true;
-		strParseResult = "Ok.";
+		strParseResult	 = "Ok.";
 		return true;
 	}
 
-	bool document::parseXMLFile(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile)
+	bool document::parseXMLFile(const sdstring & inStr, PREPARSEPTR preParser, bool bReWriteFile)
 	{
-		FILE* fd = fopen(inStr.c_str(), "rb");
+		FILE * fd = fopen(inStr.c_str(), "rb");
 		if (fd) {
 			fseek(fd, 0, SEEK_END);
 			size_t l = (size_t)ftell(fd);
@@ -1199,80 +1189,80 @@ namespace DATA_NAMESPACE
 			bParseSuccessful = bRetVal;
 			return bRetVal;
 		}
-		strParseResult = "Couldn't open file " + inStr;
+		strParseResult	 = "Couldn't open file " + inStr;
 		bParseSuccessful = false;
 		return false;
 	}
-
 #if defined DONT_DO_THIS
-	bool document::parseXMLFile_old(const sdstring &inStr, PREPARSEPTR preParser, bool bReWriteFile)
+	bool document::parseXMLFile_old(const sdstring & inStr, PREPARSEPTR preParser, bool bReWriteFile)
 	{
-//		auto start = std::chrono::steady_clock::now();
-//		auto mainStart = start;
-		FILE* fd = fopen(inStr.c_str(), "rb");
+		//		auto start = std::chrono::steady_clock::now();
+		//		auto mainStart = start;
+		FILE * fd = fopen(inStr.c_str(), "rb");
 		if (fd) {
-//			auto end = std::chrono::steady_clock::now();
-//			std::cout << "open: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			//			auto end = std::chrono::steady_clock::now();
+			//			std::cout << "open: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
 			fseek(fd, 0, SEEK_END);
 			size_t l = (size_t)ftell(fd);
 			fseek(fd, 0, SEEK_SET);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "size: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-			char* buffer = static_cast<char*>(malloc(l + 1));
+			//			end = std::chrono::steady_clock::now();
+			//			std::cout << "size: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
+			char * buffer = static_cast<char *>(malloc(l + 1));
 			if (!buffer) {
 				fclose(fd);
-				strParseResult = "Couldn't allocate memory for parsing " + inStr;
+				strParseResult	 = "Couldn't allocate memory for parsing " + inStr;
 				bParseSuccessful = false;
 				return false;
 			}
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "allocate: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			//			end = std::chrono::steady_clock::now();
+			//			std::cout << "allocate: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
 			buffer[l] = 0;
 			size_t br = fread(buffer, 1, l, fd);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "read: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			//			end = std::chrono::steady_clock::now();
+			//			std::cout << "read: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
 			if (debug() && br != l) {
 				debug()("File size mismatch in %s.", inStr.c_str());
 			}
 			fclose(fd);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "close: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			//			end = std::chrono::steady_clock::now();
+			//			std::cout << "close: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
 			bool bRetVal;
 			sdstring sDat(buffer, l);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "sdstring: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			//			end = std::chrono::steady_clock::now();
+			//			std::cout << "sdstring: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
 			if (bReWriteFile) {
 				bRetVal = parseXML_old(sDat, preParser, inStr);
 			} else {
 				bRetVal = parseXML_old(sDat, preParser);
 			}
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "parsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
+			//			end = std::chrono::steady_clock::now();
+			//			std::cout << "parsed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
 			bParseSuccessful = bRetVal;
 			memset(buffer, 0, l + 1);
 			free(buffer);
-//			end = std::chrono::steady_clock::now();
-//			std::cout << "freed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
-//			start = end;
-//			std::cout << "TOTAL: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - mainStart).count() << std::endl << std::endl;
+			//			end = std::chrono::steady_clock::now();
+			//			std::cout << "freed: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << std::endl;
+			//			start = end;
+			//			std::cout << "TOTAL: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - mainStart).count() << std::endl << std::endl;
 			return bRetVal;
 		}
-		strParseResult = "Couldn't open file " + inStr;
+		strParseResult	 = "Couldn't open file " + inStr;
 		bParseSuccessful = false;
 		return false;
 	}
 #endif
-	sdstring XMLEscape(const sdstring& in, bool bAttribute) {
+	sdstring XMLEscape(const sdstring & in, bool bAttribute)
+	{
 		sdstring out;
 		out.reserve(in.size() * 2);
-		for (const char &c: in) {
+		for (const char & c : in) {
 			switch (c) {
 				default:
 				{
@@ -1296,34 +1286,39 @@ namespace DATA_NAMESPACE
 					out.append("&lt;");
 					break;
 				case '\'':
-					if (bAttribute)
+					if (bAttribute) {
 						out.append("&apos;");
-					else
+					} else {
 						out.push_back(c);
+					}
 					break;
 				case '\"':
-					if (bAttribute)
+					if (bAttribute) {
 						out.append("&quot;");
-					else
+					} else {
 						out.push_back(c);
+					}
 					break;
 				case '\r':
-					if (bAttribute)
+					if (bAttribute) {
 						out.append("&#xD;");
-					else
+					} else {
 						out.push_back(c);
+					}
 					break;
 				case '\n':
-					if (bAttribute)
+					if (bAttribute) {
 						out.append("&#xA;");
-					else
+					} else {
 						out.push_back(c);
+					}
 					break;
 				case '\t':
-					if (bAttribute)
+					if (bAttribute) {
 						out.append("&#x9;");
-					else
+					} else {
 						out.push_back(c);
+					}
 					break;
 			}
 		}
@@ -1352,9 +1347,8 @@ namespace DATA_NAMESPACE
 
 			case JSON_NAMESPACE::JSON_OBJECT:
 			{
-
 				for (JSON_NAMESPACE::value & val : ret) {
-					bool bEmpty = true;
+					bool bEmpty			 = true;
 					const sdstring & key = val.key();
 					if (key.size() > 1) {
 						if (key[0] == '@') {
@@ -1366,7 +1360,7 @@ namespace DATA_NAMESPACE
 						continue;
 					}
 					bool bIsNumericKey = false;
-					const char & c = key[0];
+					const char & c	   = key[0];
 					if (c >= '0' && c <= '9') {
 						bIsNumericKey = true;
 					}
@@ -1380,7 +1374,7 @@ namespace DATA_NAMESPACE
 						}
 					}
 					if (val.isA(JSON_NAMESPACE::JSON_ARRAY)) {
-						bEmpty = false;
+						bEmpty	 = false;
 						size_t l = val.size();
 						for (size_t j = 0; j < l; j++) {
 							if (bPretty && bTabs && j > 0) {
@@ -1422,8 +1416,9 @@ namespace DATA_NAMESPACE
 								}
 								strParameter.append(key);
 								strParameter.push_back('>');
-								if (bPretty)
+								if (bPretty) {
 									strParameter.append("\n");
+								}
 							}
 						}
 					} else if (!val.isA(JSON_NAMESPACE::JSON_VOID)) {
@@ -1464,15 +1459,16 @@ namespace DATA_NAMESPACE
 							}
 							strParameter.append(key);
 							strParameter.push_back('>');
-							if (bPretty)
+							if (bPretty) {
 								strParameter.append("\n");
+							}
 						}
 					}
 					if (bEmpty && !(val.empty() || val.size() == 0)) {
 						if (bPretty && bTabs && strParameter[strParameter.size() - 1] == '\n') {
-						// for (int k = 0; k < depth; k++) {
+							// for (int k = 0; k < depth; k++) {
 							strParameter.append(depth, '\t');
-						// }
+							// }
 						}
 						strParameter.push_back('<');
 						if (bIsNumericKey) {
@@ -1480,17 +1476,17 @@ namespace DATA_NAMESPACE
 						}
 						strParameter.append(key);
 						strParameter.append(" />");
-						if (bPretty)
+						if (bPretty) {
 							strParameter.append("\n");
+						}
 					}
 				}
 				break;
 			}
-
 		}
 	}
 
-	sdstring document::writeXML(const sdstring &rootElem, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
+	sdstring document::writeXML(const sdstring & rootElem, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
 	{
 		if (rootElem.size()) {
 			sRootTag = rootElem;
@@ -1539,7 +1535,7 @@ namespace DATA_NAMESPACE
 		}
 
 		if (isA(JSON_NAMESPACE::JSON_OBJECT)) {
-			writeXML(ret, *(JSON_NAMESPACE::value*)this, iStartDepth, bPretty, bTabs);
+			writeXML(ret, *(JSON_NAMESPACE::value *)this, iStartDepth, bPretty, bTabs);
 		}
 		if (sRootTag.size()) {
 			ret.append("</");
@@ -1560,13 +1556,13 @@ namespace DATA_NAMESPACE
 		return ret;
 	}
 
-	bool document::writeXMLFile(const sdstring &inStr, const sdstring &rootElem, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
+	bool document::writeXMLFile(const sdstring & inStr, const sdstring & rootElem, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
 	{
 #if defined JSON_TEMP_FILES_
 		sdstring sTempFile(inStr);
 		sTempFile.append(".tmp");
 
-		FILE* fd = fopen(sTempFile.c_str(), "wb");
+		FILE * fd = fopen(sTempFile.c_str(), "wb");
 		if (fd) {
 			sdstring w = writeXML(rootElem, bPretty, bTabs, preWriter);
 			if (fwrite(w.data(), 1, w.size(), fd) != w.size()) {
@@ -1619,7 +1615,7 @@ namespace DATA_NAMESPACE
 			}
 		}
 #else
-		FILE* fd = fopen(inStr.c_str(), "wb");
+		FILE * fd = fopen(inStr.c_str(), "wb");
 		if (fd) {
 			sdstring w = writeXML(rootElem, bPretty, bTabs, preWriter);
 			if (w.size()) {
@@ -1632,9 +1628,9 @@ namespace DATA_NAMESPACE
 		return false;
 	}
 
-	bool document::writeXMLFile(const sdstring &inStr, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
+	bool document::writeXMLFile(const sdstring & inStr, bool bPretty, bool bTabs, PREWRITEPTR preWriter)
 	{
-		FILE* fd = fopen(inStr.c_str(), "wb");
+		FILE * fd = fopen(inStr.c_str(), "wb");
 		if (fd) {
 			sdstring w = writeXML(bPretty, bTabs, preWriter);
 			fwrite(w.data(), 1, w.size(), fd);
@@ -1693,7 +1689,7 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				sdstring sKey = it.key()._sdstring();
+				sdstring sKey				 = it.key()._sdstring();
 				JSON_NAMESPACE::iterator end = jNameSpaces.end();
 				for (JSON_NAMESPACE::iterator nit = jNameSpaces.begin(); nit != end; ++nit) {
 					if (sKey[0] == '@') {
@@ -1720,7 +1716,6 @@ namespace DATA_NAMESPACE
 				stripNameSpaces((*it), jNameSpaces, false);
 			}
 		}
-
 	}
 
 	void document::stripNameSpace(JSON_NAMESPACE::value & a, sdstring sNameSpace, bool begin)
@@ -1734,7 +1729,7 @@ namespace DATA_NAMESPACE
 			JSON_NAMESPACE::value temp;
 			JSON_NAMESPACE::iterator aend = a.end();
 			for (JSON_NAMESPACE::iterator it = a.begin(); it != aend; ++it) {
-				if ((*it).isA(JSON_NAMESPACE::JSON_VOID) ) {
+				if ((*it).isA(JSON_NAMESPACE::JSON_VOID)) {
 					continue;
 				}
 				sdstring sKey = it.key()._sdstring();
@@ -1839,6 +1834,4 @@ namespace DATA_NAMESPACE
 		sRootTag.insert(0, sNameSpace);
 		addNameSpace(*this, sNameSpace, false);
 	}
-
-
-}
+}	 // namespace DATA_NAMESPACE

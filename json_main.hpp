@@ -31,8 +31,9 @@ The official repository for this library is at https://github.com/VA7ODR/json
  *
  * For example:
  \code
- #include <iostream>
  #include "json.hpp"
+
+ #include <iostream>
 
  int main(int argc, char ** argv) {
  document doc;
@@ -65,34 +66,34 @@ The official repository for this library is at https://github.com/VA7ODR/json
  \endcode
  */
 
-#include <string>
-#include <deque>
-#include <cstdint>
-#include <map>
 #include "SDString/sdstring.hpp"
 
+#include <cstdint>
+#include <deque>
+#include <map>
+#include <string>
+
 #if defined DO_OJSON_STUFF
-#include "ArbitraryOrderMap/arbitrary_order_map.hpp"
+#	include "ArbitraryOrderMap/arbitrary_order_map.hpp"
 #endif
 
 #if !defined JSON_HPP_
-#if !defined JSON_NAMESPACE
-#define JSON_HPP_
-#define JSON_NAMESPACE json
-#endif
-
+#	if !defined JSON_NAMESPACE
+#		define JSON_HPP_
+#		define JSON_NAMESPACE json
+#	endif
 namespace JSON_NAMESPACE
 {
-#if defined MYMAP
-#undef MYMAP
-#endif
-#if defined DO_OJSON_STUFF
-#define MYMAP arbitrary_order_map<sdstring, value>
-#else
-#define MYMAP std::map<sdstring, value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, value>>>
-#endif
-
-	enum JSONTypes{
+#	if defined MYMAP
+#		undef MYMAP
+#	endif
+#	if defined DO_OJSON_STUFF
+#		define MYMAP arbitrary_order_map<sdstring, value>
+#	else
+#		define MYMAP std::map<sdstring, value, std::less<sdstring>, secure_delete_allocator<std::pair<const sdstring, value>>>
+#	endif
+	enum JSONTypes
+	{
 		JSON_VOID = -1,
 		JSON_NULL,
 		JSON_BOOLEAN,
@@ -113,28 +114,29 @@ namespace JSON_NAMESPACE
 	class value
 	{
 		public:
-
 			friend class object;
 			friend class array;
 			friend class document;
 			friend class query;
 			friend class iterator;
 			friend class reverse_iterator;
-#if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
+#	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
 			friend class ojson::value;
 			friend class ojson::document;
-#elif defined DO_OJSON_STUFF
+#	elif defined DO_OJSON_STUFF
 			friend class json::value;
 			friend class json::document;
-#endif
-			friend void objectParse(value& ret, instring& inputString, bool* bFailed);
+#	endif
+			friend void objectParse(value & ret, instring & inputString, bool * bFailed);
 
-			friend void arrayParse(value& arr, instring& inputString, bool* bFailed);
+			friend void arrayParse(value & arr, instring & inputString, bool * bFailed);
 
-			friend void nullParse(value& ret, instring& inputString, bool* bFailed);
-			friend void valueParse(value& a, instring& inputString, bool* bFailed);
-			friend void numberParse(value& ret, instring& s, bool* bFailed);
-			static void swap(value& lhs, value& rhs) {
+			friend void nullParse(value & ret, instring & inputString, bool * bFailed);
+			friend void valueParse(value & a, instring & inputString, bool * bFailed);
+			friend void numberParse(value & ret, instring & s, bool * bFailed);
+
+			static void swap(value & lhs, value & rhs)
+			{
 				using std::swap;
 				swap(lhs.m_number, rhs.m_number);
 				swap(lhs.m_boolean, rhs.m_boolean);
@@ -144,165 +146,228 @@ namespace JSON_NAMESPACE
 			}
 
 			value() : m_number(0), m_places(-1), m_boolean(false), myType(JSON_VOID), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
-			value(const value& V);
-			value(value&& V);
 
-#if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
-			value(const ojson::value& V);
-#elif defined SUPPORT_ORDERED_JSON && defined DO_OJSON_STUFF
-			value(const json::value& V);
-#endif
+			value(const value & V);
+			value(value && V);
+
+#	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
+			value(const ojson::value & V);
+#	elif defined SUPPORT_ORDERED_JSON && defined DO_OJSON_STUFF
+			value(const json::value & V);
+#	endif
 			value(bool V) : m_number((double)V), m_places(-1), m_boolean(V), myType(JSON_BOOLEAN), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
-			value(const char* V);
-			value(char* V);
-			value(const sdstring& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
-			value(sdstring&& V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
-			value(const std::string& V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
-			value(object& V);
-			value(array& V);
 
-			template <typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type* = nullptr>
-			value(T V) : m_number((double)V), m_places(-1), m_boolean(!(m_number == 0.0)), myType(JSON_NUMBER), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value(const char * V);
+			value(char * V);
+
+			value(const sdstring & V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+
+			value(sdstring && V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+
+			value(const std::string & V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+
+			value(object & V);
+			value(array & V);
+
+			template <typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type * = nullptr>
+			value(T V) : m_number((double)V), m_places(-1), m_boolean(!(m_number == 0.0)), myType(JSON_NUMBER), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+			{}
 
 			~value();
 
-			void setParentObject(object* pSetTo);
+			void setParentObject(object * pSetTo);
 
-			void setParentArray(array* pSetTo);
+			void setParentArray(array * pSetTo);
 
-			value& operator=(const value& V);
-			value& operator=(value&& V);
+			value & operator=(const value & V);
+			value & operator=(value && V);
 
 			int isA() const;
+
 			bool isA(int i) const
 			{
 				return (isA() == i);
 			}
 
-			bool IsVoid() { return (isA() == JSON_VOID); }
-			bool IsNull() { return (isA() == JSON_NULL); }
-			bool IsBoolean() { return (isA() == JSON_BOOLEAN); }
-			bool IsNumber() { return (isA() == JSON_NUMBER); }
-			bool IsString() { return (isA() == JSON_STRING); }
-			bool IsArray() { return (isA() == JSON_ARRAY); }
-			bool IsObject() { return (isA() == JSON_OBJECT); }
+			bool IsVoid()
+			{
+				return (isA() == JSON_VOID);
+			}
 
-			value& emptyArray();
-			value& emptyObject();
+			bool IsNull()
+			{
+				return (isA() == JSON_NULL);
+			}
 
-			value& toArray();
-			value& toObject(const sdstring& key);
-			value& toString();
-			value& toString(int iDecimalPlaces = -1);
-			value& toNumber();
-			value& toBool();
-			value& toNull();
-			value& fixedDecimal(int iPlaces);
-			int places() const { return m_places; };
+			bool IsBoolean()
+			{
+				return (isA() == JSON_BOOLEAN);
+			}
+
+			bool IsNumber()
+			{
+				return (isA() == JSON_NUMBER);
+			}
+
+			bool IsString()
+			{
+				return (isA() == JSON_STRING);
+			}
+
+			bool IsArray()
+			{
+				return (isA() == JSON_ARRAY);
+			}
+
+			bool IsObject()
+			{
+				return (isA() == JSON_OBJECT);
+			}
+
+			value & emptyArray();
+			value & emptyObject();
+
+			value & toArray();
+			value & toObject(const sdstring & key);
+			value & toString();
+			value & toString(int iDecimalPlaces = -1);
+			value & toNumber();
+			value & toBool();
+			value & toNull();
+			value & fixedDecimal(int iPlaces);
+
+			int places() const
+			{
+				return m_places;
+			}
 
 			bool boolean() const;
 
 			double number() const;
 
-			double _double() const {
+			double _double() const
+			{
 				return number();
 			}
 
-			float _float() const {
+			float _float() const
+			{
 				return (float)number();
 			}
 
-			int64_t integer() const {
+			int64_t integer() const
+			{
 				return (int64_t)number();
 			}
 
-			int64_t _int64() const {
+			int64_t _int64() const
+			{
 				return (int64_t)number();
 			}
 
-			uint64_t _uint64() const {
+			uint64_t _uint64() const
+			{
 				return (uint64_t)number();
 			}
 
-			size_t _size_t() const {
+			size_t _size_t() const
+			{
 				return (size_t)number();
 			}
 
-			long _long() const {
+			long _long() const
+			{
 				return (long)number();
 			}
 
-			unsigned long _ulong() const {
+			unsigned long _ulong() const
+			{
 				return (unsigned long)number();
 			}
 
-			int _int() const {
+			int _int() const
+			{
 				return (int)number();
 			}
 
-			int _int32() const {
+			int _int32() const
+			{
 				return (int32_t)number();
 			}
 
-			uint32_t _uint32() const {
+			uint32_t _uint32() const
+			{
 				return (uint32_t)number();
 			}
-			unsigned int _uint() const {
+
+			unsigned int _uint() const
+			{
 				return (unsigned int)number();
 			}
 
-			short _short() const {
+			short _short() const
+			{
 				return (short)number();
 			}
 
-			unsigned short _ushort() const {
+			unsigned short _ushort() const
+			{
 				return (unsigned short)number();
 			}
 
-			short _int16() const {
+			short _int16() const
+			{
 				return (int16_t)number();
 			}
 
-			short _uint16() const {
+			short _uint16() const
+			{
 				return (uint16_t)number();
 			}
 
-			char _char() const {
+			char _char() const
+			{
 				return (char)number();
 			}
 
-			unsigned char _uchar() const {
+			unsigned char _uchar() const
+			{
 				return (unsigned char)number();
 			}
 
-			char _int8() const {
+			char _int8() const
+			{
 				return (int8_t)number();
 			}
 
-			char _uint8() const {
+			char _uint8() const
+			{
 				return (uint8_t)number();
 			}
 
-			const char* c_str()
+			const char * c_str()
 			{
 				makeString(str);
 				return str.c_str();
-			};
+			}
 
-			sdstring& _sdstring() {
+			sdstring & _sdstring()
+			{
 				makeString(str);
 				return str;
 			}
 
-			std::string& string() {
+			std::string & string()
+			{
 				makeString(str);
 				return str;
 			}
 
-			value& operator[](size_t index);
-			value& operator[](const sdstring& index);
-			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type* = nullptr>
-			value& operator[](const T & index)
+			value & operator[](size_t index);
+			value & operator[](const sdstring & index);
+
+			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type * = nullptr>
+			value & operator[](const T & index)
 			{
 				assert(index.m_type == JSON_NUMBER || index.m_type == JSON_STRING && "Wrong value type used as index.");
 				switch (index.m_type) {
@@ -323,7 +388,8 @@ namespace JSON_NAMESPACE
 
 			value & value_or(const sdstring & index, value vor);
 			value & value_or(size_t index, value vor);
-			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type* = nullptr>
+
+			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type * = nullptr>
 			value & value_or(const T & index, value vor)
 			{
 				assert(index.m_type == JSON_NUMBER || index.m_type == JSON_STRING && "Wrong value type used as index.");
@@ -343,65 +409,65 @@ namespace JSON_NAMESPACE
 				return *this;
 			}
 
-			void push_back(const value& val);				// Array
-			void push_back(value&& val);					// Array
-			void push_front(const value& val);				// Array
+			void push_back(const value & val);					  // Array
+			void push_back(value && val);						  // Array
+			void push_front(const value & val);					  // Array
 
-			value pop_back();								// Array
-			value pop_front();								// Array
+			value pop_back();									  // Array
+			value pop_front();									  // Array
 
-			value & front();								// Array / Object
-			value & back();									// Array / Object
+			value & front();									  // Array / Object
+			value & back();										  // Array / Object
 
-			void erase(size_t index);						// Array
-			size_t erase(const sdstring &index);			// Object
-			iterator erase(iterator &it);					// Array / Object
-			iterator erase(iterator &first, iterator &last);	// Array / Object
+			void erase(size_t index);							  // Array
+			size_t erase(const sdstring & index);				  // Object
+			iterator erase(iterator & it);						  // Array / Object
+			iterator erase(iterator & first, iterator & last);	  // Array / Object
 
 			bool exists(size_t index);
-			bool exists(const sdstring& index);
+			bool exists(const sdstring & index);
 
-			iterator insert(size_t index, value& V);			  // Array
-			iterator insert(const sdstring& index, value& V);		 // Object
-			iterator insert(iterator position, const sdstring& key, value& V);		 // Object
-			iterator insert(iterator position, value &V);		 // Array
-			void insert(iterator position, iterator first, iterator last);  // Array / Object (position ignored unless ojson)
-			void insert(iterator first, iterator last);	 // Array (append) / Object
+			iterator insert(size_t index, value & V);								// Array
+			iterator insert(const sdstring & index, value & V);						// Object
+			iterator insert(iterator position, const sdstring & key, value & V);	// Object
+			iterator insert(iterator position, value & V);							// Array
+			void insert(iterator position, iterator first, iterator last);			// Array / Object (position ignored unless ojson)
+			void insert(iterator first, iterator last);								// Array (append) / Object
 
 			void resize(size_t iCount);
-			void resize(size_t iCount, value &val);
+			void resize(size_t iCount, value & val);
 
 			bool pruneEmptyValues();
 
 			bool compact();
 
-			bool empty() const; // Is array empty or object empty or string empty.  Number and booleans return false, nullptr and VOID return true.
+			bool empty() const;	   // Is array empty or object empty or string empty.  Number and booleans return false, nullptr and VOID return true.
 
-			value& at(size_t index);
+			value & at(size_t index);
 
-			bool operator==(const value& V) const;
-			bool operator!=(const value& V) const;
-			bool operator>(const value& V) const;
-			bool operator<(const value& V) const;
-			bool operator>=(const value& V) const;
-			bool operator<=(const value& V) const;
+			bool operator==(const value & V) const;
+			bool operator!=(const value & V) const;
+			bool operator>(const value & V) const;
+			bool operator<(const value & V) const;
+			bool operator>=(const value & V) const;
+			bool operator<=(const value & V) const;
 
-			value operator+(const value& V) const;
-			value operator-(const value& V) const;
-			value operator*(const value& V) const;
-			value operator/(const value& V) const;
-			value operator%(const value& V) const;
+			value operator+(const value & V) const;
+			value operator-(const value & V) const;
+			value operator*(const value & V) const;
+			value operator/(const value & V) const;
+			value operator%(const value & V) const;
 
-			value &operator+=(const value& V);
-			value &operator-=(const value& V);
-			value &operator*=(const value& V);
-			value &operator/=(const value& V);
-			value &operator%=(const value& V);
+			value & operator+=(const value & V);
+			value & operator-=(const value & V);
+			value & operator*=(const value & V);
+			value & operator/=(const value & V);
+			value & operator%=(const value & V);
 
 			value operator++(int);
-			value &operator++();
+			value & operator++();
 			value operator--(int);
-			value &operator--();
+			value & operator--();
 
 			value operator-() const;
 
@@ -411,34 +477,48 @@ namespace JSON_NAMESPACE
 			void clear();
 			void destroy();
 
-			void sort(bool (*compareFunc)(value&, value&));
+			void sort(bool (*compareFunc)(value &, value &));
 
-			value simpleSearch(value& searchFor, bool bSubStr = false);
-			size_t simpleCount(value& searchFor, bool bSubStr = false);
-			value merge(value& V);
+			value simpleSearch(value & searchFor, bool bSubStr = false);
+			size_t simpleCount(value & searchFor, bool bSubStr = false);
+			value merge(value & V);
 
 			iterator begin() const;
 			iterator end() const;
 			reverse_iterator rbegin() const;
 			reverse_iterator rend() const;
 			iterator find(size_t index) const;
-			iterator find(const sdstring& index) const;
-			iterator find(const char* index) const;
+			iterator find(const sdstring & index) const;
+			iterator find(const char * index) const;
 			reverse_iterator rfind(size_t index) const;
-			reverse_iterator rfind(const sdstring& index) const;
-			reverse_iterator rfind(const char* index) const;
+			reverse_iterator rfind(const sdstring & index) const;
+			reverse_iterator rfind(const char * index) const;
 
 			typedef void (*DEBUGPTR)(const char *, ...);
-			void debugPrint() { if (debug()) { debug()("%s\n", print(0, true).c_str()); } }
-			static void setDebug(DEBUGPTR setTo) { debug() = setTo; }
 
-			static const char* typeName(int type);
-			const sdstring& key() { return m_key; }
+			void debugPrint()
+			{
+				if (debug()) {
+					debug()("%s\n", print(0, true).c_str());
+				}
+			}
+
+			static void setDebug(DEBUGPTR setTo)
+			{
+				debug() = setTo;
+			}
+
+			static const char * typeName(int type);
+
+			const sdstring & key()
+			{
+				return m_key;
+			}
 
 		protected:
-			sdstring &makeString(sdstring &dest)const;
+			sdstring & makeString(sdstring & dest) const;
 
-			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false);
+			void cprint(MovingCharPointer & ptr, size_t depth = 1, bool bPretty = false);
 			sdstring print(size_t depth = 0, bool bPretty = false);
 
 			size_t psize(size_t depth, bool bPretty);
@@ -448,35 +528,38 @@ namespace JSON_NAMESPACE
 			bool m_boolean;
 			sdstring str;
 			JSONTypes myType;
-			union {
+
+			union
+			{
 				public:
-					object* obj;
-					array* arr;
+					object * obj;
+					array * arr;
 			};
+
 			sdstring m_key;
 
-			object* pParentObject;
-			array* pParentArray;
+			object * pParentObject;
+			array * pParentArray;
 
-			friend void debugTypeChangeReal(const sdstring & func, value& oldType, value& newType);
-			static DEBUGPTR& debug();
+			friend void debugTypeChangeReal(const sdstring & func, value & oldType, value & newType);
+			static DEBUGPTR & debug();
 
 		private:
-			static sdstring &makeStringFromNumber(sdstring & in, int iPlaces, double dNumber);
+			static sdstring & makeStringFromNumber(sdstring & in, int iPlaces, double dNumber);
 	};
 
-	void numberParse(value& ret, instring& s, bool* bFailed);
-	void SkipWhitespace(instring& in);
+	void numberParse(value & ret, instring & s, bool * bFailed);
+	void SkipWhitespace(instring & in);
 
 	class instring
 	{
 		public:
-			instring(const sdstring &in) : sString(in)
+			instring(const sdstring & in) : sString(in)
 			{
 				itPos = sString.begin();
 			}
 
-			const char &take()
+			const char & take()
 			{
 				return *(itPos++);
 			}
@@ -486,7 +569,7 @@ namespace JSON_NAMESPACE
 				++itPos;
 			}
 
-			const char &peek() const
+			const char & peek() const
 			{
 				if (itPos != sString.end()) {
 					return *(itPos);
@@ -507,18 +590,19 @@ namespace JSON_NAMESPACE
 				return sString.size();
 			}
 
-
-			void seek(size_t newPos) {
+			void seek(size_t newPos)
+			{
 				if (newPos < size()) {
 					itPos = sString.begin() + newPos;
 				}
 			}
 
-			const char *getPos() const {
+			const char * getPos() const
+			{
 				return &(*itPos);
 			}
 
-			const sdstring &Str() const
+			const sdstring & Str() const
 			{
 				return sString;
 			}
@@ -530,10 +614,10 @@ namespace JSON_NAMESPACE
 
 			void UpToAndIncluding(sdstring & sRet, char c)
 			{
-				auto it = itPos;
-				auto end = sString.end();
+				auto it		 = itPos;
+				auto end	 = sString.end();
 				bool bEscape = false;
-				for(; itPos != end; ++itPos) {
+				for (; itPos != end; ++itPos) {
 					if (bEscape == false && *itPos == c) {
 						++itPos;
 						break;
@@ -578,255 +662,285 @@ namespace JSON_NAMESPACE
 
 	typedef std::deque<value, secure_delete_allocator<value>> myVec;
 	typedef MYMAP myMap;
+
 	class object : public myMap
 	{
 		public:
 			object() : myMap(), bNotEmpty(false), pParentArray(nullptr), pParentObject(nullptr) {}
-			~object() {
-			}
 
-			object(const object& V) : myMap((myMap)V), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+			~object() {}
 
-			object(object&& V) : myMap((myMap)V)
+			object(const object & V) : myMap((myMap)V), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+
+			object(object && V) : myMap((myMap)V)
 			{
 				std::swap(bNotEmpty, V.bNotEmpty);
 				std::swap(pParentArray, V.pParentArray);
 				std::swap(pParentObject, V.pParentObject);
 			}
 
-			object(const object* V) : myMap(static_cast<myMap>(*V)), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
-#if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
+			object(const object * V) : myMap(static_cast<myMap>(*V)), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+#	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
 			friend class ojson::object;
-			object(const ojson::object& V);
-			object(const ojson::object* V);
-#elif defined SUPPORT_ORDERED_JSON && defined DO_OJSON_STUFF
+			object(const ojson::object & V);
+			object(const ojson::object * V);
+#	elif defined SUPPORT_ORDERED_JSON && defined DO_OJSON_STUFF
 			friend class json::object;
-			object(const json::object& V);
-			object(const json::object* V);
-#endif
+			object(const json::object & V);
+			object(const json::object * V);
+#	endif
 
-			using myMap::size;
-			using myMap::find;
 			using myMap::begin;
+			using myMap::const_iterator;
 			using myMap::end;
+			using myMap::erase;
+			using myMap::find;
+			using myMap::insert;
+			using myMap::iterator;
 			using myMap::rbegin;
 			using myMap::rend;
-			using myMap::insert;
-			using myMap::erase;
-			using myMap::iterator;
 			using myMap::reverse_iterator;
-			using myMap::const_iterator;
+			using myMap::size;
 
-			object& operator=(const object& rhs)
+			object & operator=(const object & rhs)
 			{
 				if (this != &rhs) {
-					static_cast<myMap&>(*this) = static_cast<const myMap&>(rhs);
+					static_cast<myMap &>(*this) = static_cast<const myMap &>(rhs);
 				}
 				return *this;
 			}
 
 			bool operator==(const object & rhs) const
 			{
-				return static_cast<const myMap&>(*this) == static_cast<const myMap&>(rhs);
+				return static_cast<const myMap &>(*this) == static_cast<const myMap &>(rhs);
 			}
 
 			bool operator>(const object & rhs) const
 			{
-				return static_cast<const myMap&>(*this) > static_cast<const myMap&>(rhs);
+				return static_cast<const myMap &>(*this) > static_cast<const myMap &>(rhs);
 			}
 
 			bool operator<(const object & rhs) const
 			{
-				return static_cast<const myMap&>(*this) < static_cast<const myMap&>(rhs);
+				return static_cast<const myMap &>(*this) < static_cast<const myMap &>(rhs);
 			}
 
 			bool operator>=(const object & rhs) const
 			{
-				return static_cast<const myMap&>(*this) >= static_cast<const myMap&>(rhs);
+				return static_cast<const myMap &>(*this) >= static_cast<const myMap &>(rhs);
 			}
 
 			bool operator<=(const object & rhs) const
 			{
-				return static_cast<const myMap&>(*this) <= static_cast<const myMap&>(rhs);
+				return static_cast<const myMap &>(*this) <= static_cast<const myMap &>(rhs);
 			}
 
 			bool operator!=(const object & rhs) const
 			{
-				return static_cast<const myMap&>(*this) != static_cast<const myMap&>(rhs);
+				return static_cast<const myMap &>(*this) != static_cast<const myMap &>(rhs);
 			}
 
 			value & operator[](const sdstring & key)
 			{
-				return static_cast<myMap&>(*this)[key];
+				return static_cast<myMap &>(*this)[key];
 			}
 
 			value & operator[](sdstring && key)
 			{
-				return static_cast<myMap&>(*this)[std::move(key)];
+				return static_cast<myMap &>(*this)[std::move(key)];
 			}
-
-#if defined DO_OJSON_STUFF
+#	if defined DO_OJSON_STUFF
 			value & operator[](size_t index)
 			{
-				return static_cast<myMap&>(*this)[index];
+				return static_cast<myMap &>(*this)[index];
 			}
-#endif
+#	endif
 
 			bool empty() const;
 			void setNotEmpty();
 			void setParentArray(array * pSetTo);
 			void setParentObject(object * pSetTo);
-			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false);
+			void cprint(MovingCharPointer & ptr, size_t depth = 1, bool bPretty = false);
 			size_t psize(size_t depth, bool bPretty);
-			bool notEmpty() { return bNotEmpty; }
+
+			bool notEmpty()
+			{
+				return bNotEmpty;
+			}
+
 		protected:
 			bool bNotEmpty;
+
 		private:
-			array* pParentArray;
-			object* pParentObject;
+			array * pParentArray;
+			object * pParentObject;
 	};
 
 	class array : private myVec
 	{
 		public:
 			array() : myVec(), bNotEmpty(false), pParentArray(nullptr), pParentObject(nullptr) {}
-			array(size_t C) : myVec(C), bNotEmpty(true), pParentArray(nullptr), pParentObject(nullptr) {}
-#if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
-			friend class ojson::array;
-			array(const ojson::array& V);
-			array(const ojson::array* V);
-#elif defined SUPPORT_ORDERED_JSON && defined DO_OJSON_STUFF
-			friend class json::array;
-			array(const json::array& V);
-			array(const json::array* V);
-#endif
-			array(const array& V)
-				: myVec((myVec)V), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
 
-			array(array&& V)
-				: myVec((myVec)V)
+			array(size_t C) : myVec(C), bNotEmpty(true), pParentArray(nullptr), pParentObject(nullptr) {}
+#	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
+			friend class ojson::array;
+			array(const ojson::array & V);
+			array(const ojson::array * V);
+#	elif defined SUPPORT_ORDERED_JSON && defined DO_OJSON_STUFF
+			friend class json::array;
+			array(const json::array & V);
+			array(const json::array * V);
+#	endif
+			array(const array & V) : myVec((myVec)V), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+
+			array(array && V) : myVec((myVec)V)
 			{
 				std::swap(bNotEmpty, V.bNotEmpty);
 				std::swap(pParentArray, V.pParentArray);
 				std::swap(pParentObject, V.pParentObject);
 			}
 
-			array(const array* V) : myVec(static_cast<myVec>(*V)), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
-			~array()  {}
+			array(const array * V) : myVec(static_cast<myVec>(*V)), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
 
-			using myVec::size;
-			using myVec::resize;
+			~array() {}
+
 			using myVec::at;
+			using myVec::back;
 			using myVec::begin;
+			using myVec::clear;
+			using myVec::const_iterator;
+			using myVec::emplace_back;
+			using myVec::emplace_front;
 			using myVec::end;
+			using myVec::erase;
+			using myVec::front;
+			using myVec::insert;
+			using myVec::iterator;
+			using myVec::pop_back;
+			using myVec::pop_front;
+			using myVec::push_back;
+			using myVec::push_front;
 			using myVec::rbegin;
 			using myVec::rend;
-			using myVec::insert;
-			using myVec::erase;
-			using myVec::clear;
-			using myVec::iterator;
+			using myVec::resize;
 			using myVec::reverse_iterator;
-			using myVec::const_iterator;
-			using myVec::pop_front;
-			using myVec::pop_back;
-			using myVec::push_front;
-			using myVec::push_back;
-			using myVec::emplace_front;
-			using myVec::emplace_back;
-			using myVec::front;
-			using myVec::back;
+			using myVec::size;
 			using myVec::operator=;
 
-			array& operator=(const array& rhs)
+			array & operator=(const array & rhs)
 			{
 				if (this != &rhs) {
-					static_cast<myVec&>(*this) = static_cast<const myVec&>(rhs);
+					static_cast<myVec &>(*this) = static_cast<const myVec &>(rhs);
 				}
 				return *this;
 			}
 
 			bool operator==(const array & rhs) const
 			{
-				return static_cast<const myVec&>(*this) == static_cast<const myVec&>(rhs);
+				return static_cast<const myVec &>(*this) == static_cast<const myVec &>(rhs);
 			}
 
 			bool operator>(const array & rhs) const
 			{
-				return static_cast<const myVec&>(*this) > static_cast<const myVec&>(rhs);
+				return static_cast<const myVec &>(*this) > static_cast<const myVec &>(rhs);
 			}
 
 			bool operator<(const array & rhs) const
 			{
-				return static_cast<const myVec&>(*this) < static_cast<const myVec&>(rhs);
+				return static_cast<const myVec &>(*this) < static_cast<const myVec &>(rhs);
 			}
 
 			bool operator>=(const array & rhs) const
 			{
-				return static_cast<const myVec&>(*this) >= static_cast<const myVec&>(rhs);
+				return static_cast<const myVec &>(*this) >= static_cast<const myVec &>(rhs);
 			}
 
 			bool operator<=(const array & rhs) const
 			{
-				return static_cast<const myVec&>(*this) <= static_cast<const myVec&>(rhs);
+				return static_cast<const myVec &>(*this) <= static_cast<const myVec &>(rhs);
 			}
 
 			bool operator!=(const array & rhs) const
 			{
-				return static_cast<const myVec&>(*this) != static_cast<const myVec&>(rhs);
+				return static_cast<const myVec &>(*this) != static_cast<const myVec &>(rhs);
 			}
 
 			bool empty() const;
 			void setNotEmpty();
 			void setParentArray(array * pSetTo);
 			void setParentObject(object * pSetTo);
-			void cprint(MovingCharPointer& ptr, size_t depth = 1, bool bPretty = false);
+			void cprint(MovingCharPointer & ptr, size_t depth = 1, bool bPretty = false);
 			size_t psize(size_t depth, bool bPretty);
-			bool notEmpty() { return bNotEmpty; }
+
+			bool notEmpty()
+			{
+				return bNotEmpty;
+			}
+
 		protected:
 			bool bNotEmpty;
+
 		private:
-			array* pParentArray;
-			object* pParentObject;
+			array * pParentArray;
+			object * pParentObject;
 	};
 
-class iterator
+	class iterator
 	{
 		public:
 			friend class reverse_iterator;
 
-			typedef std::input_iterator_tag  	iterator_category;
-			typedef value        				value_type;
-			typedef ptrdiff_t					difference_type;
-			typedef value*   					pointer;
-			typedef value& 						reference;
-		
-			iterator() : bNone(true), bIsArray(false) {}
-			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
-			iterator(const myVec::iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
-			iterator(const iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
-			iterator(iterator&& it);
-			iterator& operator=(const iterator& it);
-			iterator& operator=(iterator&& it);
+			typedef std::input_iterator_tag iterator_category;
+			typedef value value_type;
+			typedef ptrdiff_t difference_type;
+			typedef value * pointer;
+			typedef value & reference;
 
-			iterator& operator++();
+			iterator() : bNone(true), bIsArray(false) {}
+
+			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+
+			iterator(const myVec::iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+
+			iterator(const iterator & it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
+
+			iterator(iterator && it);
+			iterator & operator=(const iterator & it);
+			iterator & operator=(iterator && it);
+
+			iterator & operator++();
 			iterator operator++(int);
-			iterator& operator--();
+			iterator & operator--();
 			iterator operator--(int);
-#if defined _WIN32
-		bool operator==(const iterator& rhs) const;
-		bool operator!=(const iterator& rhs) const;
-#else
-			bool operator==(const iterator& rhs);
-			bool operator!=(const iterator& rhs);
-#endif
-			value& operator*();
+#	if defined _WIN32
+			bool operator==(const iterator & rhs) const;
+			bool operator!=(const iterator & rhs) const;
+#	else
+			bool operator==(const iterator & rhs);
+			bool operator!=(const iterator & rhs);
+#	endif
+			value & operator*();
 			value key();
 
-			bool Neither() { return bNone; } // changed to Neither because X.h defines None as 0L in the global namespace for some stupid reason.
-			bool IsArray() { return bIsArray; }
+			bool Neither()
+			{
+				return bNone;
+			}	 // changed to Neither because X.h defines None as 0L in the global namespace for some stupid reason.
 
-			myVec::iterator & arr() { return arr_it; }
-			myMap::iterator & obj() { return obj_it; }
+			bool IsArray()
+			{
+				return bIsArray;
+			}
+
+			myVec::iterator & arr()
+			{
+				return arr_it;
+			}
+
+			myMap::iterator & obj()
+			{
+				return obj_it;
+			}
 
 		protected:
 			friend class value;
@@ -841,31 +955,51 @@ class iterator
 	{
 		public:
 			reverse_iterator() : bNone(true), bIsArray(false) {}
+
 			reverse_iterator(const myMap::reverse_iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+
 			reverse_iterator(const myVec::reverse_iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+
 			reverse_iterator(const myMap::iterator & it) : obj_it(myMap::reverse_iterator(it)), bNone(false), bIsArray(false) {}
+
 			reverse_iterator(const myVec::iterator & it) : arr_it(myVec::reverse_iterator(it)), bNone(false), bIsArray(true) {}
-			reverse_iterator(const reverse_iterator& it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
-			reverse_iterator(const JSON_NAMESPACE::iterator& it) : arr_it(myVec::reverse_iterator(it.arr_it)), obj_it(myMap::reverse_iterator(it.obj_it)) , bNone(it.bNone), bIsArray(it.bIsArray) {}
 
-			reverse_iterator(reverse_iterator&& it);
-			reverse_iterator & operator=(const reverse_iterator& it);
-			reverse_iterator & operator=(reverse_iterator&& it);
+			reverse_iterator(const reverse_iterator & it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
 
-			reverse_iterator& operator++();
+			reverse_iterator(const JSON_NAMESPACE::iterator & it) : arr_it(myVec::reverse_iterator(it.arr_it)), obj_it(myMap::reverse_iterator(it.obj_it)), bNone(it.bNone), bIsArray(it.bIsArray) {}
+
+			reverse_iterator(reverse_iterator && it);
+			reverse_iterator & operator=(const reverse_iterator & it);
+			reverse_iterator & operator=(reverse_iterator && it);
+
+			reverse_iterator & operator++();
 			reverse_iterator operator++(int);
-			reverse_iterator& operator--();
+			reverse_iterator & operator--();
 			reverse_iterator operator--(int);
-		bool operator==(const reverse_iterator& rhs) const;
-		bool operator!=(const reverse_iterator& rhs) const;
-			value& operator*();
+			bool operator==(const reverse_iterator & rhs) const;
+			bool operator!=(const reverse_iterator & rhs) const;
+			value & operator*();
 			value key();
 
-			bool Neither() { return bNone; }
-			bool IsArray() { return bIsArray; }
+			bool Neither()
+			{
+				return bNone;
+			}
 
-			myVec::reverse_iterator & arr() { return arr_it; }
-			myMap::reverse_iterator & obj() { return obj_it; }
+			bool IsArray()
+			{
+				return bIsArray;
+			}
+
+			myVec::reverse_iterator & arr()
+			{
+				return arr_it;
+			}
+
+			myMap::reverse_iterator & obj()
+			{
+				return obj_it;
+			}
 
 		private:
 			myVec::reverse_iterator arr_it;
@@ -879,41 +1013,44 @@ class iterator
 	{
 		public:
 			friend class value;
-			document()
-				: value() {
+
+			document() : value()
+			{
 				bParseSuccessful = false;
 			}
 
-			document(const value& V)
-				: value(V) {
+			document(const value & V) : value(V)
+			{
 				bParseSuccessful = true;
 			}
 
-			document(const document& V);
-			document(document&& V);
+			document(const document & V);
+			document(document && V);
 
-			document& operator=(const document& V);
-			document& operator=(document&& V);
+			document & operator=(const document & V);
+			document & operator=(document && V);
 
-			typedef sdstring& (*PREPARSEPTR)(const sdstring& in, sdstring& out);
-			typedef sdstring& (*PREWRITEPTR)(const sdstring& in, sdstring& out);
-			bool parse(const sdstring& inStr, PREPARSEPTR = nullptr);
-			bool parseFile(const sdstring &instr, PREPARSEPTR = nullptr);
+			typedef sdstring & (*PREPARSEPTR)(const sdstring & in, sdstring & out);
+			typedef sdstring & (*PREWRITEPTR)(const sdstring & in, sdstring & out);
+			bool parse(const sdstring & inStr, PREPARSEPTR = nullptr);
+			bool parseFile(const sdstring & instr, PREPARSEPTR = nullptr);
 
 			sdstring write(bool bPretty = false, PREWRITEPTR = nullptr);
 			sdstring write(size_t iDepth, bool bPretty = false, PREWRITEPTR = nullptr);
+
 			static sdstring write(value & val, bool bPretty = false, PREWRITEPTR preWriter = nullptr)
 			{
 				return write(val, 1, bPretty, preWriter);
 			}
-			static sdstring write(value &val, size_t iDepth, bool bPretty = false, PREWRITEPTR = nullptr);
+
+			static sdstring write(value & val, size_t iDepth, bool bPretty = false, PREWRITEPTR = nullptr);
 
 			sdstring print(bool bPretty = false, PREWRITEPTR = nullptr)
 			{
 				return write(bPretty);
 			}
 
-			bool writeFile(const sdstring &inStr, bool bPretty = false, PREWRITEPTR = nullptr);
+			bool writeFile(const sdstring & inStr, bool bPretty = false, PREWRITEPTR = nullptr);
 
 			sdstring parseResult() const
 			{
@@ -925,21 +1062,25 @@ class iterator
 				return bParseSuccessful;
 			}
 
-			template<typename T>
-			document(T V) : value(V) { bParseSuccessful = true; }
+			template <typename T>
+			document(T V) : value(V)
+			{
+				bParseSuccessful = true;
+			}
 
-			static int appendToArrayFile(const sdstring &sFile, document &atm, bool bPretty);
+			static int appendToArrayFile(const sdstring & sFile, document & atm, bool bPretty);
 
-			const char * classInfo() { return STRINGIFY(JSON_NAMESPACE) "::" STRINGIFY(MYMAP); }
+			const char * classInfo()
+			{
+				return STRINGIFY(JSON_NAMESPACE) "::" STRINGIFY(MYMAP);
+			}
 
 		protected:
 			sdstring strParseResult;
 			bool bParseSuccessful;
 	};
 
-	std::ostream& operator<<(std::ostream& S, document& doc);
-	std::ostream& operator<<(std::ostream& S, value& doc);
-}
-
+	std::ostream & operator<<(std::ostream & S, document & doc);
+	std::ostream & operator<<(std::ostream & S, value & doc);
+}	 // namespace JSON_NAMESPACE
 #endif
-

@@ -49,7 +49,7 @@ BitFieldColonSpacing: Both
 BraceWrapping:
   AfterCaseLabel: true
   AfterClass: true
-  AfterControlStatement: MultiLine
+  AfterControlStatement: Never
   AfterEnum: true
   AfterFunction: true
   AfterNamespace: true
@@ -89,7 +89,7 @@ IndentAccessModifiers: true
 IndentCaseBlocks: false
 IndentCaseLabels: true
 IndentExternBlock: Indent
-IndentGotoLabels: true
+IndentGotoLabels: false
 IndentPPDirectives: AfterHash
 IndentRequiresClause: true
 IndentWidth: 4
@@ -100,7 +100,7 @@ InsertTrailingCommas: None
 KeepEmptyLinesAtTheStartOfBlocks: false
 LambdaBodyIndentation: OuterScope
 Language: Cpp
-LineEnding: DeriveCRLF
+LineEnding: DeriveLF
 MaxEmptyLinesToKeep: 1
 NamespaceIndentation: All
 PackConstructorInitializers: CurrentLine
@@ -111,7 +111,7 @@ ReflowComments: true
 RemoveSemicolon: true
 RequiresClausePosition: WithFollowing
 RequiresExpressionIndentation: OuterScope
-SeparateDefinitionBlocks: Never
+SeparateDefinitionBlocks: Always
 ShortNamespaceLines: 0
 SortIncludes: CaseInsensitive
 SortUsingDeclarations: Lexicographic
@@ -153,3 +153,5 @@ Standard: Latest
 TabWidth: 4
 UseTab: Always
 AccessModifierOffset: 0
+RemoveBracesLLVM: false
+BreakAfterJavaFieldAnnotations: false

@@ -27,23 +27,22 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 class TiXmlNode;
 
-#include <string>
-#include <deque>
-#include <cstdint>
-#include <map>
-#include "SDString/sdstring.hpp"
+#	include "json.hpp"
+#	include "SDString/sdstring.hpp"
 
-#include "json.hpp"
+#	include <cstdint>
+#	include <deque>
+#	include <map>
+#	include <string>
 
-#if defined SUPPORT_ORDERED_JSON && !defined DONE_ODATA
-
+#	if defined SUPPORT_ORDERED_JSON && !defined DONE_ODATA
 namespace json
 {
 	class value;
 	class document;
 	class object;
 	class array;
-}
+}	 // namespace json
 
 namespace ojson
 {
@@ -51,41 +50,41 @@ namespace ojson
 	class document;
 	class object;
 	class array;
-}
+}	 // namespace ojson
 
 namespace data
 {
 	class document;
-}
+}	 // namespace data
 
-#define DO_ODATA_STUFF
+#		define DO_ODATA_STUFF
 
-#if defined JSON_NAMESPACE
-#undef JSON_NAMESPACE
-#endif
+#		if defined JSON_NAMESPACE
+#			undef JSON_NAMESPACE
+#		endif
 
-#define JSON_NAMESPACE ojson
-#define DATA_NAMESPACE odata
+#		define JSON_NAMESPACE ojson
+#		define DATA_NAMESPACE odata
 
-#include "data_main.hpp"
+#		include "data_main.hpp"
 
-#define DONE_ODATA
-#undef DO_ODATA_STUFF
-#endif
+#		define DONE_ODATA
+#		undef DO_ODATA_STUFF
+#	endif
 
-#if defined JSON_NAMESPACE
-#undef JSON_NAMESPACE
-#endif
+#	if defined JSON_NAMESPACE
+#		undef JSON_NAMESPACE
+#	endif
 
-#if defined DATA_NAMESPACE
-#undef DATA_NAMESPACE
-#endif
+#	if defined DATA_NAMESPACE
+#		undef DATA_NAMESPACE
+#	endif
 
-#define JSON_NAMESPACE json
-#define DATA_NAMESPACE data
+#	define JSON_NAMESPACE json
+#	define DATA_NAMESPACE data
 
-#include "data_main.hpp"
+#	include "data_main.hpp"
 
-#define DATA_HPP_
+#	define DATA_HPP_
 
-#endif //_DATA_HPP
+#endif	  //_DATA_HPP

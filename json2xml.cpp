@@ -23,19 +23,21 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 */
 #if defined USE_DATA_DOCUMENT
-#include "data.hpp"
+#	include "data.hpp"
 #else
-#include "json.hpp"
+#	include "json.hpp"
 #endif
 #include <iostream>
 
 bool ends_with(std::string value, std::string ending)
 {
-    if (ending.size() > value.size()) return false;
-    return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
+	if (ending.size() > value.size()) {
+		return false;
+	}
+	return std::equal(ending.rbegin(), ending.rend(), value.rbegin());
 }
 
-int main (int argc, char ** argv)
+int main(int argc, char ** argv)
 {
 	ojson::document args;
 	ojson::document validArgs;
@@ -44,7 +46,6 @@ int main (int argc, char ** argv)
 		std::cout << "Useage:" << std::endl;
 		std::cout << "\t" << argv[0] << " [input file name] [output file name]" << std::endl;
 		return -1;
-
 	}
 	if (ends_with(argv[0], "jsonpretty")) {
 		ojson::document in;

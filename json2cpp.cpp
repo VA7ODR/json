@@ -23,13 +23,14 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 */
 #include "data.hpp"
-#include <iostream>
-#include <iomanip>
+
 #include <fstream>
+#include <iomanip>
+#include <iostream>
 
 #define endStr "\n"
 
-void write(const std::string &sPrefix, ojson::value & val, std::string & dest)
+void write(const std::string & sPrefix, ojson::value & val, std::string & dest)
 {
 	switch (val.isA()) {
 		default:
@@ -116,12 +117,13 @@ void write(const std::string &sPrefix, ojson::value & val, std::string & dest)
 	}
 }
 
-int main(int argc, char const *argv[])
+int main(int argc, const char * argv[])
 {
 	if (argc != 3 && argc != 4) {
 		std::cout << argv[0] << " must take 2 or 3 arguments:" << std::endl;
 		std::cout << "\t" << argv[0] << " [json file name] [json::document variable name] {optional output file name}" << std::endl;
-		std::cout << "\t" << "If no output file name is given, output will be sent to stdout." << std::endl;
+		std::cout << "\t"
+				  << "If no output file name is given, output will be sent to stdout." << std::endl;
 		return 1;
 	}
 
@@ -136,15 +138,15 @@ int main(int argc, char const *argv[])
 
 			std::cout << output;
 		} else {
-			std::ofstream ofs (argv[3], std::ofstream::out);
+			std::ofstream ofs(argv[3], std::ofstream::out);
 
 			ofs << "json::document " << argv[2] << ";" << std::endl << std::endl;
 
-  			ofs << output;
+			ofs << output;
 
-  			ofs.close();
+			ofs.close();
 		}
-		return 0;		
+		return 0;
 	} else if (jDoc.parseXMLFile(argv[1])) {
 		std::string output;
 		write(argv[2], jDoc, output);
@@ -154,16 +156,16 @@ int main(int argc, char const *argv[])
 			std::cout << argv[2] << ".rootTag(\"" << jDoc.rootTag() << "\");" << std::endl;
 			std::cout << output;
 		} else {
-			std::ofstream ofs (argv[3], std::ofstream::out);
+			std::ofstream ofs(argv[3], std::ofstream::out);
 
 			ofs << "odata::document " << argv[2] << ";" << std::endl << std::endl;
 			ofs << argv[2] << ".rootTag(\"" << jDoc.rootTag() << "\");" << std::endl;
 
-  			ofs << output;
+			ofs << output;
 
-  			ofs.close();
+			ofs.close();
 		}
-		return 0;		
+		return 0;
 	} else {
 		std::cout << argv[0] << " could not open file: " << argv[1] << std::endl;
 		return 2;

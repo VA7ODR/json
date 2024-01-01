@@ -1,51 +1,56 @@
 #include "json.hpp"
-#include <iostream>
+
 #include <chrono>
 #include <fstream>
+#include <iostream>
 
 using namespace std::chrono;
 
 class ElapsedTimer
 {
-public:
-	ElapsedTimer() {
-		reset();
-	}
-
-	void reset() {
-		t1 = high_resolution_clock::now();
-	}
-
-	double value(bool bReset = false){
-		duration<double> time_span = duration_cast<duration<double> >(high_resolution_clock::now() - t1);
-		double ret = time_span.count();
-		if(bReset) {
+	public:
+		ElapsedTimer()
+		{
 			reset();
 		}
 
-		return ret;
-	}
+		void reset()
+		{
+			t1 = high_resolution_clock::now();
+		}
 
-private:
-	high_resolution_clock::time_point  t1;
+		double value(bool bReset = false)
+		{
+			duration<double> time_span = duration_cast<duration<double>>(high_resolution_clock::now() - t1);
+			double ret				   = time_span.count();
+			if (bReset) {
+				reset();
+			}
+
+			return ret;
+		}
+
+	private:
+		high_resolution_clock::time_point t1;
 };
 
-void iterate (json::document & jDoc, json::document & jDoc2) {
+void iterate(json::document & jDoc, json::document & jDoc2)
+{
 	for (auto & row : jDoc["rows"]) {
 		auto & doc = row["doc"];
 		if (doc.exists("crash_data")) {
 			json::value jTemp;
-			jTemp["siteID"] = doc["siteID"];
-			jTemp["version"] = doc["version"];
+			jTemp["siteID"]		= doc["siteID"];
+			jTemp["version"]	= doc["version"];
 			jTemp["eventGroup"] = doc["eventGroup"];
-			jTemp["eventType"] = doc["eventType"];
-			jTemp["eventName"] = doc["eventName"];
-			jTemp["eventTime"] = doc["eventTime"];
+			jTemp["eventType"]	= doc["eventType"];
+			jTemp["eventName"]	= doc["eventName"];
+			jTemp["eventTime"]	= doc["eventTime"];
 			jTemp["crash_data"] = doc["crash_data"];
 			jDoc2.push_back(jTemp);
 		}
 	}
-};
+}
 
 int main(int argc, char ** argv)
 {
@@ -58,7 +63,6 @@ int main(int argc, char ** argv)
 	std::cout << "json::object size:   " << sizeof(json::object) << std::endl;
 	std::cout << "json::array size:    " << sizeof(json::array) << std::endl;
 	std::cout << "json::iterator size: " << sizeof(json::iterator) << std::endl;
-
 
 	std::cout << "Parsing " << argv[1] << "... ";
 	std::cout.flush();
@@ -83,7 +87,7 @@ int main(int argc, char ** argv)
 	std::cout << "Took " << timer.value(true) << "s" << std::endl;
 	std::cout << "Iterating " << argv[1] << "... ";
 	std::cout.flush();
-	iterate (jDoc, jDoc2);
+	iterate(jDoc, jDoc2);
 	std::cout << "Took " << timer.value(true) << "s" << std::endl;
 
 	std::cout << "Writing temp2.json... ";

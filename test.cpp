@@ -23,23 +23,24 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 */
 #include "data.hpp"
+
+#include <filesystem>
+#include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stdarg.h>
-#include <iomanip>
-#include <fstream>
-#include <filesystem>
 
 using namespace std;
 using namespace std::string_literals;
 
-const char szASCIIChars[257] = "\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
+const char szASCIIChars[257] =
+	"\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09\x0A\x0B\x0C\x0D\x0E\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\x7F\x80\x81\x82\x83\x84\x85\x86\x87\x88\x89\x8A\x8B\x8C\x8D\x8E\x8F\x90\x91\x92\x93\x94\x95\x96\x97\x98\x99\x9A\x9B\x9C\x9D\x9E\x9F\xa0\xa1\xa2\xa3\xa4\xa5\xa6\xa7\xa8\xa9\xaa\xab\xac\xad\xae\xaf\xb0\xb1\xb2\xb3\xb4\xb5\xb6\xb7\xb8\xb9\xba\xbb\xbc\xbd\xbe\xbf\xc0\xc1\xc2\xc3\xc4\xc5\xc6\xc7\xc8\xc9\xca\xcb\xcc\xcd\xce\xcf\xd0\xd1\xd2\xd3\xd4\xd5\xd6\xd7\xd8\xd9\xda\xdb\xdc\xdd\xde\xdf\xe0\xe1\xe2\xe3\xe4\xe5\xe6\xe7\xe8\xe9\xea\xeb\xec\xed\xee\xef\xf0\xf1\xf2\xf3\xf4\xf5\xf6\xf7\xf8\xf9\xfa\xfb\xfc\xfd\xfe\xff";
 
 void Debug(const char * format, ...)
 {
 	std::string s;
 
-	size_t 	n,
-			size = 100;
+	size_t n, size = 100;
 
 	bool b = false;
 
@@ -48,18 +49,18 @@ void Debug(const char * format, ...)
 	while (!b) {
 		s.resize(size);
 		va_start(marker, format);
-		n = vsnprintf((char*)s.c_str(), size, format, marker);
+		n = vsnprintf((char *)s.c_str(), size, format, marker);
 		va_end(marker);
 		b = (n < size);
 		if (n > 0 && n != (size_t)-1 && b) {
 			size = n;
 		} else if (n == (size_t)-1) {
-			size = size * 2; // stupid nonconformant microsoft
+			size = size * 2;	// stupid nonconformant microsoft
 		} else {
 			size = n * 2;
 		}
 	}
-	printf("%s", s.c_str());	
+	printf("%s", s.c_str());
 }
 
 sdstring dePretty(const sdstring & in)
@@ -67,7 +68,7 @@ sdstring dePretty(const sdstring & in)
 	sdstring output;
 	output.reserve(in.size());
 	bool bString = false;
-	char cLast = '\0';
+	char cLast	 = '\0';
 	for (auto & c : in) {
 		switch (c) {
 			default:
@@ -93,7 +94,6 @@ sdstring dePretty(const sdstring & in)
 				}
 				output.push_back(c);
 				break;
-
 		}
 		cLast = c;
 	}
@@ -140,7 +140,8 @@ sdstring escapeChar(const char & ch)
 	return output;
 }
 
-std::string escape_json(const std::string& input) {
+std::string escape_json(const std::string & input)
+{
 	std::string output;
 	for (char ch : input) {
 		output.append(escapeChar(ch));
@@ -148,8 +149,18 @@ std::string escape_json(const std::string& input) {
 	return output;
 }
 
-#define NUMBERTEST(x, y, a, z) if ((a)x.y != (a)z) { std::cout << "FAILED!" << std::endl; std::cerr << #x << "." << #y << " != " << z << " (" << x.y << ")" << std::endl; exit(-1);}
-#define NUMBERSTRTEST(x, y, z) if (x.y != z) { std::cout << "FAILED!" << std::endl; std::cerr << #x << "." << #y << " != " << z << " (" << x.y << ")" << std::endl; exit(-1);}
+#define NUMBERTEST(x, y, a, z)                                                          \
+	if ((a)x.y != (a)z) {                                                               \
+		std::cout << "FAILED!" << std::endl;                                            \
+		std::cerr << #x << "." << #y << " != " << z << " (" << x.y << ")" << std::endl; \
+		exit(-1);                                                                       \
+	}
+#define NUMBERSTRTEST(x, y, z)                                                          \
+	if (x.y != z) {                                                                     \
+		std::cout << "FAILED!" << std::endl;                                            \
+		std::cerr << #x << "." << #y << " != " << z << " (" << x.y << ")" << std::endl; \
+		exit(-1);                                                                       \
+	}
 #define NUMBERTESTS(x, y) numberTests(x, y, #y)
 
 template <class T>
@@ -162,7 +173,8 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 	if (parseTest.parse(sGroundTruth)) {
 		std::cout << "Success!" << std::endl;
 
-		auto numberTests = [&](const sdstring & sTag, auto val, const sdstring & sExpectedStr) {
+		auto numberTests = [&](const sdstring & sTag, auto val, const sdstring & sExpectedStr)
+		{
 			std::cout << "Testing " << sTag << "... ";
 			NUMBERTEST(parseTest[sTag], number(), double, val);
 			NUMBERTEST(parseTest[sTag], _double(), double, val);
@@ -204,7 +216,8 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 		NUMBERTESTS("float", 3.14);
 		NUMBERTESTS("negative_float", -5.67);
 
-		auto stringTests = [&](const sdstring & sTag, const char * szExpected, size_t expectedLen) {
+		auto stringTests = [&](const sdstring & sTag, const char * szExpected, size_t expectedLen)
+		{
 			std::cout << "Testing " << sTag << "... ";
 			if (parseTest[sTag].isA() != json::JSON_STRING) {
 				std::cout << "FAILED!" << std::endl;
@@ -216,10 +229,10 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 				std::cerr << "parseTest[sTag].isA(json::JSON_STRING) returned not a number." << std::endl;
 				exit(-1);
 			}
-			sdstring & sSDVal = parseTest[sTag]._sdstring();
+			sdstring & sSDVal  = parseTest[sTag]._sdstring();
 			std::string & sVal = parseTest[sTag].string();
-			size_t stSDSize = sSDVal.size();
-			size_t stSize = sVal.size();
+			size_t stSDSize	   = sSDVal.size();
+			size_t stSize	   = sVal.size();
 			if (expectedLen != stSDSize) {
 				std::cout << "FAILED!" << std::endl;
 				std::cerr << "sdstring size mismatch " << stSDSize << " != expected " << expectedLen << std::endl;
@@ -230,8 +243,8 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 				std::cerr << "std::string size mismatch " << stSize << " != expected " << expectedLen << std::endl;
 				exit(-1);
 			}
-			auto itSDVal = sSDVal.begin();
-			auto itVal = sVal.begin();
+			auto itSDVal   = sSDVal.begin();
+			auto itVal	   = sVal.begin();
 			const char * d = sVal.c_str();
 			const char * c = szExpected;
 			for (size_t i = 0; i < expectedLen; ++i, ++itSDVal, ++itVal, ++c, ++d) {
@@ -258,7 +271,9 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 		};
 		stringTests("string", szASCIIChars, 256);
 
-		std::cout << "Testing " << "nested_object" << "... ";
+		std::cout << "Testing "
+				  << "nested_object"
+				  << "... ";
 		if (parseTest["nested_object"].isA() != json::JSON_OBJECT) {
 			std::cout << "FAILED!" << std::endl;
 			std::cerr << "parseTest[\"nested_object\"].isA() says is is not an object: " << parseTest["nested_object"].isA() << " expected " << json::JSON_OBJECT << std::endl;
@@ -275,10 +290,18 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 			exit(-1);
 		}
 
-		std::map<sdstring, size_t> expectedTags = {{"nested_integer", 0}, {"nested_float", 0}, {"nested_string", 0}};
-		std::map<sdstring, size_t> expectedTypes = {{"nested_integer", json::JSON_NUMBER}, {"nested_float", json::JSON_NUMBER}, {"nested_string", json::JSON_STRING}};
-		auto it = parseTest["nested_object"].begin();
-		auto end = parseTest["nested_object"].end();
+		std::map<sdstring, size_t> expectedTags = {
+			{"nested_integer", 0},
+			   {	"nested_float", 0},
+			{ "nested_string", 0}
+		};
+		std::map<sdstring, size_t> expectedTypes = {
+			{"nested_integer", json::JSON_NUMBER},
+			   {	"nested_float", json::JSON_NUMBER},
+			{ "nested_string", json::JSON_STRING}
+		};
+		auto it		 = parseTest["nested_object"].begin();
+		auto end	 = parseTest["nested_object"].end();
 		size_t count = 0;
 		for (auto & val : parseTest["nested_object"]) {
 			auto sValKey = val.key();
@@ -350,7 +373,7 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 		}
 
 		if (type == "ojson" || type == "odata") {
-			auto it = parseTest["nested_object"].begin();
+			auto it	 = parseTest["nested_object"].begin();
 			auto end = parseTest["nested_object"].end();
 			if (it == end) {
 				std::cout << "FAILED!" << std::endl;
@@ -395,7 +418,9 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 		}
 		std::cout << "Success!" << std::endl;
 
-		std::cout << "Testing " << "nested_array" << "... ";
+		std::cout << "Testing "
+				  << "nested_array"
+				  << "... ";
 		if (parseTest["nested_array"].isA() != json::JSON_ARRAY) {
 			std::cout << "FAILED!" << std::endl;
 			std::cerr << "parseTest[\"nested_array\"].isA() says is is not an object: " << parseTest["nested_array"].isA() << " expected " << json::JSON_ARRAY << std::endl;
@@ -412,12 +437,12 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 			exit(-1);
 		}
 
-		it = parseTest["nested_array"].begin();
-		end = parseTest["nested_array"].end();
-		count = 0;
+		it											   = parseTest["nested_array"].begin();
+		end											   = parseTest["nested_array"].end();
+		count										   = 0;
 		std::deque<json::JSONTypes> expectedArrayTypes = {json::JSON_NULL, json::JSON_STRING, json::JSON_BOOLEAN};
-		std::deque<sdstring> expectedArrayStrings = {"", "two", "true"};
-		std::deque<T> arrayValues = {(char*)nullptr, "two", true};
+		std::deque<sdstring> expectedArrayStrings	   = {"", "two", "true"};
+		std::deque<T> arrayValues					   = {(char *)nullptr, "two", true};
 		for (auto & val : parseTest["nested_array"]) {
 			if (val.isA() != expectedArrayTypes[count]) {
 				std::cout << "FAILED!" << std::endl;
@@ -470,7 +495,9 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 		}
 		std::cout << "Success!" << std::endl;
 
-		std::cout << "Testing " << "writeFile" << "... ";
+		std::cout << "Testing "
+				  << "writeFile"
+				  << "... ";
 		if (parseTest.writeFile(type + "First.json", true)) {
 			std::error_code ec;
 			if (!std::filesystem::is_regular_file((type + "First.json").c_str(), ec)) {
@@ -492,7 +519,9 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 			exit(-1);
 		}
 
-		std::cout << "Testing " << "parseFile" << "... ";
+		std::cout << "Testing "
+				  << "parseFile"
+				  << "... ";
 		T parseTest2;
 		if (parseTest2.parseFile("ground_truth.json")) {
 			if (parseTest != parseTest2) {
@@ -553,8 +582,7 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 		exit(-1);
 	}
 	std::cout << std::endl;
-}	
-
+}
 
 std::string & lpad(std::string & in, char with, size_t length)
 {
@@ -567,18 +595,20 @@ std::string & lpad(std::string & in, char with, size_t length)
 
 #define TEST(x, y) test<x::document>(#x, y)
 
-int main(int, char**)
+int main(int, char **)
 {
 	std::string ground_truth_original = R"({
 	"integer": 42,
 	"negative_integer": -123,
 	"float": 3.14,
 	"negative_float": -5.67,
-	"string": ")" + escape_json(sdstring(szASCIIChars, 256)) + R"(",
+	"string": ")" + escape_json(sdstring(szASCIIChars, 256)) +
+										R"(",
 	"nested_object": {
 		"nested_integer": 789,
 		"nested_float": -456.789,
-		"nested_string": ")" + escape_json("Nested String with special characters: \t\n\r\"") + R"("
+		"nested_string": ")" + escape_json("Nested String with special characters: \t\n\r\"") +
+										R"("
 	},
 	"nested_array": [
 		null,

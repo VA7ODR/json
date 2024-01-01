@@ -27,12 +27,12 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #include <string>
 #include <vector>
 #if defined USE_DATA_DOCUMENT
-#include "data.hpp"
+#	include "data.hpp"
 #else
-#include "json.hpp"
+#	include "json.hpp"
 #endif
 
-std::vector< std::vector<sdstring> > CSVData;
+std::vector<std::vector<sdstring>> CSVData;
 
 sdstring deQuote(const sdstring & strIn)
 {
@@ -57,7 +57,7 @@ size_t ParseCSV(const sdstring & szFileName)
 		fseek(fp, 0, SEEK_END);
 		size_t l = ftell(fp);
 		fseek(fp, 0, SEEK_SET);
-		
+
 		char * szData = new char[l + 1];
 
 		char * szField = szData;
@@ -69,7 +69,7 @@ size_t ParseCSV(const sdstring & szFileName)
 		fclose(fp);
 
 		bool bQuote = false;
-		
+
 		size_t iFields = 0;
 
 		for (size_t i = 0; i < l; i++) {
@@ -110,12 +110,12 @@ size_t ParseCSV(const sdstring & szFileName)
 				}
 			}
 		}
-		delete [] szData;
+		delete[] szData;
 	}
 	return iLines;
 }
 
-int main(int argc, char ** argv) 
+int main(int argc, char ** argv)
 {
 	if (std::string(argv[0]) == "csv2xml") {
 		if (argc != 4) {
@@ -136,7 +136,6 @@ int main(int argc, char ** argv)
 	ojson::document outDoc;
 #endif
 	for (size_t i = 1; i < iLines; i++) {
-
 		for (size_t j = 0; j < CSVData[i].size(); j++) {
 			if (CSVData[0][j].empty()) {
 				continue;
@@ -153,5 +152,4 @@ int main(int argc, char ** argv)
 #endif
 	outDoc.writeFile(argv[2], true);
 	return 0;
-
 }
