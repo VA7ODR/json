@@ -79,7 +79,6 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #	endif
 
 #	define JSON_DOCUMENT_VERSION "1.1.0"
-#	define STRINGIFY(x)		  #x
 #	define JSON_NUMBER_PRECISION 14
 
 #	if defined SUPPORT_ORDERED_JSON && !defined DONE_OJSON

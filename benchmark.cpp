@@ -74,7 +74,7 @@ int main(int argc, char ** argv)
 	if (!bParsedOk) {
 		std::cout << "FAILED!" << std::endl;
 		std::cerr << "Could not parse " << argv[1] << "." << std::endl;
-		exit(-1);
+		return -1;
 	}
 	std::cout << "Writing temp1.json... ";
 	std::cout.flush();
@@ -82,7 +82,7 @@ int main(int argc, char ** argv)
 	if (!bWroteOk) {
 		std::cout << "FAILED!" << std::endl;
 		std::cerr << "Could not write temp1.json." << std::endl;
-		exit(-1);
+		return -1;
 	}
 	std::cout << "Took " << timer.value(true) << "s" << std::endl;
 	std::cout << "Iterating " << argv[1] << "... ";
@@ -96,7 +96,7 @@ int main(int argc, char ** argv)
 	if (!bWroteOk) {
 		std::cout << "FAILED!" << std::endl;
 		std::cerr << "Could not write temp2.json." << std::endl;
-		exit(-1);
+		return -1;
 	}
 	std::cout << "Took " << timer.value(true) << "s" << std::endl;
 

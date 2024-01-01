@@ -77,6 +77,10 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #	include "ArbitraryOrderMap/arbitrary_order_map.hpp"
 #endif
 
+#if !defined STRINGIFY
+#	define STRINGIFY(x) #x
+#endif
+
 #if !defined JSON_HPP_
 #	if !defined JSON_NAMESPACE
 #		define JSON_HPP_
@@ -135,7 +139,7 @@ namespace JSON_NAMESPACE
 			friend void valueParse(value & a, instring & inputString, bool * bFailed);
 			friend void numberParse(value & ret, instring & s, bool * bFailed);
 
-			static void swap(value & lhs, value & rhs)
+			static void swap(value & lhs, value & rhs) noexcept
 			{
 				using std::swap;
 				swap(lhs.m_number, rhs.m_number);
@@ -145,32 +149,32 @@ namespace JSON_NAMESPACE
 				swap(lhs.obj, rhs.obj);
 			}
 
-			value() : m_number(0), m_places(-1), m_boolean(false), myType(JSON_VOID), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value() = default;
 
 			value(const value & V);
-			value(value && V);
+			value(value && V) noexcept;
 
 #	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
 			value(const ojson::value & V);
 #	elif defined SUPPORT_ORDERED_JSON && defined DO_OJSON_STUFF
 			value(const json::value & V);
 #	endif
-			value(bool V) : m_number((double)V), m_places(-1), m_boolean(V), myType(JSON_BOOLEAN), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value(bool V) : m_number((double)V), m_boolean(V), myType(JSON_BOOLEAN) {}
 
 			value(const char * V);
 			value(char * V);
 
-			value(const sdstring & V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value(const sdstring & V) : str(V), myType(JSON_STRING) {}
 
-			value(sdstring && V) : m_number(0), m_places(-1), m_boolean(false), str(std::move(V)), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value(sdstring && V) : str(std::move(V)), myType(JSON_STRING) {}
 
-			value(const std::string & V) : m_number(0), m_places(-1), m_boolean(false), str(V), myType(JSON_STRING), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr) {}
+			value(const std::string & V) : str(V), myType(JSON_STRING) {}
 
 			value(object & V);
 			value(array & V);
 
-			template <typename T, typename std::enable_if<std::is_arithmetic<T>::value>::type * = nullptr>
-			value(T V) : m_number((double)V), m_places(-1), m_boolean(!(m_number == 0.0)), myType(JSON_NUMBER), obj(nullptr), pParentObject(nullptr), pParentArray(nullptr)
+			template <typename T, std::enable_if_t<std::is_arithmetic_v<T>> * = nullptr>
+			value(T V) : m_number((double)V), m_boolean(!(m_number == 0.0)), myType(JSON_NUMBER)
 			{}
 
 			~value();
@@ -180,11 +184,11 @@ namespace JSON_NAMESPACE
 			void setParentArray(array * pSetTo);
 
 			value & operator=(const value & V);
-			value & operator=(value && V);
+			value & operator=(value && V) noexcept;
 
-			int isA() const;
+			[[nodiscard]] int isA() const;
 
-			bool isA(int i) const
+			[[nodiscard]] bool isA(int i) const
 			{
 				return (isA() == i);
 			}
@@ -236,111 +240,111 @@ namespace JSON_NAMESPACE
 			value & toNull();
 			value & fixedDecimal(int iPlaces);
 
-			int places() const
+			[[nodiscard]] int places() const
 			{
 				return m_places;
 			}
 
-			bool boolean() const;
+			[[nodiscard]] bool boolean() const;
 
-			double number() const;
+			[[nodiscard]] double number() const;
 
-			double _double() const
+			[[nodiscard]] double _double() const
 			{
 				return number();
 			}
 
-			float _float() const
+			[[nodiscard]] float _float() const
 			{
 				return (float)number();
 			}
 
-			int64_t integer() const
+			[[nodiscard]] int64_t integer() const
 			{
 				return (int64_t)number();
 			}
 
-			int64_t _int64() const
+			[[nodiscard]] int64_t _int64() const
 			{
 				return (int64_t)number();
 			}
 
-			uint64_t _uint64() const
+			[[nodiscard]] uint64_t _uint64() const
 			{
 				return (uint64_t)number();
 			}
 
-			size_t _size_t() const
+			[[nodiscard]] size_t _size_t() const
 			{
 				return (size_t)number();
 			}
 
-			long _long() const
+			[[nodiscard]] long _long() const
 			{
 				return (long)number();
 			}
 
-			unsigned long _ulong() const
+			[[nodiscard]] unsigned long _ulong() const
 			{
 				return (unsigned long)number();
 			}
 
-			int _int() const
+			[[nodiscard]] int _int() const
 			{
 				return (int)number();
 			}
 
-			int _int32() const
+			[[nodiscard]] int _int32() const
 			{
 				return (int32_t)number();
 			}
 
-			uint32_t _uint32() const
+			[[nodiscard]] uint32_t _uint32() const
 			{
 				return (uint32_t)number();
 			}
 
-			unsigned int _uint() const
+			[[nodiscard]] unsigned int _uint() const
 			{
 				return (unsigned int)number();
 			}
 
-			short _short() const
+			[[nodiscard]] short _short() const
 			{
 				return (short)number();
 			}
 
-			unsigned short _ushort() const
+			[[nodiscard]] unsigned short _ushort() const
 			{
 				return (unsigned short)number();
 			}
 
-			short _int16() const
+			[[nodiscard]] short _int16() const
 			{
 				return (int16_t)number();
 			}
 
-			short _uint16() const
+			[[nodiscard]] short _uint16() const
 			{
 				return (uint16_t)number();
 			}
 
-			char _char() const
+			[[nodiscard]] char _char() const
 			{
 				return (char)number();
 			}
 
-			unsigned char _uchar() const
+			[[nodiscard]] unsigned char _uchar() const
 			{
 				return (unsigned char)number();
 			}
 
-			char _int8() const
+			[[nodiscard]] char _int8() const
 			{
 				return (int8_t)number();
 			}
 
-			char _uint8() const
+			[[nodiscard]] char _uint8() const
 			{
 				return (uint8_t)number();
 			}
@@ -366,7 +370,7 @@ namespace JSON_NAMESPACE
 			value & operator[](size_t index);
 			value & operator[](const sdstring & index);
 
-			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type * = nullptr>
+			template <typename T, std::enable_if_t<std::is_same_v<T, value>> * = nullptr>
 			value & operator[](const T & index)
 			{
 				assert(index.m_type == JSON_NUMBER || index.m_type == JSON_STRING && "Wrong value type used as index.");
@@ -389,7 +393,7 @@ namespace JSON_NAMESPACE
 			value & value_or(const sdstring & index, value vor);
 			value & value_or(size_t index, value vor);
 
-			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type * = nullptr>
+			template <typename T, std::enable_if_t<std::is_same_v<T, value>> * = nullptr>
 			value & value_or(const T & index, value vor)
 			{
 				assert(index.m_type == JSON_NUMBER || index.m_type == JSON_STRING && "Wrong value type used as index.");
@@ -441,7 +445,7 @@ namespace JSON_NAMESPACE
 
 			bool compact();
 
-			bool empty() const;	   // Is array empty or object empty or string empty.  Number and booleans return false, nullptr and VOID return true.
+			[[nodiscard]] bool empty() const;	 // Is array empty or object empty or string empty.  Number and booleans return false, nullptr and VOID return true.
 
 			value & at(size_t index);
 
@@ -471,7 +475,7 @@ namespace JSON_NAMESPACE
 
 			value operator-() const;
 
-			size_t size() const;
+			[[nodiscard]] size_t size() const;
 			size_t arraySize();
 			size_t length();
 			void clear();
@@ -483,15 +487,15 @@ namespace JSON_NAMESPACE
 			size_t simpleCount(value & searchFor, bool bSubStr = false);
 			value merge(value & V);
 
-			iterator begin() const;
-			iterator end() const;
-			reverse_iterator rbegin() const;
-			reverse_iterator rend() const;
-			iterator find(size_t index) const;
-			iterator find(const sdstring & index) const;
+			[[nodiscard]] iterator begin() const;
+			[[nodiscard]] iterator end() const;
+			[[nodiscard]] reverse_iterator rbegin() const;
+			[[nodiscard]] reverse_iterator rend() const;
+			[[nodiscard]] iterator find(size_t index) const;
+			[[nodiscard]] iterator find(const sdstring & index) const;
 			iterator find(const char * index) const;
-			reverse_iterator rfind(size_t index) const;
-			reverse_iterator rfind(const sdstring & index) const;
+			[[nodiscard]] reverse_iterator rfind(size_t index) const;
+			[[nodiscard]] reverse_iterator rfind(const sdstring & index) const;
 			reverse_iterator rfind(const char * index) const;
 
 			typedef void (*DEBUGPTR)(const char *, ...);
@@ -523,23 +527,23 @@ namespace JSON_NAMESPACE
 
 			size_t psize(size_t depth, bool bPretty);
 
-			double m_number;
-			int m_places;
-			bool m_boolean;
+			double m_number {0.0};
+			int m_places {-1};
+			bool m_boolean {false};
 			sdstring str;
-			JSONTypes myType;
+			JSONTypes myType {JSON_VOID};
 
 			union
 			{
 				public:
-					object * obj;
+					object * obj = nullptr;
 					array * arr;
 			};
 
 			sdstring m_key;
 
-			object * pParentObject;
-			array * pParentArray;
+			object * pParentObject = nullptr;
+			array * pParentArray   = nullptr;
 
 			friend void debugTypeChangeReal(const sdstring & func, value & oldType, value & newType);
 			static DEBUGPTR & debug();
@@ -569,7 +573,7 @@ namespace JSON_NAMESPACE
 				++itPos;
 			}
 
-			const char & peek() const
+			[[nodiscard]] const char & peek() const
 			{
 				if (itPos != sString.end()) {
 					return *(itPos);
@@ -580,12 +584,12 @@ namespace JSON_NAMESPACE
 				}
 			}
 
-			size_t tell() const
+			[[nodiscard]] size_t tell() const
 			{
 				return itPos - sString.begin();
 			}
 
-			size_t size() const
+			[[nodiscard]] size_t size() const
 			{
 				return sString.size();
 			}
@@ -597,17 +601,17 @@ namespace JSON_NAMESPACE
 				}
 			}
 
-			const char * getPos() const
+			[[nodiscard]] const char * getPos() const
 			{
 				return &(*itPos);
 			}
 
-			const sdstring & Str() const
+			[[nodiscard]] const sdstring & Str() const
 			{
 				return sString;
 			}
 
-			sdstring SoFar() const
+			[[nodiscard]] sdstring SoFar() const
 			{
 				return sdstring(sString.begin(), itPos);
 			}
@@ -666,20 +670,20 @@ namespace JSON_NAMESPACE
 	class object : public myMap
 	{
 		public:
-			object() : myMap(), bNotEmpty(false), pParentArray(nullptr), pParentObject(nullptr) {}
+			object() : myMap() {}
 
-			~object() {}
+			~object() = default;
 
-			object(const object & V) : myMap((myMap)V), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+			object(const object & V) : myMap((myMap)V) {}
 
-			object(object && V) : myMap((myMap)V)
+			object(object && V) noexcept : myMap((myMap)V)
 			{
 				std::swap(bNotEmpty, V.bNotEmpty);
 				std::swap(pParentArray, V.pParentArray);
 				std::swap(pParentObject, V.pParentObject);
 			}
 
-			object(const object * V) : myMap(static_cast<myMap>(*V)), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+			object(const object * V) : myMap(static_cast<myMap>(*V)) {}
 #	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
 			friend class ojson::object;
 			object(const ojson::object & V);
@@ -756,7 +760,7 @@ namespace JSON_NAMESPACE
 			}
 #	endif
 
-			bool empty() const;
+			[[nodiscard]] bool empty() const;
 			void setNotEmpty();
 			void setParentArray(array * pSetTo);
 			void setParentObject(object * pSetTo);
@@ -769,19 +773,19 @@ namespace JSON_NAMESPACE
 			}
 
 		protected:
-			bool bNotEmpty;
+			bool bNotEmpty{};
 
 		private:
-			array * pParentArray;
-			object * pParentObject;
+			array * pParentArray {};
+			object * pParentObject {};
 	};
 
 	class array : private myVec
 	{
 		public:
-			array() : myVec(), bNotEmpty(false), pParentArray(nullptr), pParentObject(nullptr) {}
+			array() : myVec() {}
 
-			array(size_t C) : myVec(C), bNotEmpty(true), pParentArray(nullptr), pParentObject(nullptr) {}
+			array(size_t C) : myVec(C) {}
 #	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
 			friend class ojson::array;
 			array(const ojson::array & V);
@@ -791,18 +795,18 @@ namespace JSON_NAMESPACE
 			array(const json::array & V);
 			array(const json::array * V);
 #	endif
-			array(const array & V) : myVec((myVec)V), bNotEmpty(V.bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+			array(const array & V) : myVec((myVec)V) {}
 
-			array(array && V) : myVec((myVec)V)
+			array(array && V) noexcept : myVec((myVec)V)
 			{
 				std::swap(bNotEmpty, V.bNotEmpty);
 				std::swap(pParentArray, V.pParentArray);
 				std::swap(pParentObject, V.pParentObject);
 			}
 
-			array(const array * V) : myVec(static_cast<myVec>(*V)), bNotEmpty(V->bNotEmpty), pParentArray(nullptr), pParentObject(nullptr) {}
+			array(const array * V) : myVec(static_cast<myVec>(*V)) {}
 
-			~array() {}
+			~array() = default;
 
 			using myVec::at;
 			using myVec::back;
@@ -865,7 +869,7 @@ namespace JSON_NAMESPACE
 				return static_cast<const myVec &>(*this) != static_cast<const myVec &>(rhs);
 			}
 
-			bool empty() const;
+			[[nodiscard]] bool empty() const;
 			void setNotEmpty();
 			void setParentArray(array * pSetTo);
 			void setParentObject(object * pSetTo);
@@ -878,11 +882,11 @@ namespace JSON_NAMESPACE
 			}
 
 		protected:
-			bool bNotEmpty;
+			bool bNotEmpty{};
 
 		private:
-			array * pParentArray;
-			object * pParentObject;
+			array * pParentArray {};
+			object * pParentObject{};
 	};
 
 	class iterator
@@ -896,17 +900,17 @@ namespace JSON_NAMESPACE
 			typedef value * pointer;
 			typedef value & reference;
 
-			iterator() : bNone(true), bIsArray(false) {}
+			iterator() : bNone(true) {}
 
-			iterator(const myMap::iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+			iterator(const myMap::iterator & it) : obj_it(it) {}
 
-			iterator(const myVec::iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+			iterator(const myVec::iterator & it) : arr_it(it), bIsArray(true) {}
 
 			iterator(const iterator & it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
 
-			iterator(iterator && it);
+			iterator(iterator && it) noexcept;
 			iterator & operator=(const iterator & it);
-			iterator & operator=(iterator && it);
+			iterator & operator=(iterator && it) noexcept;
 
 			iterator & operator++();
 			iterator operator++(int);
@@ -946,31 +950,31 @@ namespace JSON_NAMESPACE
 			friend class value;
 			myVec::iterator arr_it;
 			myMap::iterator obj_it;
-			bool bNone;
-			bool bIsArray;
+			bool bNone {};
+			bool bIsArray {};
 			value dumbRet;
 	};
 
 	class reverse_iterator : public std::reverse_iterator<iterator>
 	{
 		public:
-			reverse_iterator() : bNone(true), bIsArray(false) {}
+			reverse_iterator() : bNone(true) {}
 
-			reverse_iterator(const myMap::reverse_iterator & it) : obj_it(it), bNone(false), bIsArray(false) {}
+			reverse_iterator(const myMap::reverse_iterator & it) : obj_it(it) {}
 
-			reverse_iterator(const myVec::reverse_iterator & it) : arr_it(it), bNone(false), bIsArray(true) {}
+			reverse_iterator(const myVec::reverse_iterator & it) : arr_it(it), bIsArray(true) {}
 
-			reverse_iterator(const myMap::iterator & it) : obj_it(myMap::reverse_iterator(it)), bNone(false), bIsArray(false) {}
+			reverse_iterator(const myMap::iterator & it) : obj_it(myMap::reverse_iterator(it)) {}
 
-			reverse_iterator(const myVec::iterator & it) : arr_it(myVec::reverse_iterator(it)), bNone(false), bIsArray(true) {}
+			reverse_iterator(const myVec::iterator & it) : arr_it(myVec::reverse_iterator(it)), bIsArray(true) {}
 
 			reverse_iterator(const reverse_iterator & it) : arr_it(it.arr_it), obj_it(it.obj_it), bNone(it.bNone), bIsArray(it.bIsArray), dumbRet() {}
 
 			reverse_iterator(const JSON_NAMESPACE::iterator & it) : arr_it(myVec::reverse_iterator(it.arr_it)), obj_it(myMap::reverse_iterator(it.obj_it)), bNone(it.bNone), bIsArray(it.bIsArray) {}
 
-			reverse_iterator(reverse_iterator && it);
+			reverse_iterator(reverse_iterator && it) noexcept;
 			reverse_iterator & operator=(const reverse_iterator & it);
-			reverse_iterator & operator=(reverse_iterator && it);
+			reverse_iterator & operator=(reverse_iterator && it) noexcept;
 
 			reverse_iterator & operator++();
 			reverse_iterator operator++(int);
@@ -1004,8 +1008,8 @@ namespace JSON_NAMESPACE
 		private:
 			myVec::reverse_iterator arr_it;
 			myMap::reverse_iterator obj_it;
-			bool bNone;
-			bool bIsArray;
+			bool bNone {};
+			bool bIsArray {};
 			value dumbRet;
 	};
 
@@ -1025,10 +1029,10 @@ namespace JSON_NAMESPACE
 			}
 
 			document(const document & V);
-			document(document && V);
+			document(document && V) noexcept;
 
 			document & operator=(const document & V);
-			document & operator=(document && V);
+			document & operator=(document && V) noexcept;
 
 			typedef sdstring & (*PREPARSEPTR)(const sdstring & in, sdstring & out);
 			typedef sdstring & (*PREWRITEPTR)(const sdstring & in, sdstring & out);
@@ -1052,12 +1056,12 @@ namespace JSON_NAMESPACE
 
 			bool writeFile(const sdstring & inStr, bool bPretty = false, PREWRITEPTR = nullptr);
 
-			sdstring parseResult() const
+			[[nodiscard]] sdstring parseResult() const
 			{
 				return strParseResult;
 			}
 
-			bool parseSuccessful() const
+			[[nodiscard]] bool parseSuccessful() const
 			{
 				return bParseSuccessful;
 			}
@@ -1077,7 +1081,7 @@ namespace JSON_NAMESPACE
 
 		protected:
 			sdstring strParseResult;
-			bool bParseSuccessful;
+			bool bParseSuccessful {};
 	};
 
 	std::ostream & operator<<(std::ostream & S, document & doc);

@@ -1132,7 +1132,7 @@ namespace DATA_NAMESPACE
 		str.clear();
 
 		TiXmlDocument doc;
-		doc.SetCondenseWhiteSpace(false);
+		TiXmlDocument::SetCondenseWhiteSpace(false);
 		if (preParser == nullptr) {
 			doc.Parse(inStr.c_str());
 		} else {
@@ -1167,7 +1167,7 @@ namespace DATA_NAMESPACE
 		FILE * fd = fopen(inStr.c_str(), "rb");
 		if (fd) {
 			fseek(fd, 0, SEEK_END);
-			size_t l = (size_t)ftell(fd);
+			auto l = (size_t)ftell(fd);
 			fseek(fd, 0, SEEK_SET);
 
 			sdstring sDat(l, 0);
@@ -1178,7 +1178,7 @@ namespace DATA_NAMESPACE
 			}
 
 			fclose(fd);
-			bool bRetVal;
+			bool bRetVal = false;
 
 			if (bReWriteFile) {
 				bRetVal = parseXML(sDat, preParser, inStr);
@@ -1500,9 +1500,9 @@ namespace DATA_NAMESPACE
 		size_t iStartDepth = 0;
 		if (!bNoXMLHeader && (sRootTag.size() || bForceXMLHeader)) {
 			if (bStandAlone) {
-				ret = "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>";
+				ret = R"(<?xml version="1.0" encoding="utf-8" standalone="yes"?>)";
 			} else {
-				ret = "<?xml version=\"1.0\" encoding=\"utf-8\"?>";
+				ret = R"(<?xml version="1.0" encoding="utf-8"?>)";
 			}
 			if (bPretty) {
 				ret.append("\n");

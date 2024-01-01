@@ -29,6 +29,9 @@ The official repository for this library is at https://github.com/VA7ODR/json
 // #define DATA_NAMESPACE data
 // #endif
 
+#include "json.hpp"
+#include "SDString/sdstring.hpp"
+
 #if !defined JSON_NAMESPACE
 #	pragma message("What the heck?")
 #endif
@@ -49,7 +52,7 @@ namespace DATA_NAMESPACE
 				bStandAlone		= true;
 			}
 
-			document(sdstring & in)
+			document(const sdstring & in)
 			{
 				bForceXMLHeader = false;
 				bNoXMLHeader	= false;
@@ -136,7 +139,7 @@ namespace DATA_NAMESPACE
 				return sRootTag;
 			}
 
-			void rootTag(sdstring rootElem)
+			void rootTag(const sdstring & rootElem)
 			{
 				sRootTag = rootElem;
 			}
