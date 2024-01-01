@@ -2349,6 +2349,24 @@ namespace JSON_NAMESPACE
 		return ret;
 	}
 
+	value & value::value_or(const sdstring & index, value vor)
+	{
+		auto & ret = (*this)[index];
+		if (ret.IsVoid()) {
+			ret = vor;
+		}
+		return ret;
+	}
+
+	value &value::value_or(size_t index, value vor)
+	{
+		auto & ret = (*this)[index];
+		if (ret.IsVoid()) {
+			ret = vor;
+		}
+		return ret;
+	}
+
 	void value::push_back(const value& val) {
 		if (myType != JSON_ARRAY) {
 			debugTypeChange(true, (*this), value().emptyArray());

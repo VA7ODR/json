@@ -52,6 +52,14 @@ int main(int argc, char ** argv)
 	ElapsedTimer timer;
 	json::document jDoc;
 	json::document jDoc2;
+
+	std::cout << "json::document size: " << sizeof(json::document) << std::endl;
+	std::cout << "json::value size:    " << sizeof(json::value) << std::endl;
+	std::cout << "json::object size:   " << sizeof(json::object) << std::endl;
+	std::cout << "json::array size:    " << sizeof(json::array) << std::endl;
+	std::cout << "json::iterator size: " << sizeof(json::iterator) << std::endl;
+
+
 	std::cout << "Parsing " << argv[1] << "... ";
 	std::cout.flush();
 

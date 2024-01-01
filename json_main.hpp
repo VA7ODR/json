@@ -321,6 +321,28 @@ namespace JSON_NAMESPACE
 				return *this;
 			}
 
+			value & value_or(const sdstring & index, value vor);
+			value & value_or(size_t index, value vor);
+			template <typename T, typename std::enable_if<std::is_same<T, value>::value>::type* = nullptr>
+			value & value_or(const T & index, value vor)
+			{
+				assert(index.m_type == JSON_NUMBER || index.m_type == JSON_STRING && "Wrong value type used as index.");
+				switch (index.m_type) {
+					case JSON_STRING:
+						return value_or(index.str, vor);
+
+					case JSON_NUMBER:
+						return value_or(index._size_t(), vor);
+
+					default:
+						break;
+				}
+				if (debug()) {
+					debug()("json operator[value]: of type %s used as index. Returning self: ", typeName(index.myType));
+				}
+				return *this;
+			}
+
 			void push_back(const value& val);				// Array
 			void push_back(value&& val);					// Array
 			void push_front(const value& val);				// Array
