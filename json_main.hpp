@@ -533,12 +533,12 @@ namespace JSON_NAMESPACE
 			sdstring str;
 			JSONTypes myType {JSON_VOID};
 
-			union
-			{
-				public:
+			// union
+			// {
+			// 	public:
 					object * obj = nullptr;
 					array * arr;
-			};
+			// };
 
 			sdstring m_key;
 
@@ -674,16 +674,16 @@ namespace JSON_NAMESPACE
 
 			~object() = default;
 
-			object(const object & V) : myMap((myMap)V) {}
+			object(const object & V) : myMap((myMap)V), bHasStuff(V.bHasStuff) {}
 
 			object(object && V) noexcept : myMap((myMap)V)
 			{
-				std::swap(bNotEmpty, V.bNotEmpty);
+				std::swap(bHasStuff, V.bHasStuff);
 				std::swap(pParentArray, V.pParentArray);
 				std::swap(pParentObject, V.pParentObject);
 			}
 
-			object(const object * V) : myMap(static_cast<myMap>(*V)) {}
+			object(const object * V) : myMap(static_cast<myMap>(*V)), bHasStuff(V->bHasStuff) {}
 #	if defined SUPPORT_ORDERED_JSON && !defined DO_OJSON_STUFF
 			friend class ojson::object;
 			object(const ojson::object & V);
@@ -710,6 +710,7 @@ namespace JSON_NAMESPACE
 			{
 				if (this != &rhs) {
 					static_cast<myMap &>(*this) = static_cast<const myMap &>(rhs);
+					bHasStuff = rhs.bHasStuff;
 				}
 				return *this;
 			}
@@ -769,15 +770,15 @@ namespace JSON_NAMESPACE
 
 			bool notEmpty()
 			{
-				return bNotEmpty;
+				return bHasStuff;
 			}
 
 		protected:
-			bool bNotEmpty{};
+			bool bHasStuff{false};
 
 		private:
-			array * pParentArray {};
-			object * pParentObject {};
+			array * pParentArray {nullptr};
+			object * pParentObject {nullptr};
 	};
 
 	class array : private myVec
@@ -795,16 +796,16 @@ namespace JSON_NAMESPACE
 			array(const json::array & V);
 			array(const json::array * V);
 #	endif
-			array(const array & V) : myVec((myVec)V) {}
+			array(const array & V) : myVec((myVec)V), bHasStuff(V.bHasStuff) {}
 
 			array(array && V) noexcept : myVec((myVec)V)
 			{
-				std::swap(bNotEmpty, V.bNotEmpty);
+				std::swap(bHasStuff, V.bHasStuff);
 				std::swap(pParentArray, V.pParentArray);
 				std::swap(pParentObject, V.pParentObject);
 			}
 
-			array(const array * V) : myVec(static_cast<myVec>(*V)) {}
+			array(const array * V) : myVec(static_cast<myVec>(*V)), bHasStuff(V->bHasStuff) {}
 
 			~array() = default;
 
@@ -835,6 +836,7 @@ namespace JSON_NAMESPACE
 			{
 				if (this != &rhs) {
 					static_cast<myVec &>(*this) = static_cast<const myVec &>(rhs);
+					bHasStuff = rhs.bHasStuff;
 				}
 				return *this;
 			}
@@ -878,15 +880,15 @@ namespace JSON_NAMESPACE
 
 			bool notEmpty()
 			{
-				return bNotEmpty;
+				return bHasStuff;
 			}
 
 		protected:
-			bool bNotEmpty{};
+			bool bHasStuff{false};
 
 		private:
-			array * pParentArray {};
-			object * pParentObject{};
+			array * pParentArray {nullptr};
+			object * pParentObject{nullptr};
 	};
 
 	class iterator

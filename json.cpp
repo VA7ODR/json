@@ -1597,13 +1597,13 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	array::array(const ojson::array & V) : myVec(V.begin(), V.end()), bNotEmpty(V.bNotEmpty) {}
+	array::array(const ojson::array & V) : myVec(V.begin(), V.end()), bHasStuff(V.bHasStuff) {}
 
-	array::array(const ojson::array * V) : myVec(V->begin(), V->end()), bNotEmpty(V->bNotEmpty) {}
+	array::array(const ojson::array * V) : myVec(V->begin(), V->end()), bHasStuff(V->bHasStuff) {}
 
-	object::object(const ojson::object & V) : myMap(V.begin(), V.end()), bNotEmpty(V.bNotEmpty) {}
+	object::object(const ojson::object & V) : myMap(V.begin(), V.end()), bHasStuff(V.bHasStuff) {}
 
-	object::object(const ojson::object * V) : myMap(V->begin(), V->end()), bNotEmpty(V->bNotEmpty) {}
+	object::object(const ojson::object * V) : myMap(V->begin(), V->end()), bHasStuff(V->bHasStuff) {}
 #elif defined JSON_USE_ADDED_ORDER
 	value::value(const json::value & V) :
 		m_number(V.m_number),
@@ -1624,14 +1624,14 @@ namespace JSON_NAMESPACE
 
 	array::array(const json::array & V) : myVec(V.begin(), V.end())
 	{
-		bNotEmpty	  = V.bNotEmpty;
+		bHasStuff	  = V.bHasStuff;
 		pParentArray  = nullptr;
 		pParentObject = nullptr;
 	}
 
 	array::array(const json::array * V) : myVec(V->begin(), V->end())
 	{
-		bNotEmpty	  = V->bNotEmpty;
+		bHasStuff	  = V->bHasStuff;
 		pParentArray  = nullptr;
 		pParentObject = nullptr;
 	}
@@ -1643,7 +1643,7 @@ namespace JSON_NAMESPACE
 			(*this).insert(this->end(), *it);
 		}
 
-		bNotEmpty	  = V.bNotEmpty;
+		bHasStuff	  = V.bHasStuff;
 		pParentArray  = nullptr;
 		pParentObject = nullptr;
 	}
@@ -1656,9 +1656,9 @@ namespace JSON_NAMESPACE
 				(*this).insert(this->end(), *it);
 			}
 
-			bNotEmpty = V->bNotEmpty;
+			bHasStuff = V->bHasStuff;
 		} else {
-			bNotEmpty = false;
+			bHasStuff = false;
 		}
 		pParentArray  = nullptr;
 		pParentObject = nullptr;
@@ -2491,8 +2491,8 @@ namespace JSON_NAMESPACE
 		}
 		arr->emplace_front(val);
 		arr->front().setParentArray(arr);
-		arr->back().setParentObject(nullptr);
-		arr->back().m_key.clear();
+		arr->front().setParentObject(nullptr);
+		arr->front().m_key.clear();
 
 		if (val.myType != JSON_VOID) {
 			arr->setNotEmpty();
@@ -2632,16 +2632,16 @@ namespace JSON_NAMESPACE
 
 			case JSON_ARRAY:
 			{
-				bool bNotEmpty = false;
+				bool bHasStuff = false;
 				for (reverse_iterator rit = (*this).rbegin(); rit != (*this).rend(); ++rit) {
-					if ((*rit).isA(JSON_NULL) && bNotEmpty) {
+					if ((*rit).isA(JSON_NULL) && bHasStuff) {
 						continue;	 // NULLs are placeholders in arrays and only ones after the last non null value are pruned.
 					}
 					if ((*rit).pruneEmptyValues()) {
-						bNotEmpty = true;
+						bHasStuff = true;
 					}
 				}
-				if (bNotEmpty == false) {
+				if (bHasStuff == false) {
 					m_number  = 0.0;
 					m_places  = -1;
 					m_boolean = false;
@@ -2662,17 +2662,17 @@ namespace JSON_NAMESPACE
 					}
 					myType = JSON_VOID;
 				}
-				return bNotEmpty;
+				return bHasStuff;
 			}
 			case JSON_OBJECT:
 			{
-				bool bNotEmpty = false;
+				bool bHasStuff = false;
 				for (value & val : *this) {
 					if (val.pruneEmptyValues()) {
-						bNotEmpty = true;
+						bHasStuff = true;
 					}
 				}
-				if (bNotEmpty == false) {
+				if (bHasStuff == false) {
 					m_number  = 0.0;
 					m_places  = -1;
 					m_boolean = false;
@@ -2693,7 +2693,7 @@ namespace JSON_NAMESPACE
 					}
 					myType = JSON_VOID;
 				}
-				return bNotEmpty;
+				return bHasStuff;
 			}
 		}
 	}
@@ -2709,18 +2709,18 @@ namespace JSON_NAMESPACE
 
 			case JSON_ARRAY:
 			{
-				bool bNotEmpty = false;
+				bool bHasStuff = false;
 				size_t s	   = arr->size();
 				for (auto rit = arr->rbegin(); rit != arr->rend() && s > 0; ++rit) {
 					if ((*rit).compact()) {
-						bNotEmpty = true;
+						bHasStuff = true;
 						break;
 					} else {
 						s--;
 					}
 				}
 
-				if (bNotEmpty == false) {
+				if (bHasStuff == false) {
 					m_number  = 0.0;
 					m_places  = -1;
 					m_boolean = false;
@@ -2743,14 +2743,14 @@ namespace JSON_NAMESPACE
 				} else {
 					resize(s);
 				}
-				return bNotEmpty;
+				return bHasStuff;
 			}
 			case JSON_OBJECT:
 			{
-				bool bNotEmpty = false;
+				bool bHasStuff = false;
 				for (auto it = obj->begin(); it != obj->end();) {
 					if ((*it).second.compact()) {
-						bNotEmpty = true;
+						bHasStuff = true;
 						++it;
 					} else {
 						auto it2 = it;
@@ -2759,7 +2759,7 @@ namespace JSON_NAMESPACE
 						it = it2;
 					}
 				}
-				if (bNotEmpty == false) {
+				if (bHasStuff == false) {
 					m_number  = 0.0;
 					m_places  = -1;
 					m_boolean = false;
@@ -2780,7 +2780,7 @@ namespace JSON_NAMESPACE
 					}
 					myType = JSON_VOID;
 				}
-				return bNotEmpty;
+				return bHasStuff;
 			}
 		}
 	}
@@ -2814,16 +2814,16 @@ namespace JSON_NAMESPACE
 		if (myVec::empty()) {
 			return true;
 		} else {
-			return !bNotEmpty;
+			return !bHasStuff;
 		}
 	}
 
 	void array::setNotEmpty()
 	{
-		if (bNotEmpty) {
+		if (bHasStuff) {
 			return;
 		}
-		bNotEmpty = true;
+		bHasStuff = true;
 
 		if (pParentArray && pParentArray != this) {
 			if (pParentArray->empty()) {
@@ -2839,7 +2839,7 @@ namespace JSON_NAMESPACE
 	void object::setParentArray(array * pSetTo)
 	{
 		pParentArray = pSetTo;
-		if (bNotEmpty && pParentArray) {
+		if (bHasStuff && pParentArray) {
 			pParentArray->setNotEmpty();
 		}
 	}
@@ -2850,7 +2850,7 @@ namespace JSON_NAMESPACE
 			return;
 		}
 		pParentObject = pSetTo;
-		if (bNotEmpty && pParentObject) {
+		if (bHasStuff && pParentObject) {
 			pParentObject->setNotEmpty();
 		}
 	}
@@ -2861,7 +2861,7 @@ namespace JSON_NAMESPACE
 			return;
 		}
 		pParentArray = pSetTo;
-		if (bNotEmpty && pParentArray) {
+		if (bHasStuff && pParentArray) {
 			pParentArray->setNotEmpty();
 		}
 	}
@@ -2869,7 +2869,7 @@ namespace JSON_NAMESPACE
 	void array::setParentObject(object * pSetTo)
 	{
 		pParentObject = pSetTo;
-		if (bNotEmpty && pParentObject) {
+		if (bHasStuff && pParentObject) {
 			pParentObject->setNotEmpty();
 		}
 	}
@@ -2879,16 +2879,16 @@ namespace JSON_NAMESPACE
 		if (myMap::empty()) {
 			return true;
 		} else {
-			return !bNotEmpty;
+			return !bHasStuff;
 		}
 	}
 
 	void object::setNotEmpty()
 	{
-		if (bNotEmpty) {
+		if (bHasStuff) {
 			return;
 		}
-		bNotEmpty = true;
+		bHasStuff = true;
 		if (pParentArray) {
 			if (pParentArray->empty()) {
 				pParentArray->setNotEmpty();
