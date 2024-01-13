@@ -533,12 +533,12 @@ namespace JSON_NAMESPACE
 			sdstring str;
 			JSONTypes myType {JSON_VOID};
 
-			// union
-			// {
-			// 	public:
+			union
+			{
+				public:
 					object * obj = nullptr;
 					array * arr;
-			// };
+			};
 
 			sdstring m_key;
 
