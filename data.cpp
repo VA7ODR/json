@@ -1154,11 +1154,13 @@ namespace DATA_NAMESPACE
 			strParseResult	 = "XML Parsing failed: " + sdstring(doc.ErrorDesc());
 			return false;
 		}
-		sRootTag.clear();
-		parseXMLElement(*this, &doc);
 
 		bParseSuccessful = true;
 		strParseResult	 = "Ok.";
+
+		sRootTag.clear();
+		parseXMLElement(*this, &doc);
+
 		return true;
 	}
 
