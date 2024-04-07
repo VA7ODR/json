@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2023 James Baker
+Copyright (c) 2012-2024 James Baker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,7 +23,7 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 */
 
-#if !defined DATA_HPP
+#if !defined DATA_HPP_
 
 class TiXmlNode;
 
@@ -36,21 +36,21 @@ class TiXmlNode;
 #	include <string>
 
 #	if defined SUPPORT_ORDERED_JSON && !defined DONE_ODATA
-namespace json
-{
-	class value;
-	class document;
-	class object;
-	class array;
-}	 // namespace json
+//namespace json
+//{
+//	class value;
+//	class document;
+//	class object;
+//	class array;
+//}	 // namespace json
 
-namespace ojson
-{
-	class value;
-	class document;
-	class object;
-	class array;
-}	 // namespace ojson
+//namespace ojson
+//{
+//	class value;
+//	class document;
+//	class object;
+//	class array;
+//}	 // namespace ojson
 
 namespace data
 {
@@ -70,6 +70,8 @@ namespace data
 
 #		define DONE_ODATA
 #		undef DO_ODATA_STUFF
+#		undef JSON_NAMESPACE
+#		undef DATA_NAMESPACE
 #	endif
 
 #	if defined JSON_NAMESPACE
@@ -87,4 +89,4 @@ namespace data
 
 #	define DATA_HPP_
 
-#endif	  //_DATA_HPP
+#endif	  //DATA_HPP_

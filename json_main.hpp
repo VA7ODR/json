@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2023 James Baker
+Copyright (c) 2012-2024 James Baker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1081,9 +1081,18 @@ namespace JSON_NAMESPACE
 				return STRINGIFY(JSON_NAMESPACE) "::" STRINGIFY(MYMAP);
 			}
 
+			std::pair<size_t, size_t> parseProgress()
+			{
+				if (parseIn) {
+					return {parseIn->tell(), parseIn->size()};
+				}
+				return {0, 1};
+			}
+
 		protected:
 			sdstring strParseResult;
 			bool bParseSuccessful {};
+			instring * parseIn = nullptr;
 	};
 
 	std::ostream & operator<<(std::ostream & S, document & doc);
