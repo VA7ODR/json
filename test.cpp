@@ -442,7 +442,7 @@ void test(const sdstring & type, const sdstring & sGroundTruth)
 		count										   = 0;
 		std::deque<json::JSONTypes> expectedArrayTypes = {json::JSON_NULL, json::JSON_STRING, json::JSON_BOOLEAN};
 		std::deque<sdstring> expectedArrayStrings	   = {"", "two", "true"};
-		std::deque<T> arrayValues					   = {(char *)nullptr, "two", true};
+		std::deque<T> arrayValues					   = {(const char *)nullptr,"two", true, 4, 4.6f};
 		for (auto & val : parseTest["nested_array"]) {
 			if (val.isA() != expectedArrayTypes[count]) {
 				std::cout << "FAILED!" << std::endl;
@@ -657,6 +657,12 @@ int main(int, char **)
 	TEST(json, ground_truth_original);
 #if defined SUPPORT_ORDERED_JSON
 	TEST(ojson, ground_truth_original);
+#endif
+#if defined USE_DATA_DOCUMENT
+	TEST(data, ground_truth_original);
+#if defined SUPPORT_ORDERED_JSON
+	TEST(odata, ground_truth_original);
+#endif
 #endif
 
 	std::cout << "All tests successful!" << std::endl;
