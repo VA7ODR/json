@@ -1295,7 +1295,7 @@ namespace JSON_NAMESPACE
 						return true;
 					case JSON_ARRAY:
 					case JSON_OBJECT:
-						return !(*it).empty();
+						return true;//!(*it).empty();
 					default:
 					case JSON_VOID:
 						return false;
