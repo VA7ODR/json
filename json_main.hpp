@@ -81,11 +81,6 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #	define STRINGIFY(x) #x
 #endif
 
-#if !defined JSON_HPP_
-#	if !defined JSON_NAMESPACE
-#		define JSON_HPP_
-#		define JSON_NAMESPACE json
-#	endif
 namespace JSON_NAMESPACE
 {
 #	if defined MYMAP
@@ -131,6 +126,15 @@ namespace JSON_NAMESPACE
 			friend class json::value;
 			friend class json::document;
 #	endif
+
+#if defined USE_DATA_DOCUMENT
+			friend class data::value;
+			friend class data::document;
+#	if defined SUPPORT_ORDERED_JSON
+			friend class odata::value;
+			friend class odata::document;
+#	endif
+#endif
 			friend void objectParse(value & ret, instring & inputString, bool * bFailed);
 
 			friend void arrayParse(value & arr, instring & inputString, bool * bFailed);
@@ -162,7 +166,7 @@ namespace JSON_NAMESPACE
 			value(bool V) : m_number((double)V), m_boolean(V), myType(JSON_BOOLEAN) {}
 
 			value(const char * V);
-			value(char * V);
+//			value(char * V);
 
 			value(const sdstring & V) : str(V), myType(JSON_STRING) {}
 
@@ -1098,4 +1102,4 @@ namespace JSON_NAMESPACE
 	std::ostream & operator<<(std::ostream & S, document & doc);
 	std::ostream & operator<<(std::ostream & S, value & doc);
 }	 // namespace JSON_NAMESPACE
-#endif
+

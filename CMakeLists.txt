@@ -27,7 +27,7 @@ cmake_minimum_required(VERSION 3.5)
 
 project(json_document)
 
-set (CMAKE_CXX_STANDARD 17)
+set (CMAKE_CXX_STANDARD 23)
 
 option(JSON_ORDERED "Is the ordered json (ojson::document) class required" ON)
 option(JSON_DATA_DOCUMENT "Is the xml functionality (data/odata::document) class(es) required" ON)
@@ -84,7 +84,7 @@ target_compile_definitions(${PROJECT_NAME} PUBLIC ${JSON_TARGET_DEFINES})
 
 if(JSON_TEST_EXAMPLE)
     add_executable(testbed test.cpp)
-    target_compile_definitions(testbed PUBLIC ${JSON_TARGET_DEFINES})
+    target_compile_definitions(testbed PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
     target_link_libraries(testbed PUBLIC ${PROJECT_NAME})
 
     add_executable(benchmark benchmark.cpp)
@@ -93,19 +93,22 @@ if(JSON_TEST_EXAMPLE)
 endif(JSON_TEST_EXAMPLE)
 
 if(JSON_SAMPLES)
-    add_executable(jsonpretty json2xml.cpp)
-    target_compile_definitions(jsonpretty PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
-    target_link_libraries(jsonpretty PUBLIC ${PROJECT_NAME})
+    if(JSON_ORDERED)
+        add_executable(csv2json csv2json.cpp)
+        target_compile_definitions(csv2json PUBLIC ${JSON_TARGET_DEFINES})
+        target_link_libraries(csv2json PUBLIC ${PROJECT_NAME})
 
-    add_executable(json2csv json2csv.cpp)
-    target_compile_definitions(json2csv PUBLIC __STANDALONE_CSV__ ${JSON_TARGET_DEFINES})
-    target_link_libraries(json2csv PUBLIC ${PROJECT_NAME})
+        add_executable(jsonpretty json2xml.cpp)
+        target_compile_definitions(jsonpretty PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
+        target_link_libraries(jsonpretty PUBLIC ${PROJECT_NAME})
 
-    add_executable(csv2json csv2json.cpp)
-    target_compile_definitions(csv2json PUBLIC ${JSON_TARGET_DEFINES})
-    target_link_libraries(csv2json PUBLIC ${PROJECT_NAME})
+        add_executable(json2csv json2csv.cpp)
+        target_compile_definitions(json2csv PUBLIC __STANDALONE_CSV__ ${JSON_TARGET_DEFINES})
+        target_link_libraries(json2csv PUBLIC ${PROJECT_NAME})
 
-    install(TARGETS jsonpretty json2csv csv2json RUNTIME DESTINATION bin)
+        install(TARGETS jsonpretty json2csv csv2json RUNTIME DESTINATION bin)
+    endif(JSON_ORDERED)
+
 endif(JSON_SAMPLES)
 
 if(JSON_DATA_DOCUMENT)

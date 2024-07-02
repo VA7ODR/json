@@ -45,6 +45,9 @@ namespace DATA_NAMESPACE
 	class document : public JSON_NAMESPACE::document
 	{
 		public:
+			using JSON_NAMESPACE::document::document;
+			using JSON_NAMESPACE::document::value;
+
 			document() : JSON_NAMESPACE::document()
 			{
 				bForceXMLHeader = false;
@@ -52,21 +55,21 @@ namespace DATA_NAMESPACE
 				bStandAlone		= true;
 			}
 
-			document(const sdstring & in)
-			{
-				bForceXMLHeader = false;
-				bNoXMLHeader	= false;
-				bStandAlone		= true;
-				parseXML(in);
-			}
-
-			document(const char * in)
-			{
-				bForceXMLHeader = false;
-				bNoXMLHeader	= false;
-				bStandAlone		= true;
-				parseXML(in);
-			}
+//			document(const sdstring & in)
+//			{
+//				bForceXMLHeader = false;
+//				bNoXMLHeader	= false;
+//				bStandAlone		= true;
+//				parseXML(in);
+//			}
+//
+//			document(const char * in)
+//			{
+//				bForceXMLHeader = false;
+//				bNoXMLHeader	= false;
+//				bStandAlone		= true;
+//				parseXML(in);
+//			}
 
 			document(const JSON_NAMESPACE::value & V) : JSON_NAMESPACE::document(V)
 			{

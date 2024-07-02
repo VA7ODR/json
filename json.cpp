@@ -1898,15 +1898,15 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	value::value(char * V)
-	{
-		if (V) {
-			str.assign(V);
-			myType = JSON_STRING;
-		} else {
-			myType = JSON_NULL;
-		}
-	}
+//	value::value(char * V)
+//	{
+//		if (V) {
+//			str.assign(V);
+//			myType = JSON_STRING;
+//		} else {
+//			myType = JSON_NULL;
+//		}
+//	}
 
 	value::value(object & V)
 	{
