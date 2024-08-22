@@ -259,6 +259,11 @@ namespace JSON_NAMESPACE
 		for (;;) {
 			const char & c = *take++;
 			switch (c) {
+				case '\0':
+					generateError(s, "Unexpected EOF.");
+					*bFailed = true;
+					return;
+
 				default:
 				{
 					*ptr = c;
