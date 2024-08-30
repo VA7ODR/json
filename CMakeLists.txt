@@ -86,10 +86,6 @@ if(JSON_TEST_EXAMPLE)
     add_executable(testbed test.cpp)
     target_compile_definitions(testbed PUBLIC ${JSON_TARGET_DEFINES} ${DATA_DOCUMENT_DEFINES})
     target_link_libraries(testbed PUBLIC ${PROJECT_NAME})
-
-    add_executable(benchmark benchmark.cpp)
-    target_compile_definitions(benchmark PUBLIC ${JSON_TARGET_DEFINES})
-    target_link_libraries(benchmark PUBLIC ${PROJECT_NAME})
 endif(JSON_TEST_EXAMPLE)
 
 if(JSON_SAMPLES)
