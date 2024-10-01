@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2023 James Baker
+Copyright (c) 2012-2024 James Baker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,7 @@ The official repository for this library is at https://github.com/VA7ODR/json
 // #define DATA_NAMESPACE data
 // #endif
 
-#include "json.hpp"
+//#include "json.hpp"
 #include "SDString/sdstring.hpp"
 
 #if !defined JSON_NAMESPACE
@@ -45,6 +45,9 @@ namespace DATA_NAMESPACE
 	class document : public JSON_NAMESPACE::document
 	{
 		public:
+			using JSON_NAMESPACE::document::document;
+			using JSON_NAMESPACE::document::value;
+
 			document() : JSON_NAMESPACE::document()
 			{
 				bForceXMLHeader = false;
@@ -52,21 +55,21 @@ namespace DATA_NAMESPACE
 				bStandAlone		= true;
 			}
 
-			document(const sdstring & in)
-			{
-				bForceXMLHeader = false;
-				bNoXMLHeader	= false;
-				bStandAlone		= true;
-				parseXML(in);
-			}
-
-			document(const char * in)
-			{
-				bForceXMLHeader = false;
-				bNoXMLHeader	= false;
-				bStandAlone		= true;
-				parseXML(in);
-			}
+//			document(const sdstring & in)
+//			{
+//				bForceXMLHeader = false;
+//				bNoXMLHeader	= false;
+//				bStandAlone		= true;
+//				parseXML(in);
+//			}
+//
+//			document(const char * in)
+//			{
+//				bForceXMLHeader = false;
+//				bNoXMLHeader	= false;
+//				bStandAlone		= true;
+//				parseXML(in);
+//			}
 
 			document(const JSON_NAMESPACE::value & V) : JSON_NAMESPACE::document(V)
 			{

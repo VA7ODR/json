@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2023 James Baker
+Copyright (c) 2012-2024 James Baker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -259,6 +259,11 @@ namespace JSON_NAMESPACE
 		for (;;) {
 			const char & c = *take++;
 			switch (c) {
+				case '\0':
+					generateError(s, "Unexpected EOF.");
+					*bFailed = true;
+					return;
+
 				default:
 				{
 					*ptr = c;
@@ -1295,7 +1300,7 @@ namespace JSON_NAMESPACE
 						return true;
 					case JSON_ARRAY:
 					case JSON_OBJECT:
-						return !(*it).empty();
+						return true;//!(*it).empty();
 					default:
 					case JSON_VOID:
 						return false;
@@ -1898,15 +1903,15 @@ namespace JSON_NAMESPACE
 		}
 	}
 
-	value::value(char * V)
-	{
-		if (V) {
-			str.assign(V);
-			myType = JSON_STRING;
-		} else {
-			myType = JSON_NULL;
-		}
-	}
+//	value::value(char * V)
+//	{
+//		if (V) {
+//			str.assign(V);
+//			myType = JSON_STRING;
+//		} else {
+//			myType = JSON_NULL;
+//		}
+//	}
 
 	value::value(object & V)
 	{
@@ -4086,8 +4091,10 @@ namespace JSON_NAMESPACE
 			pData = &sOut;
 		}
 		instring in(*pData);
+		parseIn = &in;
 		SkipWhitespace(in);
 		if (in.tell() >= in.size()) {
+			parseIn = nullptr;
 			return true;
 		}
 		valueParse(*this, in, &bFailed);
@@ -4098,6 +4105,7 @@ namespace JSON_NAMESPACE
 				debug()("%s", strParseResult.c_str());
 			}
 		}
+		parseIn = nullptr;
 		return !bFailed;
 	}
 

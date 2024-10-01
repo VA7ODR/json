@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2023 James Baker
+Copyright (c) 2012-2024 James Baker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -81,11 +81,6 @@ The official repository for this library is at https://github.com/VA7ODR/json
 #	define STRINGIFY(x) #x
 #endif
 
-#if !defined JSON_HPP_
-#	if !defined JSON_NAMESPACE
-#		define JSON_HPP_
-#		define JSON_NAMESPACE json
-#	endif
 namespace JSON_NAMESPACE
 {
 #	if defined MYMAP
@@ -131,6 +126,15 @@ namespace JSON_NAMESPACE
 			friend class json::value;
 			friend class json::document;
 #	endif
+
+#if defined USE_DATA_DOCUMENT
+			friend class data::value;
+			friend class data::document;
+#	if defined SUPPORT_ORDERED_JSON
+			friend class odata::value;
+			friend class odata::document;
+#	endif
+#endif
 			friend void objectParse(value & ret, instring & inputString, bool * bFailed);
 
 			friend void arrayParse(value & arr, instring & inputString, bool * bFailed);
@@ -162,7 +166,7 @@ namespace JSON_NAMESPACE
 			value(bool V) : m_number((double)V), m_boolean(V), myType(JSON_BOOLEAN) {}
 
 			value(const char * V);
-			value(char * V);
+//			value(char * V);
 
 			value(const sdstring & V) : str(V), myType(JSON_STRING) {}
 
@@ -1081,12 +1085,21 @@ namespace JSON_NAMESPACE
 				return STRINGIFY(JSON_NAMESPACE) "::" STRINGIFY(MYMAP);
 			}
 
+			std::pair<size_t, size_t> parseProgress()
+			{
+				if (parseIn) {
+					return {parseIn->tell(), parseIn->size()};
+				}
+				return {0, 1};
+			}
+
 		protected:
 			sdstring strParseResult;
 			bool bParseSuccessful {};
+			instring * parseIn = nullptr;
 	};
 
 	std::ostream & operator<<(std::ostream & S, document & doc);
 	std::ostream & operator<<(std::ostream & S, value & doc);
 }	 // namespace JSON_NAMESPACE
-#endif
+

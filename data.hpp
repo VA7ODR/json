@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2023 James Baker
+Copyright (c) 2012-2024 James Baker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -23,68 +23,114 @@ The official repository for this library is at https://github.com/VA7ODR/json
 
 */
 
-#if !defined DATA_HPP
+//#if !defined DATA_HPP_
+//
+//class TiXmlNode;
+//
+//#	include "json.hpp"
+//#	include "SDString/sdstring.hpp"
+//
+//#	include <cstdint>
+//#	include <deque>
+//#	include <map>
+//#	include <string>
+//
+//#	if defined SUPPORT_ORDERED_JSON && !defined DONE_ODATA
+////namespace json
+////{
+////	class value;
+////	class document;
+////	class object;
+////	class array;
+////}	 // namespace json
+//
+////namespace ojson
+////{
+////	class value;
+////	class document;
+////	class object;
+////	class array;
+////}	 // namespace ojson
+//
+//namespace data
+//{
+//	class document;
+//}	 // namespace data
+//
+//#		define DO_ODATA_STUFF
+//
+//#		if defined JSON_NAMESPACE
+//#			undef JSON_NAMESPACE
+//#		endif
+//
+//#		define JSON_NAMESPACE ojson
+//#		define DATA_NAMESPACE odata
+//
+//#		include "data_main.hpp"
+//
+//#		define DONE_ODATA
+//#		undef DO_ODATA_STUFF
+//#		undef JSON_NAMESPACE
+//#		undef DATA_NAMESPACE
+//#	endif
+//
+//#	if defined JSON_NAMESPACE
+//#		undef JSON_NAMESPACE
+//#	endif
+//
+//#	if defined DATA_NAMESPACE
+//#		undef DATA_NAMESPACE
+//#	endif
+//
+//#	define JSON_NAMESPACE json
+//#	define DATA_NAMESPACE data
+//
+//#	include "data_main.hpp"
+//
+//#	define DATA_HPP_
+//
+//#endif	  //DATA_HPP_
 
-class TiXmlNode;
+#pragma once
+#include "json.hpp"
 
-#	include "json.hpp"
-#	include "SDString/sdstring.hpp"
+#if defined JSON_NAMESPACE
+#	undef JSON_NAMESPACE
+#endif
 
-#	include <cstdint>
-#	include <deque>
-#	include <map>
-#	include <string>
+#define JSON_NAMESPACE json
+#define DATA_NAMESPACE data
 
-#	if defined SUPPORT_ORDERED_JSON && !defined DONE_ODATA
-namespace json
-{
-	class value;
-	class document;
-	class object;
-	class array;
-}	 // namespace json
+#include "data_main.hpp"
 
-namespace ojson
-{
-	class value;
-	class document;
-	class object;
-	class array;
-}	 // namespace ojson
-
-namespace data
-{
-	class document;
-}	 // namespace data
-
-#		define DO_ODATA_STUFF
-
-#		if defined JSON_NAMESPACE
-#			undef JSON_NAMESPACE
-#		endif
-
-#		define JSON_NAMESPACE ojson
-#		define DATA_NAMESPACE odata
-
-#		include "data_main.hpp"
-
-#		define DONE_ODATA
-#		undef DO_ODATA_STUFF
-#	endif
+#if defined SUPPORT_ORDERED_JSON
 
 #	if defined JSON_NAMESPACE
 #		undef JSON_NAMESPACE
 #	endif
-
 #	if defined DATA_NAMESPACE
 #		undef DATA_NAMESPACE
 #	endif
 
-#	define JSON_NAMESPACE json
-#	define DATA_NAMESPACE data
+#	define JSON_NAMESPACE ojson
+#	define DATA_NAMESPACE odata
+#	define DO_ODATA_STUFF
 
 #	include "data_main.hpp"
 
-#	define DATA_HPP_
+#	if !defined JSON_USE_ADDED_ORDER
+#		if defined JSON_NAMESPACE
+#			undef JSON_NAMESPACE
+#		endif
+#		if defined DATA_NAMESPACE
+#			undef DATA_NAMESPACE
+#		endif
+#		if defined DO_ODATA_STUFF
+#			undef DO_ODATA_STUFF
+#		endif
 
-#endif	  //_DATA_HPP
+#		define JSON_NAMESPACE json
+#		define DATA_NAMESPACE data
+#	endif
+
+#endif

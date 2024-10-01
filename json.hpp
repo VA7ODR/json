@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2012-2023 James Baker
+Copyright (c) 2012-2024 James Baker
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -67,21 +67,62 @@ The official repository for this library is at https://github.com/VA7ODR/json
  \endcode
  */
 
-#if !defined JSON_HPP_
+//#if !defined JSON_HPP_
+//
+//#	if defined __GNUC__
+//#		define DEPRECATED(func) func __attribute__((deprecated))
+//#	elif defined(_MSC_VER)
+//#		define DEPRECATED(func) __declspec(deprecated) func
+//#	else
+//#		pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+//#		define DEPRECATED(func) func
+//#	endif
+//
+//#	define JSON_DOCUMENT_VERSION "1.1.0"
+//#	define JSON_NUMBER_PRECISION 14
+//
+//#	if defined SUPPORT_ORDERED_JSON && !defined DONE_OJSON
+//namespace json
+//{
+//	class value;
+//	class document;
+//	class object;
+//	class array;
+//}	 // namespace json
+//
+//#		define DO_OJSON_STUFF
+//#		define JSON_NAMESPACE ojson
+//#		include "json_main.hpp"
+//#		undef DO_OJSON_STUFF
+//#		undef JSON_NAMESPACE
+//#		define DONE_OJSON
+//#	endif
+//
+//#	if defined JSON_NAMESPACE
+//#		undef JSON_NAMESPACE
+//#	endif
+//
+//#	define JSON_NAMESPACE json
+//#	include "json_main.hpp"
+//
+//#	define JSON_HPP_
+//
+//#endif
 
-#	if defined __GNUC__
-#		define DEPRECATED(func) func __attribute__((deprecated))
-#	elif defined(_MSC_VER)
-#		define DEPRECATED(func) __declspec(deprecated) func
-#	else
-#		pragma message("WARNING: You need to implement DEPRECATED for this compiler")
-#		define DEPRECATED(func) func
-#	endif
+#pragma once
 
-#	define JSON_DOCUMENT_VERSION "1.1.0"
-#	define JSON_NUMBER_PRECISION 14
+#if defined __GNUC__
+#	define DEPRECATED(func) func __attribute__((deprecated))
+#elif defined(_MSC_VER)
+#	define DEPRECATED(func) __declspec(deprecated) func
+#else
+#	pragma message("WARNING: You need to implement DEPRECATED for this compiler")
+#	define DEPRECATED(func) func
+#endif
 
-#	if defined SUPPORT_ORDERED_JSON && !defined DONE_OJSON
+#define JSON_DOCUMENT_VERSION "1.1.1"
+#define JSON_NUMBER_PRECISION 14
+
 namespace json
 {
 	class value;
@@ -90,21 +131,52 @@ namespace json
 	class array;
 }	 // namespace json
 
-#		define DO_OJSON_STUFF
-#		define JSON_NAMESPACE ojson
-#		include "json_main.hpp"
-#		undef DO_OJSON_STUFF
-#		undef JSON_NAMESPACE
-#		define DONE_OJSON
-#	endif
+#if defined SUPPORT_ORDERED_JSON
+namespace ojson
+{
+	class value;
+	class document;
+	class object;
+	class array;
+}	 // namespace ojson
 
-#	if defined JSON_NAMESPACE
-#		undef JSON_NAMESPACE
-#	endif
+#if defined USE_DATA_DOCUMENT
+namespace data
+{
+	class value;
+	class document;
+}	 // namespace ojson
 
-#	define JSON_NAMESPACE json
-#	include "json_main.hpp"
+namespace odata
+{
+	class value;
+	class document;
+}	 // namespace ojson
+#endif
 
-#	define JSON_HPP_
+#endif
+
+#define JSON_NAMESPACE json
+#include "json_main.hpp"
+
+#if defined SUPPORT_ORDERED_JSON
+
+#if defined JSON_NAMESPACE
+#	undef JSON_NAMESPACE
+#endif
+
+#define JSON_NAMESPACE ojson
+#define DO_OJSON_STUFF
+#include "json_main.hpp"
+
+#if !defined JSON_USE_ADDED_ORDER
+#if defined JSON_NAMESPACE
+#	undef JSON_NAMESPACE
+#endif
+#if defined DO_OJSON_STUFF
+#	undef DO_OJSON_STUFF
+#endif
+#define JSON_NAMESPACE json
+#endif
 
 #endif
