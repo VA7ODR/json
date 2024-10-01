@@ -3177,7 +3177,7 @@ namespace JSON_NAMESPACE
 				if (str.empty()) {
 					return 0.0;
 				}
-				std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char>> convert(str.c_str());
+				std::basic_istringstream<char, std::char_traits<char>, secure_delete_allocator<char>> convert(str);
 				double d = 0.0;
 				if (!(convert >> d)) {
 					return 0.0;
@@ -3829,13 +3829,13 @@ namespace JSON_NAMESPACE
 					} else {
 						bFirst = false;
 					}
-					if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+					if ((ff & std::ostream::skipws) == 0) {
 						S.put('\n');
 						tab(S, depth + 1);
 					}
 					value_stream(S, sub, depth + 1);
 				}
-				if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+				if ((ff & std::ostream::skipws) == 0) {
 					S.put('\n');
 					tab(S, depth);
 				}
@@ -3854,19 +3854,19 @@ namespace JSON_NAMESPACE
 					} else {
 						bFirst = false;
 					}
-					if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+					if ((ff & std::ostream::skipws) == 0) {
 						S.put('\n');
 						tab(S, depth + 1);
 					}
 					S.put('\"');
 					escape(S, sub.key());
 					S.write("\":", 2);
-					if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+					if ((ff & std::ostream::skipws) == 0) {
 						S.put(' ');
 					}
 					value_stream(S, sub, depth + 1);
 				}
-				if ((ff & std::ostream::fmtflags::_S_skipws) == 0) {
+				if ((ff & std::ostream::skipws) == 0) {
 					S.put('\n');
 					tab(S, depth);
 				}
