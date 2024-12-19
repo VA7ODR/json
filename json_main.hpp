@@ -961,7 +961,7 @@ namespace JSON_NAMESPACE
 			value dumbRet;
 	};
 
-	class reverse_iterator : public std::reverse_iterator<iterator>
+	class reverse_iterator// : public std::reverse_iterator<iterator>
 	{
 		public:
 			reverse_iterator() : bNone(true) {}
